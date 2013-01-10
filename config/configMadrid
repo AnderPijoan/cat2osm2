@@ -1,0 +1,16 @@
+
+ResultPath=/home/ander/Eclipse/cat2osm2/cat2osm/result
+ResultFileName=Madrid
+UrbanoSHPPath=/home/ander/Eclipse/cat2osm/files/Madrid/28_900_UA_2012-09-23_SHF.zip
+RusticoSHPPath=/home/ander/Eclipse/cat2osm/files/Madrid/28_900_RA_2012-09-23_SHF.zip
+UrbanoCATFile=/home/ander/Eclipse/cat2osm/files/Madrid/28_900_U_2012-09-23.CAT.gz
+RusticoCATFile=/home/ander/Eclipse/cat2osm/files/Madrid/28_900_R_2012-09-23.CAT.gz
+NadgridsPath=auto:peninsula
+Proyeccion=auto
+FechaDesde=00000000
+FechaHasta=99999999
+FechaConstruDesde=00000000
+FechaConstruHasta=99999999
+TipoRegistro=0
+Catastro3d=0
+PrintShapeIds=0
