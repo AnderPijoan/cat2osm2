@@ -29,19 +29,7 @@ public class ExtensionFileFilter extends FileFilter {
      * @return A boolean that indicates whether or not the file is accepted by the filter.
      */
     public boolean accept(final File file) {
-
-        if (file.isDirectory()) {
-            return true;
-        }
-
-        final String name = file.getName().toLowerCase();
-        if (name.endsWith(this.extension)) {
-            return true;
-        }
-        else {
-            return false;
-        }
-
+    	return file.isDirectory() || file.getName().toLowerCase().endsWith(this.extension);
     }
 
     /**
