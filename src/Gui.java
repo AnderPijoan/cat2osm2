@@ -12,10 +12,13 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 
 
 public class Gui extends JFrame {
@@ -33,61 +36,52 @@ public class Gui extends JFrame {
 		this.setLayout(new BorderLayout());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		this.add(new JLabel("GUÍA DE USO EN: http://wiki.openstreetmap.org/wiki/Cat2Osm"), BorderLayout.NORTH);
 
 		JPanel options = new JPanel();
-		options.setLayout(new GridLayout(1,2));
+		options.setLayout(new BorderLayout());
 
 
-		JPanel labels = new JPanel();
-		labels.setLayout(new GridLayout(16,1));
+		JPanel descriptions = new JPanel();
+		descriptions.setLayout(new GridLayout(13,1));
 
-		String[] labelsText = {"Carpeta donde se exportarán los archivos temporales y el resultado.\n(Tiene que tener privilegios lectura/escritura).",
-				"Nombre del archivo que exportará Cat2Osm como resultado.",
-				"Ruta al ARCHIVO COMPRIMIDO (con nombre generalmente XX_XXX_UA_XXXX-XX-XX_SHF.zip) tal cual se ha descargado, que contiene dentro CARPETAS de los shapefiles URBANOS.\n",
-				"Ruta al ARCHIVO COMPRIMIDO (con nombre generalmente XX_XXX_RA_XXXX-XX-XX_SHF.zip) tal cual se ha descargado, que contiene dentro CARPETAS de los shapefiles RUSTICOS.\n", 
-				"Ruta al ARCHIVO .CAT.gz URBANO.",
-				"Ruta al ARCHIVO .CAT.gz RÚSTICO.", 
-				//"Ruta al directorio principal de FWTools.\n(De momento no es necesario)", 
-				"Zona en la que se encuentra la población (peninsula para Península + Islas Canarias o baleares para las Islas Baleares).",
-				"Proyección en la que se encuentran los archivos shapefile." +
-						"\n\"auto\" para que busque automáticamente"+
-						"\n32628 para WGS84/ Zona UTM 29N"+
-						"\n23029 para ED_1950/ Zona UTM 29N,"+
-						"\n23030 para ED_1950/ Zona UTM 30N,"+
-						"\n23031 para ED_1950/ Zona UTM 31N,"+
-						"\n25829 para ETRS_1989/ Zona UTM 29N,"+
-						"\n25830 para ETRS_1989/ Zona UTM 30N,"+
-						"\n25831 para ETRS_1989/ Zona UTM 31N"+
-						"\n(Se puede comprobar abriendo con un editor de texto cualquiera de los archivos .PRJ)",
-				"Si se quiere delimitar una fecha de alta de los datos (Formato AAAAMMDD).\nTomará los datos que se han dado de alta a partir de esta fecha.\nEjemeplo: 20060127 (27 de Enero del 2006)",
-				"Si se quiere delimitar una fecha de baja de los datos (Formato AAAAMMDD).\nTomará los shapes que se han dado de alta hasta esta fecha y siguen sin darse de baja después.\nEjemeplo: 20060127 (27 de Enero del 2006)", 
-				"Si se quiere delimitar una fecha de construcción desde la cual coger los datos (Formato AAAAMMDD).\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)",
-				"Si se quiere delimitar una fecha de construcción hasta la cual coger los datos (Formato AAAAMMDD).\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)", 
-				"Tipo de Registro de catastro a usar (0 = todos).\nLos registros de catastro tienen la mayoría de la información necesaria para los shapefiles.",
-				"Imprimir las geometrias separadas por alturas y con los tags building:levels. Esto crea relaciones muy pesadas NO PERMITIDAS PARA SUBIR A OSM.",
-				"Imprimir tanto en las vías como en las relaciones la lista de shapes que las componen o las utilizan.\nEs para casos de debugging si se quiere tener los detalles.",
-				"Utilizar de forma adicional un archivo de reglas para ASIGNAR TAGS a los elementos de ELEMTEX (consultar wiki para el funcionamiento). Si no se selecciona ningún archivo ELEMTEX será exportado sin asignación de tags."};
+		String[] descriptionsTexts = {"<html><b>NECESARIO</b><br/>Carpeta donde se exportarán los archivos temporales y el resultado.\n(Tiene que tener privilegios lectura/escritura).</html>",
+				"<html><b>NECESARIO</b><br/>Nombre del archivo que exportará Cat2Osm como resultado</html>",
+				"<html><b>NECESARIO</b><br/>Ruta a una carpeta que contenga los ARCHIVOS DE CATASTRO DE UNA POBLACIÓN. Sin descomprimir y con el nombre tal cual se descargan de catastro, es decir: XX_XXX_UA_XXXX-XX-XX_SHF.zip, XX_XXX_RA_XXXX-XX-XX_SHF.zip, XX_XXX_R_XXXX-XX-XX.CAT.gz y XX_XXX_R_XXXX-XX-XX.CAT.gz (Si falta alguno se procesará sin él)</html>", 
+				"<html><b>NECESARIO</b><br/>Zona en la que se encuentra la población (peninsula para Península + Islas Canarias o baleares para las Islas Baleares)</html>",
+				"<html><b>OPCIONAL</b><br/>Proyección en la que se encuentran los archivos shapefile.<ul>" +
+						"<li><b>\"auto\"</b> para que busque automáticamente"+
+						"<li><b>32628</b> para WGS84/ Zona UTM 29N"+
+						"<li><b>23029</b> para ED_1950/ Zona UTM 29N</li>"+
+						"<li><b>23030</b> para ED_1950/ Zona UTM 30N</li>"+
+						"<li><b>23031</b> para ED_1950/ Zona UTM 31N</li>"+
+						"<li><b>25829</b> para ETRS_1989/ Zona UTM 29N</li>"+
+						"<li><b>25830</b> para ETRS_1989/ Zona UTM 30N</li>"+
+						"<li><b>25831</b> para ETRS_1989/ Zona UTM 31N</li>"+
+						"</ul>(Se puede comprobar abriendo con un editor de texto cualquiera de los archivos .PRJ)</html>",
+						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de alta de los datos (Formato AAAAMMDD), sino 00000000.\nTomará los datos que se han dado de alta a partir de esta fecha.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>",
+						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de baja de los datos (Formato AAAAMMDD), sino 99999999.\nTomará los shapes que se han dado de alta hasta esta fecha y siguen sin darse de baja después.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>", 
+						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de construcción desde la cual coger los datos (Formato AAAAMMDD), sino 00000000.\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>",
+						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de construcción hasta la cual coger los datos (Formato AAAAMMDD), sino 99999999.\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>", 
+						"<html><b>OPCIONAL</b><br/>Tipo de Registro de catastro a usar (0 = todos).\nLos registros de catastro tienen la mayoría de la información necesaria para los shapefiles</html>",
+						"<html><b>OPCIONAL</b><br/>Imprimir las geometrias separadas por alturas y con los tags building:levels. Esto crea relaciones muy pesadas NO PERMITIDAS PARA SUBIR A OSM</html>",
+						"<html><b>OPCIONAL</b><br/>Imprimir tanto en las vías como en las relaciones la lista de shapes que las componen o las utilizan.\nEs para casos de debugging si se quiere tener los detalles</html>",
+		"<html><b>OPCIONAL</b><br/>Utilizar de forma adicional un archivo de reglas para ASIGNAR TAGS a los elementos de ELEMTEX (consultar wiki para el funcionamiento). Si no se selecciona ningún archivo ELEMTEX será exportado sin asignación de tags</html>"};
 
+
+		// Crear los botones
 		JPanel buttons = new JPanel();
-		buttons.setLayout(new GridLayout(16,1));
+		buttons.setLayout(new GridLayout(13,1));
 
-
-		JButton resultPath, urbanoShpPath, rusticoShpPath, urbanoCatFile, rusticoCatFile, rulesFile = null;
+		JButton resultPath, filesDirPath, rulesFile = null;
 
 		final JFileChooser fcResult = new JFileChooser();
 		fcResult.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
 		final JTextField resultFileName = new JTextField("Resultado");
 
-		final JFileChooser fcShpUr = new JFileChooser();
-		fcShpUr.setFileFilter(new ExtensionFileFilter("Archivos .zip", ".zip"));
-		final JFileChooser fcShpRu = new JFileChooser();
-		fcShpRu.setFileFilter(new ExtensionFileFilter("Archivos .zip", ".zip"));
-
-		final JFileChooser fcCatUr = new JFileChooser();
-		fcCatUr.setFileFilter(new ExtensionFileFilter("Archivos .gz", ".gz"));
-		final JFileChooser fcCatRu = new JFileChooser();
-		fcCatRu.setFileFilter(new ExtensionFileFilter("Archivos .gz", ".gz"));
+		final JFileChooser filesDir = new JFileChooser();
+		filesDir.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
 		final JComboBox<String> fcGsb = new JComboBox<String>();
 
@@ -101,22 +95,30 @@ public class Gui extends JFrame {
 		final JComboBox<String> tipoReg = new JComboBox<String>();
 		final JComboBox<String> catastro3d = new JComboBox<String>();
 		final JComboBox<String> shapesId = new JComboBox<String>();
-		
-		
+
+
 		final JFileChooser fcRules = new JFileChooser();
 		fcRules.setFileFilter(new ExtensionFileFilter("Archivos .rules", ".rules"));
 
-		for (int x = 0; x < labelsText.length; x++){
+		// Crear las descripciones
+		for (int x = 0; x < descriptionsTexts.length; x++){
 
-			JTextArea t = new JTextArea(labelsText[x]);
-			t.setLineWrap(true);
-			t.setBackground(new Color(220,220,220));
-			labels.add(new JScrollPane(t));
+			HTMLEditorKit kit = new HTMLEditorKit();
+			HTMLDocument doc = new HTMLDocument();
+			JTextPane t = new JTextPane();
+			t.setEditorKit(kit);
+			t.setDocument(doc);
+			t.setText(descriptionsTexts[x]);
+			if (x < 4)
+				t.setBackground(new Color(255,220,220));
+			else 
+				t.setBackground(new Color(220,220,220));
+			descriptions.add(new JScrollPane(t));
 
 			switch (x){
 
 			case 0:{
-				resultPath = new JButton("Seleccione carpeta destino");
+				resultPath = new JButton("Seleccionar carpeta destino");
 				resultPath.addActionListener(new ActionListener()
 				{  public void actionPerformed(ActionEvent e)  
 				{ fcResult.showOpenDialog(new JFrame()); }  
@@ -129,54 +131,21 @@ public class Gui extends JFrame {
 				break;
 			}
 			case 2:{
-				urbanoShpPath = new JButton("Seleccionar archivo comprimido de shapesfiles Urbanos XX_XXX_UA_XXXX-XX-XX_SHF.zip ");
-				urbanoShpPath.addActionListener(new ActionListener()  
+				filesDirPath = new JButton("Seleccionar carpeta de archivos");
+				filesDirPath.addActionListener(new ActionListener()  
 				{  public void actionPerformed(ActionEvent e)  
-				{ fcShpUr.showOpenDialog(new JFrame()); }  
+				{ filesDir.showOpenDialog(new JFrame()); }  
 				});  
-				buttons.add(urbanoShpPath);
+				buttons.add(filesDirPath);
 				break;
 			}
-			case 3:{
-				rusticoShpPath = new JButton("Seleccionar  archivo comprimido de shapefiles Rústicos XX_XXX_RA_XXXX-XX-XX_SHF.zip ");
-				rusticoShpPath.addActionListener(new ActionListener()  
-				{  public void actionPerformed(ActionEvent e)  
-				{ fcShpRu.showOpenDialog(new JFrame()); }  
-				});  
-				buttons.add(rusticoShpPath);
-				break;
-			}
-			case 4:{
-				urbanoCatFile = new JButton("Seleccionar archivo .CAT.gz Urbano XX_XX_U_XXXX-XX-XX.CAT.gz");
-				urbanoCatFile.addActionListener(new ActionListener()  
-				{  public void actionPerformed(ActionEvent e)  
-				{ fcCatUr.showOpenDialog(new JFrame()); }  
-				});  
-				buttons.add(urbanoCatFile);
-				break;
-			}
-			case 5:{
-				rusticoCatFile = new JButton("Seleccionar archivo .CAT.gz Rústico XX_XX_R_XXXX-XX-XX.CAT.gz");
-				rusticoCatFile.addActionListener(new ActionListener()  
-				{  public void actionPerformed(ActionEvent e)  
-				{ fcCatRu.showOpenDialog(new JFrame()); }  
-				});  
-				buttons.add(rusticoCatFile);
-				break;
-			}
-//			case 6:{
-//				JTextArea l = new JTextArea("");
-//				l.setBackground(new Color(220,220,220));
-//				buttons.add(l);
-//				break;
-//			}
-			case 6:{		
+			case 3:{		
 				fcGsb.addItem("peninsula");
 				fcGsb.addItem("baleares");
 				buttons.add(fcGsb);
 				break;
 			}
-			case 7:{
+			case 4:{
 				proj.addItem("auto");
 				proj.addItem("32628");
 				proj.addItem("23029");
@@ -189,25 +158,25 @@ public class Gui extends JFrame {
 				buttons.add(proj);
 				break;        		
 			}
-			case 8:{
+			case 5:{
 				buttons.add(fdesde);
 				break;
 			}
-			case 9:{
+			case 6:{
 				new JTextField("99999999");
 				buttons.add(fhasta);
 				break;
 			}
-			case 10:{
+			case 7:{
 				buttons.add(fconstrudesde);
 				break;
 			}
-			case 11:{
+			case 8:{
 				new JTextField("99999999");
 				buttons.add(fconstruhasta);
 				break;
 			}
-			case 12:{
+			case 9:{
 				tipoReg.addItem("0");
 				tipoReg.addItem("11");
 				tipoReg.addItem("13");
@@ -219,22 +188,22 @@ public class Gui extends JFrame {
 				buttons.add(tipoReg);
 				break;
 			}
-			case 13:{
+			case 10:{
 				catastro3d.addItem("NO");
 				catastro3d.addItem("SI");
 				catastro3d.setBackground(new Color(255,255,255));
 				buttons.add(catastro3d);
 				break;
 			}
-			case 14:{
+			case 11:{
 				shapesId.addItem("NO");
 				shapesId.addItem("SI");
 				shapesId.setBackground(new Color(255,255,255));
 				buttons.add(shapesId);
 				break;
 			}
-			case 15:{
-				rulesFile = new JButton("Seleccionar archivo de reglas .rules (opcional)");
+			case 12:{
+				rulesFile = new JButton("Seleccionar archivo de reglas .rules");
 				rulesFile.addActionListener(new ActionListener()  
 				{  public void actionPerformed(ActionEvent e)  
 				{ fcRules.showOpenDialog(new JFrame()); }  
@@ -242,11 +211,10 @@ public class Gui extends JFrame {
 				buttons.add(rulesFile);
 				break;
 			}
-
 			}
 		}
 
-		options.add(labels, BorderLayout.CENTER);
+		options.add(descriptions, BorderLayout.CENTER);
 		options.add(buttons, BorderLayout.EAST);
 
 		this.add(options,BorderLayout.CENTER);
@@ -259,108 +227,79 @@ public class Gui extends JFrame {
 		{  public void actionPerformed(ActionEvent e)  
 		{
 
-			JTextArea popupText = new JTextArea("");
-			popupText.setLineWrap(true);
-			popupText.setWrapStyleWord(true);
-			JFrame popup = new JFrame("ERROR");
-			popup.setLayout(new BorderLayout());
-			popup.setSize(600,400);
+			StringBuilder popupText = new StringBuilder();
 
 			if (fcResult.getSelectedFile() == null){
-				popupText.append("No ha especificado dónde crear el archivo resultado. Este archivo config y el archivo resultado cuando después ejecute cat2osm se crearán ahí.\n\n");
+				popupText.append("Especifique dónde crear el archivo resultado.\n\n");
 			}
 
 			if (resultFileName.getText().equals(null)){
-				popupText.append("No ha especificado el nombre que tomará el archivo resultado de cat2osm.\n\n");
+				popupText.append("Especifique el nombre que tomará el archivo resultado de cat2osm.\n\n");
 			}
 
-			if (fcShpUr.getSelectedFile() == null){
-				popupText.append("No ha especificado la carpeta que contiene todas las subcarpetas de shapefiles urbanos. " +
-						"Normalmente suele ser una carpeta con el siguiente formato XX_XXX_UA_XXXX-XX-XX_SHF. " +
-						"Dentro tendrán que estar las subcarpetas extraidas tal cual vienen en catastro, es decir dentro de la carpeta que indicamos debería haber una carpeta CONSTRU, ELEMLIN, ELEMPUN..." +
-						"y dentro de estas (generalmente) 4 archivos.\n\n");	
-			}
-
-			if (fcShpRu.getSelectedFile() == null){
-				popupText.append("No ha especificado la carpeta que contiene todas las subcarpetas de shapefiles rústicos. " +
-						"Normalmente suele ser una carpeta con el siguiente formato XX_XXX_RA_XXXX-XX-XX_SHF. " +
-						"Dentro tendrán que estar las subcarpetas extraidas tal cual vienen en catastro, es decir dentro de la carpeta que indicamos debería haber una carpeta CONSTRU, ELEMLIN, ELEMPUN..." +
-						"y dentro de estas (generalmente) 4 archivos.\n\n");	
-			}
-
-			if (fcCatUr.getSelectedFile() == null){
-				popupText.append("No ha seleccionado el archivo .CAT urbano. Tiene que ser el archivo extraido con extensión .CAT\n\n");	
-			}
-
-			if (fcCatRu.getSelectedFile() == null){
-				popupText.append("No ha seleccionado el archivo .CAT rústico. Tiene que ser el archivo extraido con extensión .CAT\n\n");	
+			if (filesDir.getSelectedFile() == null){
+				popupText.append("Especifique la carpeta que contiene los archivos de catastro.\n\n");	
 			}
 
 			if (fcGsb.getSelectedItem() == null){
-				popupText.append("No ha seleccionado el archivo de rejilla para la reproyección.");	
+				popupText.append("Seleccione el archivo de rejilla para la reproyección.\n\n");	
 			}
 
 			if (fdesde.getText().equals(null)){
-				popupText.append("No ha especificado la fecha desde la cual tomar los datos (AAAAMMDD). Por defecto para tomar todos los datos indique 00000000\n\n");
+				popupText.append("Especifique la fecha desde la cual tomar los datos (AAAAMMDD). Por defecto para tomar todos los datos indique 00000000\n\n");
 			}
 
 			if (fhasta.getText().equals(null)){
-				popupText.append("No ha especificado la fecha hasta la cual tomar los datos (AAAAMMDD). Por defecto para tomar todos los datos indique 99999999\n\n");
+				popupText.append("Especifique la fecha hasta la cual tomar los datos (AAAAMMDD). Por defecto para tomar todos los datos indique 99999999\n\n");
 			}
-			
+
 			if (fconstrudesde.getText().equals(null)){
-				popupText.append("No ha especificado la fecha de construcción desde la cual tomar los datos (AAAAMMDD). Por defecto para tomar todos los datos indique 00000000\n\n");
+				popupText.append("Especifique la fecha de construcción desde la cual tomar los datos (AAAAMMDD).\n\n");
 			}
 
 			if (fconstruhasta.getText().equals(null)){
-				popupText.append("No ha especificado la fecha de construcción hasta la cual tomar los datos (AAAAMMDD). Por defecto para tomar todos los datos indique 99999999\n\n");
+				popupText.append("Especifique la fecha de construcción hasta la cual tomar los datos (AAAAMMDD). Por defecto para tomar todos los datos indique 99999999\n\n");
 			}
 
-			if (!popupText.getText().isEmpty()){
-				popupText.append("Para más ayuda o ver como debería ser el árbol de directorios consulte: http://wiki.openstreetmap.org/wiki/Cat2Osm");
-				popup.add(popupText, BorderLayout.CENTER);
-				popup.setVisible(true);
-
+			if (!popupText.toString().isEmpty()){
+				JOptionPane.showMessageDialog(null,popupText,"Faltan datos",JOptionPane.ERROR_MESSAGE);
 			}
 			else {
+
 				File dir = new File(""+fcResult.getSelectedFile());
-				if (!dir.exists()) 
-					dir.mkdirs();
+				if (!dir.exists())
+				dir.mkdirs();
 
 				try {
-					FileWriter fstream = new FileWriter(""+fcResult.getSelectedFile()+"/config");
-					BufferedWriter out = new BufferedWriter(fstream);
-
-					exe.setText("ARCHIVO CREADO EN EL DIRECTORIO "+fcResult.getSelectedFile()+". AHORA EJECUTE CAT2OSM SEGUN SE INDICA EN LA GUÍA DE USO.");
-
-					out.write("\nResultPath="+fcResult.getSelectedFile());
-					out.write("\nResultFileName="+resultFileName.getText());
-					out.write("\nUrbanoSHPPath="+fcShpUr.getSelectedFile());
-					out.write("\nRusticoSHPPath="+fcShpRu.getSelectedFile());
-					out.write("\nUrbanoCATFile="+fcCatUr.getSelectedFile());
-					out.write("\nRusticoCATFile="+fcCatRu.getSelectedFile());
-					out.write("\nNadgridsPath=auto:"+fcGsb.getSelectedItem());
-					out.write("\nProyeccion="+proj.getSelectedItem());
-					out.write("\nFechaDesde="+fdesde.getText());
-					out.write("\nFechaHasta="+fhasta.getText());
-					out.write("\nFechaConstruDesde="+fconstrudesde.getText());
-					out.write("\nFechaConstruHasta="+fconstruhasta.getText());
-					out.write("\nTipoRegistro="+tipoReg.getSelectedItem());
-					out.write("\nCatastro3d="+catastro3d.getSelectedIndex());
-					out.write("\nPrintShapeIds="+shapesId.getSelectedIndex());
-					if (fcRules.getSelectedFile() != null)out.write("\nElemtexRules="+fcRules.getSelectedFile());
-
-					out.close();
+				FileWriter fstream = new FileWriter(""+fcResult.getSelectedFile()+"/config");
+				BufferedWriter out = new BufferedWriter(fstream);
+				
+				out.write("ResultPath="+fcResult.getSelectedFile().toString());out.newLine();
+				out.write("ResultFileName="+resultFileName.getText());out.newLine();
+				out.write("InputDirPath="+filesDir.getSelectedFile().toString());out.newLine();
+				out.write("NadgridsPath="+"auto:"+fcGsb.getSelectedItem());out.newLine();
+				out.write("Proyeccion="+proj.getSelectedItem().toString());out.newLine();
+				out.write("FechaDesde="+fdesde.getText());out.newLine();
+				out.write("FechaHasta="+fhasta.getText());out.newLine();
+				out.write("FechaConstruDesde="+fconstrudesde.getText());out.newLine();
+				out.write("FechaConstruHasta="+fconstruhasta.getText());out.newLine();
+				out.write("TipoRegistro="+tipoReg.getSelectedItem().toString());out.newLine();
+				out.write("Catastro3d="+catastro3d.getSelectedIndex()+"");out.newLine();
+				out.write("PrintShapeIds="+shapesId.getSelectedIndex()+"");out.newLine();
+				if (fcRules.getSelectedFile() != null)
+					out.write("ElemtexRules="+fcRules.getSelectedFile().toString());out.newLine();
+				
+				out.close();
 
 				}
 				catch (Exception e1){ e1.printStackTrace(); }
-
+				
+				exe.setText("ARCHIVO CREADO EN LA CARPETA : "+ fcResult.getSelectedFile());
 			}
 
 		}  
 		});  
 
-		this.add(new JLabel("GUÍA DE USO EN: http://wiki.openstreetmap.org/wiki/Cat2Osm"),BorderLayout.NORTH);
 		this.setVisible(true);
 	}
 

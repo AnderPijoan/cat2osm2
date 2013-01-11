@@ -93,6 +93,7 @@ public class Config {
 		if ("".equals(configuration.getProperty("InputDirPath", ""))){
 			return;
 		}
+		
 		// Si se han indicado los archivos por separado ignoramos.
 		if (!"".equals(configuration.getProperty("UrbanosSHPPath", ""))){
 			return;
