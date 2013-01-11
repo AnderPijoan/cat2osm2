@@ -59,6 +59,7 @@ public class Config {
 	 */
 	private static void postProcessConfig() {
 		createDirAtHome();
+		searchAndBuildFilesPath();
 		normalizeVariableContent("UrbanoSHPPath");
 		normalizeVariableContent("RusticoSHPPath");
 		try {
@@ -80,6 +81,45 @@ public class Config {
 			);
 		}
 		configureGrid();
+	}
+	/**
+	 * Si se indica un directorio como parametro InputDirPath, busca en el
+	 * los archivos cat.gz y SHF.zip necesarios, y completa la configuración.
+	 * Ojo, el directorio solo debe contener los archivos de un municipio/localidad
+	 * 
+	 */
+	private static void searchAndBuildFilesPath(){
+		// Si no esta definida ignoramos.
+		if ("".equals(configuration.getProperty("InputDirPath", ""))){
+			return;
+		}
+		// Si se han indicado los archivos por separado ignoramos.
+		if (!"".equals(configuration.getProperty("UrbanosSHPPath", ""))){
+			return;
+		}
+		File directorio = new File(configuration.getProperty("InputDirPath"));
+		if (!directorio.exists()){
+			return;
+		}
+		File[] entradas = directorio.listFiles();
+		for (File fichero:entradas){
+			if (fichero.isFile()){
+				String nombre = fichero.getName().toUpperCase();
+				if (nombre.matches("^\\d+_\\d+_RA_\\d+-\\d+-\\d+_SHF\\.ZIP$")){
+					configuration.setProperty("RusticoSHPPath", fichero.getAbsolutePath());
+					
+				}
+				else if (nombre.matches("^\\d+_\\d+_UA_\\d+-\\d+-\\d+_SHF\\.ZIP$")){
+					configuration.setProperty("UrbanoSHPPath", fichero.getAbsolutePath());
+				}
+				else if (nombre.matches("^\\d+_\\d+_U_\\d+-\\d+-\\d+\\.CAT\\.GZ$")){
+					configuration.setProperty("UrbanoCATFile", fichero.getAbsolutePath());
+				}
+				else if (nombre.matches("^\\d+_\\d+_R_\\d+\\-\\d+\\-\\d+\\.CAT\\.GZ$")){
+					configuration.setProperty("RusticoCATFile", fichero.getAbsolutePath());
+				}
+			}
+		}
 	}
 	/** 
 	 * Crea un directorio para catosm (".catosm") en el directorio del usuario.
