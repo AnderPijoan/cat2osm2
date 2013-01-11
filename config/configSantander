@@ -1,10 +1,10 @@
 
-ResultPath=/home/ander/Eclipse/cat2osm2/cat2osm/result
+ResultPath=/home/ander/workspace/cat2osm2/result
 ResultFileName=Santander
-UrbanoSHPPath=/home/ander/Eclipse/cat2osm/files/Santander/39_900_UA_2011-09-18_SHF.zip
-RusticoSHPPath=/home/ander/Eclipse/cat2osm/files/Santander/39_900_RA_2011-09-18_SHF.zip
-UrbanoCATFile=/home/ander/Eclipse/cat2osm/files/Santander/39_900_U_2011-09-18.CAT.gz
-RusticoCATFile=/home/ander/Eclipse/cat2osm/files/Santander/39_900_R_2011-09-17.CAT.gz
+UrbanoSHPPath=/home/ander/workspace/cat2osm2/files/Santander/39_900_UA_2011-09-18_SHF.zip
+RusticoSHPPath=/home/ander/workspace/cat2osm2/files/Santander/39_900_RA_2011-09-18_SHF.zip
+UrbanoCATFile=/home/ander/workspace/cat2osm2/files/Santander/39_900_U_2011-09-18.CAT.gz
+RusticoCATFile=/home/ander/workspace/cat2osm2/files/Santander/39_900_R_2011-09-17.CAT.gz
 NadgridsPath=auto:peninsula
 Proyeccion=auto
 FechaDesde=00000000

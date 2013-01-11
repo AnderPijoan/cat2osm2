@@ -39,7 +39,8 @@ public class ShapeParser extends Thread{
 
 		try {
 			FileDataStore store = FileDataStoreFinder.getDataStore(file);
-			//ShapefileDataStore store = new ShapefileDataStore(file.toURL(),true,Charset.forName("ISO-8859-15"));
+			//ShapefileDataStore store = new ShapefileDataStore(file.toURI().toURL());
+			//ShapefileDataStore store = new ShapefileDataStore(file.toURI().toURL(),true,Charset.forName("ISO-8859-15"));
 			FeatureReader<SimpleFeatureType, SimpleFeature> reader = 
 					((FileDataStore) store).getFeatureReader();
 

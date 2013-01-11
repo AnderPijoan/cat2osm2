@@ -228,7 +228,6 @@ public class Main {
 		else
 			System.out.println("["+new Timestamp(new Date().getTime())+"]    El directorio de shapefiles rústicos "+Config.get("RusticoSHPPath")+" no existe.");
 
-
 		for (ShapeParser sp : parsers)
 			sp.join();
 
@@ -251,7 +250,7 @@ public class Main {
 		
 		
 		// Mover las entradas de las casas a sus respectivas parcelas
-		if (archivo.equals("*") && Config.get("MovePortales").equals("1")){
+		if (archivo.equals("*")){
 			System.out.println("["+new Timestamp(new Date().getTime())+"] Moviendo puntos de entrada a sus parcelas mas cercanas.");
 			HashMap <String, List<Shape>> shapesTemp = catastro.calcularEntradas(shapes);
 			if (shapesTemp != null)
