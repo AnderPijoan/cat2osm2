@@ -268,32 +268,31 @@ public class Gui extends JFrame {
 
 				File dir = new File(""+fcResult.getSelectedFile());
 				if (!dir.exists())
-				dir.mkdirs();
+					dir.mkdirs();
 
 				try {
-				FileWriter fstream = new FileWriter(""+fcResult.getSelectedFile()+"/config");
-				BufferedWriter out = new BufferedWriter(fstream);
-				
-				out.write("ResultPath="+fcResult.getSelectedFile().toString());out.newLine();
-				out.write("ResultFileName="+resultFileName.getText());out.newLine();
-				out.write("InputDirPath="+filesDir.getSelectedFile().toString());out.newLine();
-				out.write("NadgridsPath="+"auto:"+fcGsb.getSelectedItem());out.newLine();
-				out.write("Proyeccion="+proj.getSelectedItem().toString());out.newLine();
-				out.write("FechaDesde="+fdesde.getText());out.newLine();
-				out.write("FechaHasta="+fhasta.getText());out.newLine();
-				out.write("FechaConstruDesde="+fconstrudesde.getText());out.newLine();
-				out.write("FechaConstruHasta="+fconstruhasta.getText());out.newLine();
-				out.write("TipoRegistro="+tipoReg.getSelectedItem().toString());out.newLine();
-				out.write("Catastro3d="+catastro3d.getSelectedIndex()+"");out.newLine();
-				out.write("PrintShapeIds="+shapesId.getSelectedIndex()+"");out.newLine();
-				if (fcRules.getSelectedFile() != null)
-					out.write("ElemtexRules="+fcRules.getSelectedFile().toString());out.newLine();
-				
-				out.close();
+					FileWriter fstream = new FileWriter(""+fcResult.getSelectedFile()+"/config");
+					BufferedWriter out = new BufferedWriter(fstream);
 
+					out.write("ResultPath="+fcResult.getSelectedFile().toString());out.newLine();
+					out.write("ResultFileName="+resultFileName.getText());out.newLine();
+					out.write("InputDirPath="+filesDir.getSelectedFile().toString());out.newLine();
+					out.write("NadgridsPath="+"auto:"+fcGsb.getSelectedItem());out.newLine();
+					out.write("Proyeccion="+proj.getSelectedItem().toString());out.newLine();
+					out.write("FechaDesde="+fdesde.getText());out.newLine();
+					out.write("FechaHasta="+fhasta.getText());out.newLine();
+					out.write("FechaConstruDesde="+fconstrudesde.getText());out.newLine();
+					out.write("FechaConstruHasta="+fconstruhasta.getText());out.newLine();
+					out.write("TipoRegistro="+tipoReg.getSelectedItem().toString());out.newLine();
+					out.write("Catastro3d="+catastro3d.getSelectedIndex()+"");out.newLine();
+					out.write("PrintShapeIds="+shapesId.getSelectedIndex()+"");out.newLine();
+					if (fcRules.getSelectedFile() != null)
+						out.write("ElemtexRules="+fcRules.getSelectedFile().toString());out.newLine();
+
+						out.close();
 				}
 				catch (Exception e1){ e1.printStackTrace(); }
-				
+
 				exe.setText("ARCHIVO CREADO EN LA CARPETA : "+ fcResult.getSelectedFile());
 			}
 

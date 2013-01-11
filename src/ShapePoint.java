@@ -94,19 +94,16 @@ public abstract class ShapePoint extends Shape {
 	
 	
 	public boolean hasRelevantAttributes(){
-		boolean with_data = false;
-		
 		if(attributes != null)
 			for (ShapeAttribute atr : attributes)
 				if (!atr.getKey().equals("addr:postcode") && 
 						!atr.getKey().equals("addr:country") && 
 						!atr.getKey().equals("source") && 
-						!atr.getKey().equals("catastro:ref") &&
 						!atr.getKey().equals("source:date") && 
 						!atr.getKey().equals("type"))
-					with_data = with_data || true;
+					return true;
 		
-		return with_data;
+		return false;
 	}
 
 }

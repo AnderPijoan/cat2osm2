@@ -3,6 +3,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -498,7 +499,6 @@ public class Cat2OsmUtils {
 	 * @param shape Shape creado pero sin los valores de los nodos, ways o relation
 	 * @return boolean si se ha podido parsear
 	 */
-	@SuppressWarnings("unchecked")
 	public boolean mPolygonShapeParser(Shape shape){
 		
 		// Caso general
@@ -555,41 +555,18 @@ public class Cat2OsmUtils {
 							else roles.add("inner");
 						}
 				}
-				
 				shape.setRelation(generateRelationId(shape.getCodigoMasa(), ids, types, roles, shape));
-				
 				
 				// Caso especial de ShapeParcela que esta contiene varios shapes dentro
 				if(shape instanceof ShapeParcela){
 					
-					RelationOsm relation = (RelationOsm) getKeyFromValue( (Map<String, Map <Object, Long>>) ((Object)getTotalRelations()), shape.getCodigoMasa(), shape.getRelationId());
-					
-//					if (((ShapeParcela) shape).getEntrance() != null){
-//						pointShapeParser(((ShapeParcela) shape).getEntrance());
-//						
-//						// Incluimos el elemento en la relation de su parcela
-//						relation.getIds().add(((ShapeParcela) shape).getEntrance().getNodesIds(0).get(0));
-//						relation.getTypes().add("node");
-//						relation.getRoles().add("outer");
-//					}
-
-					if (((ShapeParcela) shape).getSubshapes() != null)
-						for(ShapePolygonal subshape : ((ShapeParcela) shape).getSubshapes()){
-							boolean parsed = mPolygonShapeParser(subshape);
-
-							// Comprobamos que una parcela no meta un edificio con la misma geometria
-							// como relacion suya. (Al tener la misma geometria tienen el mismo id de
-							// relation y este caso ya se contempla al imprimir)
-							if(parsed && shape.getRelationId().longValue() != subshape.getRelationId().longValue()){
-								// Incluimos el elemento en la relation de su parcela
-								// pero teniendo en cuenta que si solo tiene 1 way esa relation se convertira en way
-								relation.getIds().add(subshape.getRelationId());
-								relation.getTypes().add("relation");
-								relation.getRoles().add("outer");
-							}
+					if(null != ((ShapeParcela) shape).getSubshapes()){
+						Iterator<ShapePolygonal> it = ((ShapeParcela) shape).getSubshapes().iterator();
+						while(it.hasNext()){
+							mPolygonShapeParser(it.next());
 						}
+					}
 				}
-				
 				return true;
 			}
 			else

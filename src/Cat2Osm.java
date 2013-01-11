@@ -505,7 +505,7 @@ public class Cat2Osm {
 				// Comprobamos si se tocan
 				if(shape1 != shape2){
 
-					switch(utils.areConnected(shape1.getGeometry(), shape2.getGeometry())){
+					switch(Cat2OsmUtils.areConnected(shape1.getGeometry(), shape2.getGeometry())){
 					case 1: newGeom = shape1.getGeometry().union(shape2.getGeometry()); break;
 					case 2: newGeom = shape2.getGeometry().union(shape1.getGeometry()); break;
 					case 3: newGeom = shape1.getGeometry().reverse().union(shape2.getGeometry()); break;
@@ -653,8 +653,16 @@ public class Cat2Osm {
 
 		switch(shape.getClass().getName()){
 
+		case "ShapeParcela":{
+			
+			if( null != ((ShapeParcela)shape).getSubshapes())
+			for(Shape subshape : ((ShapeParcela)shape).getSubshapes())
+				printShape(key, subshape, outNodes, outWays, outRelations);
+			
+			// Continua
+		}
+		
 		case "ShapeConstru":			
-		case "ShapeParcela":
 		case "ShapeMasa":
 		case "ShapeSubparce":{
 

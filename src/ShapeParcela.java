@@ -208,7 +208,14 @@ public class ShapeParcela extends ShapePolygonal {
 	public void addSubshape(ShapePolygonal shape){
 		if (subshapes == null)
 			subshapes = new ArrayList<ShapePolygonal>();
-		subshapes.add(shape);
+		
+		// Si el subshape coincide perfectamente con su parcela
+		// directamente solo anadimos los tags a su padre
+		if (shape.getGeometry().equals(this.geometry)){
+			addAttributes(shape.getAttributes());
+		} else {
+			subshapes.add(shape);
+		}
 	}
 	
 
@@ -1751,8 +1758,10 @@ public class ShapeParcela extends ShapePolygonal {
 					}
 				// Si empieza con * se debe comprobar que no exista ya ese tag, porque el shapefile
 				// indica de forma mas especifica y este nuevo lo machacaria con un valor mas general
-			} else if (s[0].startsWith("*") && getAttribute(s[0].replace("*", "")) == null){
-				addAttribute(s[0].replace("*", ""), s[1]);
+			} else if (s[0].startsWith("*")){
+				if (getAttribute(s[0].replace("*", "")) == null){
+					addAttribute(s[0].replace("*", ""), s[1]);
+			}
 				// Sino anadir el attribute
 			} else {
 				addAttribute(s[0], s[1]);

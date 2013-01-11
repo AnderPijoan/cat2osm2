@@ -190,43 +190,7 @@ public class RelationOsm {
 
 					RelationOsm relation = ((RelationOsm) utils.getKeyFromValue((Map<String, Map<Object, Long>>) ((Object)utils.getTotalRelations()), key, ids.get(x)));
 					if (relation != null){
-
-						// Hay que tener en cuenta en QUE se va a convertir al 
-						// ser impresa ya que puede convertirse en relation o way
-
-						if(relation.getIds().size() == 1){
-//							if(relation.getTypes().get(0).equals("way")){
-								String writeString = relation.printRelation(relation.getIds().get(0), key, outNodes, outWays, outRelations, utils, this.shapes);
-								outWays.write(writeString); outWays.newLine();
-								s += ("<member type=\""+ "way" +"\" ref=\""+ relation.getIds().get(0) +"\" role=\""+ relation.getRoles().get(0) +"\" />\n");
-//							} else if(relation.getTypes().get(0).equals("relation")){
-//								String writeString = relation.printRelation(ids.get(x), key, outNodes, outWays, outRelations, utils, this.shapes);
-//								outWays.write(writeString); outWays.newLine();
-//								s += ("<member type=\""+ "way" +"\" ref=\""+ ids.get(x) +"\" role=\""+ roles.get(x) +"\" />\n");
-//							}
-						} 
-						else {
-							String writeString = relation.printRelation(ids.get(x), key, outNodes, outWays, outRelations, utils, this.shapes);
-							outRelations.write(writeString); outRelations.newLine();
-							s += ("<member type=\""+ "relation" +"\" ref=\""+ ids.get(x)+"\" role=\""+ roles.get(x) +"\" />\n");
-						}
-						
-//						for(int pos = 0; pos < relation.getIds().size(); pos++){
-//
-//							switch(relation.getTypes().get(pos)){
-//							case "way":
-//								// Recogemos el unico way que tiene esta relacion
-//								WayOsm way = ((WayOsm) utils.getKeyFromValue((Map<String, Map<Object, Long>>) ((Object)utils.getTotalWays()), key, relation.getIds().get(pos)));
-//								if (way != null){
-//									String writeString = way.printWay(relation.getIds().get(pos), key, outNodes, utils, relation.getShapes());
-//									outWays.write(writeString); outWays.newLine();
-//									s += ("<member type=\""+ relation.getTypes().get(pos) +"\" ref=\""+ relation.getIds().get(pos)+"\" role=\""+ relation.getRoles().get(pos) +"\" />\n");
-//									break;
-//								}
-//							default:
-//								System.out.println("CASO QUE NUNCA SE HA DADO Y NO SE SI PODRÍA DARSE");
-//							}
-//						}
+						System.out.println();
 					}
 				}
 				else if(types.get(x).equals("way")){
