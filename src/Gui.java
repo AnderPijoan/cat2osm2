@@ -17,7 +17,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.jfree.ui.ExtensionFileFilter;
 
 public class Gui extends JFrame {
 
