@@ -24,10 +24,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.index.SpatialIndex;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
+import com.vividsolutions.jts.operation.distance.DistanceOp;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 
@@ -108,6 +110,7 @@ public class Cat2Osm {
 	@SuppressWarnings("unchecked")
 	public HashMap <String, List<Shape>> calcularEntradas(HashMap <String, List<Shape>> shapes){
 
+		// Si no se ha leido ningun portal
 		if (shapes.get("ELEMTEX-189401") == null)
 			return null;
 
@@ -134,13 +137,16 @@ public class Cat2Osm {
 					if (shapeParcela instanceof ShapeParcela &&  shapeParcela.getGeometry() != null && !shapeParcela.getGeometry().isEmpty()){
 
 						// Cogemos la geometria exterior de la parcela
-						Geometry geom = (LineString) gf.createLineString(
-								shapeParcela.getGeometry().getEnvelope().getCoordinates());
+						Polygon p = (Polygon) shapeParcela.getGeometry().getGeometryN(0);
+						
+						// Outer
+						Coordinate[] coors = p.getExteriorRing().getCoordinates();
+						Geometry geom = (LineString) gf.createLineString(coors);
 
 						// Para hacer la query es necesario en Envelope
 						Envelope env = shapeParcela.getGeometry().getEnvelope().getEnvelopeInternal();
 
-						// Si existe
+						// Comprobamos que el envelope no sea null y lo metemos
 						if (!env.isNull()){
 							index.insert(env, new LocationIndexedLine(geom));
 						}
@@ -176,8 +182,8 @@ public class Cat2Osm {
 			Coordinate nearestSameNumberSnappedCoor = null; // Igual pero a la parcela con el mismo addr:housenumber
 
 			// Variables
-			Coordinate tempSnappedCoor = new Coordinate(); // Coordenada del elemtex pegado a la geometria de la parcela
-			com.vividsolutions.jts.geom.Point point = (Point) shapeTex.getGeometry();
+			Coordinate tempSnappedCoor = new Coordinate(); // Coordenada temporal del elemtex pegado a la geometria de la parcela
+			com.vividsolutions.jts.geom.Point point = (Point) shapeTex.getGeometry(); // Geometria del shape del portal
 
 
 			// Buscamos la parcela mas cercana
@@ -199,17 +205,17 @@ public class Cat2Osm {
 			for (LocationIndexedLine line : lines) {
 				LinearLocation here = line.project(point.getCoordinate());
 				tempSnappedCoor = line.extractPoint(here);
-				double dist = tempSnappedCoor.distance(point.getCoordinate());
+				double distance = tempSnappedCoor.distance(point.getCoordinate());
 
-				if (dist < minDist) {
-
-					ShapeParcela tempParcela = (ShapeParcela) getIntersectingParcela(shapes, tempSnappedCoor);
-
+				if (distance < minDist) {
+					
+					ShapeParcela tempParcela = (ShapeParcela) getClosestParcela(shapes, tempSnappedCoor);
+					
 					// Si hemos encontrado una parcela que cumple, actualizamos
 					if (tempParcela != null){
 
 						// Acualizamos la variable minDist y la parcela
-						minDist = dist;
+						minDist = distance;
 						nearestParcela = tempParcela;
 						nearestSnappedCoor = tempSnappedCoor;
 					}
@@ -243,7 +249,7 @@ public class Cat2Osm {
 
 				if (dist < minDist) {
 
-					ShapeParcela tempParcela = (ShapeParcela) getIntersectingParcela(shapes, tempSnappedCoor);
+					ShapeParcela tempParcela = (ShapeParcela) getClosestParcela(shapes, tempSnappedCoor);
 
 					// Si hemos encontrado una parcela que cumple miramos su addr:housenumber
 					if (tempParcela != null){
@@ -291,7 +297,7 @@ public class Cat2Osm {
 
 				if (dist < minDist) {
 
-					ShapeParcela tempParcela = (ShapeParcela) getIntersectingParcela(shapes, tempSnappedCoor);
+					ShapeParcela tempParcela = (ShapeParcela) getClosestParcela(shapes, tempSnappedCoor);
 
 					// Si hemos encontrado una parcela que cumple miramos su addr:housenumber
 					if (tempParcela != null){
@@ -392,9 +398,9 @@ public class Cat2Osm {
 				//				System.out.println("OO" + point.getCoordinate() + "\n+C" + nearestSnappedCoor + "\nPI" + nearestPairSnappedCoor + "\nMM" + nearestSameNumberSnappedCoor);
 
 				// Original
-				//				((ShapeElemtex)shapeTex).setCoor(finalCoord);
-				//				shapeTex.addAttribute("PARCELA",finalParcel.getShapeId());
-				//				finalParcel.setEntrance((ShapeElemtex) shapeTex);
+								((ShapeElemtex)shapeTex).setCoor(finalCoord);
+								shapeTex.addAttribute("PARCELA",finalParcel.getShapeId());
+								finalParcel.setEntrance((ShapeElemtex) shapeTex);
 
 				// Mas cercana
 				//				((ShapeElemtex)shapeTex).setCoor(nearestSnappedCoor);
@@ -416,8 +422,9 @@ public class Cat2Osm {
 	 * @param coor coordenada a comprobar
 	 * @return Shape que coincide
 	 */
-	public Shape getIntersectingParcela(HashMap <String, List<Shape>> shapesTotales, Coordinate coor){
+	public Shape getClosestParcela(HashMap <String, List<Shape>> shapesTotales, Coordinate coor){
 
+		// Coordinate[] pts = DistanceOp.nearestPoints(poly, outsidePoint);
 		// Creamos la factoria para crear objetos de GeoTools (hay otra factoria pero falla)
 		// com.vividsolutions.jts.geom.GeometryFactory factory = JTSFactoryFinder.getGeometryFactory(null);
 		GeometryFactory gf = new GeometryFactory();

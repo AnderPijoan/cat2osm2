@@ -263,7 +263,7 @@ public class WayOsm {
 			}
 		}
 		
-		// Si no tiene tags relevantes para imprimir
+		// Si no tiene tags relevantes y no ha venido de una relation que lo necesita, no se imprime
 		if (!hasData && (null != shapes || null != shapesRelation)) return "";
 		
 		// Imprimir info de Cat2Osm
