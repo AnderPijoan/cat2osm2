@@ -5,7 +5,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
 
-public class ShapeMasa extends ShapePolygonal {
+public class ShapeMasa extends ShapeParent {
 	
 	// Variable autoincremental que se concatena al shapeId
 	private volatile static Long URID = (long) 0;
@@ -47,5 +47,10 @@ public class ShapeMasa extends ShapePolygonal {
 	
 	public boolean isValid (){
 		return true;
+	}
+
+
+
+	public void createAttributesFromUsoDestino() {		
 	}
 }

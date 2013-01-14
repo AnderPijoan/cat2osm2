@@ -83,7 +83,7 @@ public class Cat2Osm {
 		return shapeList;
 	}
 
-	
+
 	/** Busca en la lista de shapes los que sean parcelas
 	 * @param shapes lista de shapes
 	 * @return List<Shape> lista de shapes que coinciden  
@@ -389,12 +389,12 @@ public class Cat2Osm {
 				}
 
 				// Copiamos el resultado final
-//				System.out.println("OO" + point.getCoordinate() + "\n+C" + nearestSnappedCoor + "\nPI" + nearestPairSnappedCoor + "\nMM" + nearestSameNumberSnappedCoor);
+				//				System.out.println("OO" + point.getCoordinate() + "\n+C" + nearestSnappedCoor + "\nPI" + nearestPairSnappedCoor + "\nMM" + nearestSameNumberSnappedCoor);
 
 				// Original
-//				((ShapeElemtex)shapeTex).setCoor(finalCoord);
-//				shapeTex.addAttribute("PARCELA",finalParcel.getShapeId());
-//				finalParcel.setEntrance((ShapeElemtex) shapeTex);
+				//				((ShapeElemtex)shapeTex).setCoor(finalCoord);
+				//				shapeTex.addAttribute("PARCELA",finalParcel.getShapeId());
+				//				finalParcel.setEntrance((ShapeElemtex) shapeTex);
 
 				// Mas cercana
 				//				((ShapeElemtex)shapeTex).setCoor(nearestSnappedCoor);
@@ -453,7 +453,17 @@ public class Cat2Osm {
 
 			Shape shape = it.next();
 
-			if(shape == null || !shape.hasRelevantAttributes()){
+			if(shape instanceof ShapeParcela){
+				boolean hasData = false;
+				if (null != ((ShapeParcela) shape).getSubshapes())
+					for(ShapePolygonal subshape : ((ShapeParcela) shape).getSubshapes()){
+						hasData = hasData || subshape.hasRelevantAttributes();
+					}
+
+				if(!hasData && !shape.hasRelevantAttributes())
+					it.remove();
+
+			} else if(shape == null || !shape.hasRelevantAttributes()){
 				it.remove();
 			}
 		}
@@ -653,17 +663,17 @@ public class Cat2Osm {
 
 		switch(shape.getClass().getName()){
 
-		case "ShapeParcela":{
-			
-			if( null != ((ShapeParcela)shape).getSubshapes())
-			for(Shape subshape : ((ShapeParcela)shape).getSubshapes())
-				printShape(key, subshape, outNodes, outWays, outRelations);
-			
+		case "ShapeParcela":
+		case "ShapeMasa":{
+
+			if( null != ((ShapeParent)shape).getSubshapes())
+				for(Shape subshape : ((ShapeParent)shape).getSubshapes())
+					printShape(key, subshape, outNodes, outWays, outRelations);
+
 			// Continua
 		}
-		
-		case "ShapeConstru":			
-		case "ShapeMasa":
+
+		case "ShapeConstru":
 		case "ShapeSubparce":{
 
 			if(!shape.checkBuildingDate(Long.parseLong(Config.get("FechaConstruDesde")), Long.parseLong(Config.get("FechaConstruHasta"))))
@@ -696,13 +706,13 @@ public class Cat2Osm {
 			if(!shape.checkBuildingDate(Long.parseLong(Config.get("FechaConstruDesde")), Long.parseLong(Config.get("FechaConstruHasta"))))
 				break;
 
-				long wayId = shape.getWays().get(0);
-			
-				WayOsm way = (WayOsm) utils.getKeyFromValue( (Map<String, Map <Object, Long>>) ((Object)utils.getTotalWays()), key, wayId);
+			long wayId = shape.getWays().get(0);
 
-				if (way != null){
-					outWays.write(way.printWay(wayId, key, outNodes, utils, null));
-				}
+			WayOsm way = (WayOsm) utils.getKeyFromValue( (Map<String, Map <Object, Long>>) ((Object)utils.getTotalWays()), key, wayId);
+
+			if (way != null){
+				outWays.write(way.printWay(wayId, key, outNodes, utils, null));
+			}
 
 			break;
 
@@ -1441,8 +1451,11 @@ public class Cat2Osm {
 	}
 
 
-	// Los shapes de parcela van a tener unos subshapes que seran las subparcelas y construcciones
+	// Los shapes de parcela urbana van a tener unos subshapes que seran las construcciones
 	// Se sacan de la lista de shapes las que coincidan con una parcela y se meten en su parcela.
+	// Lo mismo con las masas rusticas, que almacenaran dentro sus subparcelas (ya que de la informacion
+	// rustica no interesan las parcelas ni sus direcciones, solo la union de todas las geometrias segun
+	// sus cultivos).
 	// Esto sirve para luego imprimir los datos, para que elementos hijo no tengan repetidos los
 	// tags del padre. (Como seria el caso de que un building tuviese el codigo postal o direccion
 	// si ya su parcela los tiene).
@@ -1453,10 +1466,10 @@ public class Cat2Osm {
 		for(int x = 0; x < shapes.size(); x++){
 
 			Shape shape = shapes.get(x);
-			
-			// Si encontramos una parcela
-			if(shape != null && shape instanceof ShapeParcela){
-				
+
+			// Si encontramos una PARCELA URBANA
+			if(shape != null && shape instanceof ShapeParcela && "UR".equals(shape.getTipo())){
+
 				// Leemos su referencia catastral
 				String refCat = shape.getRefCat();
 
@@ -1464,33 +1477,109 @@ public class Cat2Osm {
 				for(int y = 0; y < shapes.size(); y++){
 
 					Shape subshape = shapes.get(y);
-					
+
 					// Si una coincide
-					if(x != y && subshape != null &&  subshape.getRefCat().equals(refCat) &&
-							(subshape instanceof ShapeSubparce || subshape instanceof ShapeConstru)){
-						
+					if(x != y && subshape != null && 
+							(subshape instanceof ShapeSubparce || subshape instanceof ShapeConstru) && 
+							subshape.getRefCat().equals(refCat)){
+
 						// Se mete dentro de su parcela padre
-						((ShapeParcela) shape).addSubshape((ShapePolygonal) subshape);
+						((ShapeParent) shape).addSubshape((ShapePolygonal) subshape);
 
 						// INTRODUCIMOS NULL PARA NO ALTERAR EL ORDEN DE LOS ELEMENTOS DE LA LISTA
 						// DESPUES LOS BORRAMOS
 						shapes.set(y, null);
 					}
 				}
-				
+
 				// Coge el destino o uso de mayor area de esa parcela y crea los attributes
 				// para ella y sus subshapes
-				((ShapeParcela) shape).createAttributesFromUsoDestino();
-				
+				((ShapeParent) shape).createAttributesFromUsoDestino();
+
 				// Intenta unir todos los subshapes con los mismos tags en uno
-				((ShapeParcela) shape).joinSubshapes();
-			}
+				((ShapeParent) shape).joinSubshapes();
+			} else 
+				// Si encontramos una MASA RUSTICA 
+				// (deberia haber solo una en la lista de shapes, ya que son por una unica masa)
+				if(shape != null && shape instanceof ShapeMasa && "RU".equals(shape.getTipo())){
+
+					// Leemos su codigo de masa
+					String masa = shape.getCodigoMasa();
+
+					// Comparamos con las demas shapes de la lista
+					for(int y = 0; y < shapes.size(); y++){
+
+						Shape subshape = shapes.get(y);
+
+						// Si encontramos una PARCELA RUSTICA
+						if(x != y && null != subshape &&
+								subshape instanceof ShapeParcela &&
+								"RU".equals(subshape.getTipo())){
+
+							// Leemos su referencia catastral
+							String refCat = subshape.getRefCat();
+
+							// Comparamos con las demas shapes de la lista
+							for(int z = 0; z < shapes.size(); z++){
+
+								Shape subsubshape = shapes.get(z);
+
+								// Si una coincide
+								if(x != y && y != z && null != subsubshape && 
+										subsubshape instanceof ShapeConstru && 
+										subsubshape.getRefCat().equals(refCat)){
+
+									// Se mete dentro de su parcela padre
+									((ShapeParent) subshape).addSubshape((ShapePolygonal) subsubshape);
+
+									// INTRODUCIMOS NULL PARA NO ALTERAR EL ORDEN DE LOS ELEMENTOS DE LA LISTA
+									// DESPUES LOS BORRAMOS
+									shapes.set(z, null);
+								}
+							}
+
+							// Coge el destino o uso de mayor area de esa parcela y crea los attributes
+							// para ella y sus subshapes
+							((ShapeParent) subshape).createAttributesFromUsoDestino();
+
+							// Intenta unir todos los subshapes con los mismos tags en uno
+							((ShapeParent) subshape).joinSubshapes();
+
+							// Una vez unidos y transferidos los datos de la parcela a sus construcciones
+							// las parcelas no se van a usar, por lo que pasamos las construcciones de la
+							// parcela a la masa
+							if(null != ((ShapeParent) subshape).getSubshapes())
+								for(ShapePolygonal constru : ((ShapeParent) subshape).getSubshapes())
+									((ShapeParent) shape).addSubshape(constru);
+
+							// Eliminamos la parcela
+							// INTRODUCIMOS NULL PARA NO ALTERAR EL ORDEN DE LOS ELEMENTOS DE LA LISTA
+							// DESPUES LOS BORRAMOS
+							shapes.set(y, null);
+						}
+
+						// Si una subparcela coincide
+						if(x != y && null != subshape &&
+								subshape instanceof ShapeSubparce &&
+								subshape.getCodigoMasa().equals(masa)){
+
+							// Se mete dentro de su parcela padre
+							((ShapeParent) shape).addSubshape((ShapePolygonal) subshape);
+
+							// INTRODUCIMOS NULL PARA NO ALTERAR EL ORDEN DE LOS ELEMENTOS DE LA LISTA
+							// DESPUES LOS BORRAMOS
+							shapes.set(y, null);
+						}
+					}
+					// Intenta unir todos los subshapes con los mismos tags en uno
+					((ShapeParent) shape).joinSubshapes();
+				}					
 		}
-		
+
 		// Eliminar los null que hemos introducido
 		Iterator<Shape> it = shapes.iterator();
-			while(it.hasNext())
-				if(it.next() == null)
+		while(it.hasNext())
+			if(null == it.next())
 				it.remove();
 	}
 

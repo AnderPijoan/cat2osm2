@@ -557,11 +557,11 @@ public class Cat2OsmUtils {
 				}
 				shape.setRelation(generateRelationId(shape.getCodigoMasa(), ids, types, roles, shape));
 				
-				// Caso especial de ShapeParcela que esta contiene varios shapes dentro
-				if(shape instanceof ShapeParcela){
+				// Caso especial de ShapeParent que contiene varios shapes dentro
+				if(shape instanceof ShapeParent){
 					
-					if(null != ((ShapeParcela) shape).getSubshapes()){
-						Iterator<ShapePolygonal> it = ((ShapeParcela) shape).getSubshapes().iterator();
+					if(null != ((ShapeParent) shape).getSubshapes()){
+						Iterator<ShapePolygonal> it = ((ShapeParent) shape).getSubshapes().iterator();
 						while(it.hasNext()){
 							mPolygonShapeParser(it.next());
 						}

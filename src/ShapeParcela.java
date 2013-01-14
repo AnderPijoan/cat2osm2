@@ -11,7 +11,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
 
-public class ShapeParcela extends ShapePolygonal {
+public class ShapeParcela extends ShapeParent {
 
 	// Variable autoincremental que se concatena al shapeId
 	private volatile static Long URID = (long) 0;
@@ -42,8 +42,7 @@ public class ShapeParcela extends ShapePolygonal {
 	// Las parcelas pueden contener otros shapes en su interior
 	// El portal que es un elemtex
 	private ShapeElemtex entrance;
-	// Los edificios y subparcelas
-	private List<ShapePolygonal> subshapes;
+
 
 	/**
 	 * Constructor
@@ -197,65 +196,6 @@ public class ShapeParcela extends ShapePolygonal {
 
 	public void setEntrance(ShapeElemtex entrance) {
 		this.entrance = entrance;
-	}
-
-
-	public List<ShapePolygonal> getSubshapes() {
-		return subshapes;
-	}
-
-	
-	public void addSubshape(ShapePolygonal shape){
-		if (subshapes == null)
-			subshapes = new ArrayList<ShapePolygonal>();
-		
-		// Si el subshape coincide perfectamente con su parcela
-		// directamente solo anadimos los tags a su padre
-		if (shape.getGeometry().equals(this.geometry)){
-			addAttributes(shape.getAttributes());
-		} else {
-			subshapes.add(shape);
-		}
-	}
-	
-
-	/** 
-	 * Une todos los subshapes que se toquen y tengan los mismos tags en uno solo
-	 */
-	public void joinSubshapes() {
-		if (subshapes == null)
-			return;
-		
-		// En los subshapes eliminamos los tags que coincidan con los de su shape padre
-		Iterator<ShapePolygonal> it = subshapes.iterator();
-		while(it.hasNext()){
-			ShapePolygonal subshape = it.next();
-		if (subshape.getAttributes() != null)
-			for(ShapeAttribute atr : getAttributes())
-				subshape.getAttributes().remove(atr);
-		
-		// Si se ha quedado sin tags o no tiene, es innecesaria
-		if(subshape.getAttributes() == null || subshape.getAttributes().isEmpty())
-			it.remove();
-		}
-
-		// Comprobamos todos los subshapes con todos
-		for(int x = 0; x < subshapes.size(); x++)
-			for(int y = x; y < subshapes.size(); y++)
-				if(	x != y &&
-					subshapes.get(x).sameAttributes(subshapes.get(y).getAttributes()) &&
-					(subshapes.get(x).getGeometry().touches(subshapes.get(y).getGeometry()) || 
-							subshapes.get(x).getGeometry().intersects(subshapes.get(y).getGeometry()))
-							){
-			
-					subshapes.get(x).setGeometry(
-							subshapes.get(x).getGeometry().union(
-									subshapes.get(y).getGeometry()));
-					
-					// Actualizamos los indices para seguir buscando
-					subshapes.remove(y);
-					y = 0;
-		}
 	}
 
 

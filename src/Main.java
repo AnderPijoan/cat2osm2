@@ -40,12 +40,12 @@ public class Main {
 		else if (args.length == 2 && (
 				args[1].replaceAll("-", "").equals("constru") ||
 				args[1].replaceAll("-", "").equals("ejes") ||
-				args[1].replaceAll("-", "").equals("elemlin") ||  
+				args[1].replaceAll("-", "").equals("elemlin") ||
 				args[1].replaceAll("-", "").equals("elempun") ||
 				args[1].replaceAll("-", "").equals("elemtex") ||
-				args[1].replaceAll("-", "").equals("masa") || 
-				args[1].replaceAll("-", "").equals("parcela") || 
-				args[1].replaceAll("-", "").equals("subparce")) 
+				args[1].replaceAll("-", "").equals("masa") ||
+				args[1].replaceAll("-", "").equals("parcela") ||
+				args[1].replaceAll("-", "").equals("subparce"))
 				&& new File(args[0]).exists()){
 			System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm con el archivo de configuración para exportar únicamente "+ args[1].replaceAll("-", "").toUpperCase()+ ".");
 			// Ruta al fichero de configuracion por parametro
@@ -167,7 +167,7 @@ public class Main {
 		HashMap <String, List<Shape>> shapes = new HashMap <String, List<Shape>>();
 		List<ShapeParser> parsers = new ArrayList<ShapeParser>();
 
-		// Recorrer los directorios Urbanos
+		// Recorrer los directorios Urbanos, en este se no cogen las MASAS
 		File dirU = new File (Config.get("UrbanoSHPPath"));
 
 		// Si archivo es * cogemos todos los shapefiles necesarios para obtener el resultado
@@ -200,7 +200,7 @@ public class Main {
 		else
 			System.out.println("["+new Timestamp(new Date().getTime())+"]    El directorio de shapefiles urbanos "+Config.get("UrbanoSHPPath")+" no existe.");
 
-		// Recorrer los directorios Rusticos
+		// Recorrer los directorios Rusticos, en este se cogen las MASAS
 		File dirR = new File (Config.get("RusticoSHPPath"));
 
 		if( dirR.exists() && dirR.isDirectory()){
@@ -212,6 +212,7 @@ public class Main {
 						filesR[i].getName().toUpperCase().equals("ELEMLIN") ||
 						filesR[i].getName().toUpperCase().equals("ELEMPUN") ||
 						filesR[i].getName().toUpperCase().equals("ELEMTEX") ||
+						filesR[i].getName().toUpperCase().equals("MASA")    ||
 						filesR[i].getName().toUpperCase().equals("PARCELA") ||
 						filesR[i].getName().toUpperCase().equals("SUBPARCE") 
 						))
@@ -250,12 +251,12 @@ public class Main {
 		
 		
 		// Mover las entradas de las casas a sus respectivas parcelas
-		if (archivo.equals("*")){
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Moviendo puntos de entrada a sus parcelas mas cercanas.");
-			HashMap <String, List<Shape>> shapesTemp = catastro.calcularEntradas(shapes);
-			if (shapesTemp != null)
-			shapes = shapesTemp;
-		}
+//		if (archivo.equals("*")){
+//			System.out.println("["+new Timestamp(new Date().getTime())+"] Moviendo puntos de entrada a sus parcelas mas cercanas.");
+//			HashMap <String, List<Shape>> shapesTemp = catastro.calcularEntradas(shapes);
+//			if (shapesTemp != null)
+//			shapes = shapesTemp;
+//		}
 
 		int pos = 0;
 		for (String key : shapes.keySet()){
@@ -276,15 +277,6 @@ public class Main {
 			}
 			else if (shapes.get(key) != null){
 
-				// Operacion de simplificacion de relaciones sin tags relevantes
-				// Los EJES hay que dejarlos aunque no tengan tags relevantes
-				// Este metodo generalmente elimina todas las parcelas rusticas dejando solo las subparcelas
-				if (archivo.equals("*")){
-					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando Shapes sin tags relevantes.");
-					catastro.simplificarShapesSinTags(key, shapes.get(key));
-				}
-				
-				
 				// Si son ELEMLIN o EJES, juntar todos los ways que compartan un node
 				// aunque sean de distintos shapes
 				// y
@@ -305,10 +297,17 @@ public class Main {
 				}
 				
 				
+				// Operacion de simplificacion de relaciones sin tags relevantes
+				if (archivo.equals("*")){
+					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando Shapes sin tags relevantes.");
+					catastro.simplificarShapesSinTags(key, shapes.get(key));
+				}
+				
+				
 				// Desmontar las geometrias en elementos de OSM
 				catastro.convertShapes2OSM(shapes.get(key));
-				
-				
+
+
 				// Escribir los datos en los archivos temporales
 				System.out.print("["+new Timestamp(new Date().getTime())+"]    Escribiendo archivos temporales.\r");
 				catastro.printResults(key, folder, shapes.get(key));
