@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,8 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.data.FeatureReader;
+import org.geotools.data.FeatureSource;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
+import org.geotools.data.shapefile.ShapefileDataStore;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -41,7 +44,10 @@ public class ShapeParser extends Thread{
 			FileDataStore store = FileDataStoreFinder.getDataStore(file);
 			//ShapefileDataStore store = new ShapefileDataStore(file.toURI().toURL());
 			//ShapefileDataStore store = new ShapefileDataStore(file.toURI().toURL(),true,Charset.forName("ISO-8859-15"));
-			//SimpleFeatureSource source = dataStore.getFeatureSource( typeName );
+			//ShapefileDataStore ds = new ShapefileDataStore(new URL(file.getAbsolutePath()));
+			//FeatureSource fs = (FeatureSource)ds.getFeatureSource("xuhui_polyline");
+			//FeatureCollection fr = fs.getFeatures();
+			//FeatureIterator f = fr.features();
 			FeatureReader<SimpleFeatureType, SimpleFeature> reader = 
 					((FileDataStore) store).getFeatureReader();
 

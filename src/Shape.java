@@ -253,7 +253,9 @@ public abstract class Shape {
 	
 	public abstract Long getRelationId();
 
-	public abstract boolean hasRelevantAttributes();
+	public abstract boolean hasRelevantAttributesInternally();
+	
+	public abstract boolean hasRelevantAttributesForPrinting();
 
 	public abstract String getRefCat();
 

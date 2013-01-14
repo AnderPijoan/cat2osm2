@@ -93,7 +93,7 @@ public abstract class ShapeLinear extends Shape {
 	}
 	
 	
-	public boolean hasRelevantAttributes(){
+	public boolean hasRelevantAttributesInternally(){
 		if(attributes != null)
 			for (ShapeAttribute atr : attributes)
 				if (!atr.getKey().equals("addr:postcode") && 
@@ -104,6 +104,11 @@ public abstract class ShapeLinear extends Shape {
 					return true;
 		
 		return false;
+	}
+	
+	
+	public boolean hasRelevantAttributesForPrinting(){
+		return hasRelevantAttributesInternally();
 	}
 	
 	

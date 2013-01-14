@@ -107,8 +107,8 @@ public class NodeOsm {
 		}
 		
 		// Imprimir info de Cat2Osm
-		s += "<tag k=\"source\" v=\"catastro\"/>\n";
-		s += "<tag k=\"source:date\" v=\""+new StringBuffer(Cat2OsmUtils.getFechaArchivos()+"").insert(4, "-").toString().substring(0, 7)+"\"/>\n";
+//		s += "<tag k=\"source\" v=\"catastro\"/>\n";
+//		s += "<tag k=\"source:date\" v=\""+new StringBuffer(Cat2OsmUtils.getFechaArchivos()+"").insert(4, "-").toString().substring(0, 7)+"\"/>\n";
 
 		s += ("</node>\n");
 	

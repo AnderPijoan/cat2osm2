@@ -111,13 +111,26 @@ public abstract class ShapePolygonal extends Shape {
 	}
 	
 	
-	public boolean hasRelevantAttributes(){
+	public boolean hasRelevantAttributesInternally(){
+		if(attributes != null)
+			for (ShapeAttribute atr : attributes)
+				if (	!atr.getKey().equals("source") &&
+						!atr.getKey().equals("source:date") &&
+						!atr.getKey().equals("type"))
+					return true;
+		
+		return false;
+	}
+	
+	
+	public boolean hasRelevantAttributesForPrinting(){
 		if(attributes != null)
 			for (ShapeAttribute atr : attributes)
 				if (!atr.getKey().equals("addr:postcode") &&
 						!atr.getKey().equals("addr:country") &&
 						!atr.getKey().equals("source") &&
 						!atr.getKey().equals("source:date") &&
+						!atr.getKey().equals("masa") &&
 						!atr.getKey().equals("type"))
 					return true;
 		

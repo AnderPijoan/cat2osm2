@@ -457,13 +457,13 @@ public class Cat2Osm {
 				boolean hasData = false;
 				if (null != ((ShapeParcela) shape).getSubshapes())
 					for(ShapePolygonal subshape : ((ShapeParcela) shape).getSubshapes()){
-						hasData = hasData || subshape.hasRelevantAttributes();
+						hasData = hasData || subshape.hasRelevantAttributesInternally();
 					}
 
-				if(!hasData && !shape.hasRelevantAttributes())
+				if(!hasData && !shape.hasRelevantAttributesInternally())
 					it.remove();
 
-			} else if(shape == null || !shape.hasRelevantAttributes()){
+			} else if(shape == null || !shape.hasRelevantAttributesInternally()){
 				it.remove();
 			}
 		}
@@ -1497,7 +1497,7 @@ public class Cat2Osm {
 				((ShapeParent) shape).createAttributesFromUsoDestino();
 
 				// Intenta unir todos los subshapes con los mismos tags en uno
-				((ShapeParent) shape).joinSubshapes();
+				((ShapeParent) shape).joinSubshapes(true);
 			} else 
 				// Si encontramos una MASA RUSTICA 
 				// (deberia haber solo una en la lista de shapes, ya que son por una unica masa)
@@ -1543,7 +1543,7 @@ public class Cat2Osm {
 							((ShapeParent) subshape).createAttributesFromUsoDestino();
 
 							// Intenta unir todos los subshapes con los mismos tags en uno
-							((ShapeParent) subshape).joinSubshapes();
+							((ShapeParent) subshape).joinSubshapes(false);
 
 							// Una vez unidos y transferidos los datos de la parcela a sus construcciones
 							// las parcelas no se van a usar, por lo que pasamos las construcciones de la
@@ -1572,7 +1572,7 @@ public class Cat2Osm {
 						}
 					}
 					// Intenta unir todos los subshapes con los mismos tags en uno
-					((ShapeParent) shape).joinSubshapes();
+					((ShapeParent) shape).joinSubshapes(false);
 				}					
 		}
 

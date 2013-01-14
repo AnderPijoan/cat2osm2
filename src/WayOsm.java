@@ -229,6 +229,7 @@ public class WayOsm {
 	@SuppressWarnings("unchecked")
 	public String printWay(Long id, String key, BufferedWriter outNodes, Cat2OsmUtils utils, List<Shape> shapesRelation) throws IOException{
 		String s = "";
+		boolean hasData = false; // variable para comprobar si tiene datos relevantes
 
 		// Si un way no tiene mas de dos nodos, es incorrecto
 		if (nodos.size()<2){
@@ -243,6 +244,7 @@ public class WayOsm {
 			int pos = 1;
 			for(Shape shape : shapes){
 				s += shape.printAttributes();
+				hasData = hasData || shape.hasRelevantAttributesForPrinting();
 
 				if( Config.get("PrintShapeIds").equals("1"))
 					s += "<tag k=\"CAT2OSMSHAPEID-" + pos++ + "\" v=\"" + shape.getShapeId() + "\"/>\n";
@@ -254,11 +256,19 @@ public class WayOsm {
 			int pos = 1;
 			for(Shape shape : shapesRelation){
 				s += shape.printAttributes();
+				hasData = hasData || shape.hasRelevantAttributesForPrinting();
 
 				if( Config.get("PrintShapeIds").equals("1"))
 					s += "<tag k=\"CAT2OSMSHAPEID-" + pos++ + "\" v=\"" + shape.getShapeId() + "\"/>\n";
 			}
 		}
+		
+		// Si no tiene tags relevantes para imprimir
+		if (!hasData && (null != shapes || null != shapesRelation)) return "";
+		
+		// Imprimir info de Cat2Osm
+				s += "<tag k=\"source\" v=\"catastro\"/>\n";
+				s += "<tag k=\"source:date\" v=\""+new StringBuffer(Cat2OsmUtils.getFechaArchivos()+"").insert(4, "-").toString().substring(0, 7)+"\"/>\n";
 
 		// Imprimir el way y las referencias
 		// Una vez imprimido borrarlo de la lista
@@ -275,7 +285,7 @@ public class WayOsm {
 				}
 			}
 		}
-
+		
 		s += ("</way>\n");
 		return s;
 	}

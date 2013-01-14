@@ -151,6 +151,7 @@ public class RelationOsm {
 	@SuppressWarnings({ "unchecked" })
 	public String printRelation(Long id, String key, BufferedWriter outNodes, BufferedWriter outWays, BufferedWriter outRelations, Cat2OsmUtils utils, List<Shape> shapesRelation) throws IOException{
 		String s = "";
+		boolean hasData = false; // variable para comprobar si tiene datos relevantes
 
 		// Si una relation tiene menos de dos ways, deberia quedarse como way
 		// ya que sino es redundante.
@@ -223,6 +224,7 @@ public class RelationOsm {
 			for (Shape shape : shapes){
 				for (ShapeAttribute atr : shape.getAttributes()){
 					s += "<tag k=\""+atr.getKey()+"\" v=\""+atr.getValue()+"\"/>\n";
+					hasData = hasData || shape.hasRelevantAttributesForPrinting();
 				}
 				if (Config.get("PrintShapeIds").equals("1"))
 					s += "<tag k=\"CAT2OSMSHAPEID-" + pos++ + "\" v=\""+shape.getShapeId()+"\"/>\n";
@@ -232,12 +234,18 @@ public class RelationOsm {
 				for (Shape shape : shapesRelation){
 					for (ShapeAttribute atr : shape.getAttributes()){
 						s += "<tag k=\""+atr.getKey()+"\" v=\""+atr.getValue()+"\"/>\n";
+						hasData = hasData || shape.hasRelevantAttributesForPrinting();
 					}
 					if (Config.get("PrintShapeIds").equals("1"))
 						s += "<tag k=\"CAT2OSMSHAPEID-" + pos++ + "\" v=\""+shape.getShapeId()+"\"/>\n";
 				}
 
+			// Si no tiene tags relevantes para imprimir
+			if (!hasData) return "";
+			
 			s += "<tag k=\"type\" v=\"multipolygon\"/>\n";
+			
+			// Imprimir info de Cat2Osm
 			s += "<tag k=\"source\" v=\"catastro\"/>\n";
 			s += "<tag k=\"source:date\" v=\""+new StringBuffer(Cat2OsmUtils.getFechaArchivos()+"").insert(4, "-").toString().substring(0, 7)+"\"/>\n";
 
