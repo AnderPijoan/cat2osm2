@@ -49,7 +49,7 @@ public class Gui extends JFrame {
 				"<html><b>NECESARIO</b><br/>Nombre del archivo que exportará Cat2Osm como resultado</html>",
 				"<html><b>NECESARIO</b><br/>Ruta a una carpeta que contenga los ARCHIVOS DE CATASTRO DE UNA POBLACIÓN. Sin descomprimir y con el nombre tal cual se descargan de catastro, es decir: XX_XXX_UA_XXXX-XX-XX_SHF.zip, XX_XXX_RA_XXXX-XX-XX_SHF.zip, XX_XXX_R_XXXX-XX-XX.CAT.gz y XX_XXX_R_XXXX-XX-XX.CAT.gz (Si falta alguno se procesará sin él)</html>", 
 				"<html><b>NECESARIO</b><br/>Zona en la que se encuentra la población (peninsula para Península + Islas Canarias o baleares para las Islas Baleares)</html>",
-				"<html><b>OPCIONAL</b><br/>Proyección en la que se encuentran los archivos shapefile.<ul>" +
+				"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Proyección en la que se encuentran los archivos shapefile.<ul>" +
 						"<li><b>\"auto\"</b> para que busque automáticamente"+
 						"<li><b>32628</b> para WGS84/ Zona UTM 29N"+
 						"<li><b>23029</b> para ED_1950/ Zona UTM 29N</li>"+
@@ -59,13 +59,13 @@ public class Gui extends JFrame {
 						"<li><b>25830</b> para ETRS_1989/ Zona UTM 30N</li>"+
 						"<li><b>25831</b> para ETRS_1989/ Zona UTM 31N</li>"+
 						"</ul>(Se puede comprobar abriendo con un editor de texto cualquiera de los archivos .PRJ)</html>",
-						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de alta de los datos (Formato AAAAMMDD), sino 00000000.\nTomará los datos que se han dado de alta a partir de esta fecha.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>",
-						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de baja de los datos (Formato AAAAMMDD), sino 99999999.\nTomará los shapes que se han dado de alta hasta esta fecha y siguen sin darse de baja después.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>", 
-						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de construcción desde la cual coger los datos (Formato AAAAMMDD), sino 00000000.\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>",
-						"<html><b>OPCIONAL</b><br/>Si se quiere delimitar una fecha de construcción hasta la cual coger los datos (Formato AAAAMMDD), sino 99999999.\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>", 
-						"<html><b>OPCIONAL</b><br/>Tipo de Registro de catastro a usar (0 = todos).\nLos registros de catastro tienen la mayoría de la información necesaria para los shapefiles</html>",
-						"<html><b>OPCIONAL</b><br/>Imprimir las geometrias separadas por alturas y con los tags building:levels. Esto crea relaciones muy pesadas NO PERMITIDAS PARA SUBIR A OSM</html>",
-						"<html><b>OPCIONAL</b><br/>Imprimir tanto en las vías como en las relaciones la lista de shapes que las componen o las utilizan.\nEs para casos de debugging si se quiere tener los detalles</html>",
+						"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Si se quiere delimitar una fecha de alta de los datos (Formato AAAAMMDD), sino 00000000.\nTomará los datos que se han dado de alta a partir de esta fecha.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>",
+						"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Si se quiere delimitar una fecha de baja de los datos (Formato AAAAMMDD), sino 99999999.\nTomará los shapes que se han dado de alta hasta esta fecha y siguen sin darse de baja después.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>", 
+						"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Si se quiere delimitar una fecha de construcción desde la cual coger los datos (Formato AAAAMMDD), sino 00000000.\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>",
+						"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Si se quiere delimitar una fecha de construcción hasta la cual coger los datos (Formato AAAAMMDD), sino 99999999.\nÚnicamente imprimirá las relations que cumplan estar entre las fechas de construcción.\nEjemeplo: 20060127 (27 de Enero del 2006)</html>", 
+						"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Tipo de Registro de catastro a usar (0 = todos).\nLos registros de catastro tienen la mayoría de la información necesaria para los shapefiles</html>",
+						"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Imprimir las geometrias separadas por alturas y con los tags building:levels. Esto crea relaciones muy pesadas NO PERMITIDAS PARA SUBIR A OSM</html>",
+						"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Imprimir tanto en las vías como en las relaciones la lista de shapes que las componen o las utilizan.\nEs para casos de debugging si se quiere tener los detalles</html>",
 		"<html><b>OPCIONAL</b><br/>Utilizar de forma adicional un archivo de reglas para ASIGNAR TAGS a los elementos de ELEMTEX (consultar wiki para el funcionamiento). Si no se selecciona ningún archivo ELEMTEX será exportado sin asignación de tags</html>"};
 
 

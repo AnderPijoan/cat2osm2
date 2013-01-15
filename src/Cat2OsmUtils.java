@@ -524,7 +524,8 @@ public class Cat2OsmUtils {
 						pointShapeParser(entrance);
 
 						// Anadimos el punto a la geometria de la parcela
-						Coordinate[] coorsArray = shape.getGeometry().getGeometryN(0).getCoordinates();
+						List polys = PolygonExtracter.getPolygons(shape.getGeometry().union());
+						Coordinate[] coorsArray = shape.getGeometry().getFactory().buildGeometry(polys).getCoordinates();
 						List<Coordinate> coors = new ArrayList<Coordinate>();
 						for(Coordinate c : coorsArray) coors.add(c);
 
@@ -549,8 +550,10 @@ public class Cat2OsmUtils {
 							for(int x = 0; x < coors.size(); x++)
 								coorsArray[x] = coors.get(x);
 
+							if(coorsArray[coorsArray.length-1].equals(coorsArray[0])){						
 							shape.setGeometry(shape.getGeometry().getFactory().createPolygon(
 									shape.getGeometry().getFactory().createLinearRing(coorsArray), null));
+							}
 						}
 					}
 				}
