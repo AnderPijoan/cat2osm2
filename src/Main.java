@@ -251,12 +251,12 @@ public class Main {
 		
 		
 		// Mover las entradas de las casas a sus respectivas parcelas
-//		if (archivo.equals("*")){
-//			System.out.println("["+new Timestamp(new Date().getTime())+"] Moviendo puntos de entrada a sus parcelas mas cercanas.");
-//			HashMap <String, List<Shape>> shapesTemp = catastro.calcularEntradas(shapes);
-//			if (shapesTemp != null)
-//			shapes = shapesTemp;
-//		}
+		if (archivo.equals("*")){
+			System.out.println("["+new Timestamp(new Date().getTime())+"] Moviendo puntos de entrada a sus parcelas mas cercanas.");
+			HashMap <String, List<Shape>> shapesTemp = catastro.calcularEntradas(shapes);
+			if (shapesTemp != null)
+			shapes = shapesTemp;
+		}
 
 		int pos = 0;
 		for (String key : shapes.keySet()){
@@ -277,6 +277,13 @@ public class Main {
 			}
 			else if (shapes.get(key) != null){
 
+
+				// Montar la jerarquia de parcelas.
+				if (archivo.equals("*") && !key.startsWith("EJES") && !key.startsWith("ELEM")){
+					System.out.println("["+new Timestamp(new Date().getTime())+"]    Creando jerarquia de parcelas/subparcelas/construcciones.");
+					catastro.createHyerarchy(key, shapes.get(key));
+				}
+				
 				// Si son ELEMLIN o EJES, juntar todos los ways que compartan un node
 				// aunque sean de distintos shapes
 				// y
@@ -285,17 +292,13 @@ public class Main {
 					System.out.println("["+new Timestamp(new Date().getTime())+"]    Encadenando shapes lineales.");
 					catastro.joinLinearElements(key, shapes.get(key));
 					
-					System.out.println("["+new Timestamp(new Date().getTime())+"]    Eliminando nodos alineados.");
+					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando geometrías.");
 					catastro.simplifyGeometries(shapes.get(key), 0.000002);
-				}
-			
-				
-				// Montar la jerarquia de parcelas.
-				if (archivo.equals("*") && !key.startsWith("EJES") && !key.startsWith("ELEM")){
-					System.out.println("["+new Timestamp(new Date().getTime())+"]    Creando jerarquia de parcelas/subparcelas/construcciones.");
-					catastro.createHyerarchy(key, shapes.get(key));
-				}
-				
+				} 
+//				else {
+//					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando geometrías.");
+//					catastro.simplifyGeometries(shapes.get(key), 0.0000005);
+//				}
 				
 				// Operacion de simplificacion de relaciones sin tags relevantes
 				if (archivo.equals("*")){

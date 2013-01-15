@@ -12,6 +12,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.linuxense.javadbf.DBFReader;
 import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.util.PolygonExtracter;
 
 public class ShapeSubparce extends ShapePolygonal {
 
@@ -45,6 +46,11 @@ public class ShapeSubparce extends ShapePolygonal {
 
 			// Poligono, trae el primer punto de cada poligono repetido al final.
 			geometry = (MultiPolygon) f.getDefaultGeometry();
+			
+			// Eliminamos posibles poligonos multiples
+			List<?> polys = PolygonExtracter.getPolygons(geometry.union());
+			geometry = geometry.getFactory().buildGeometry(polys);
+			geometry.normalize();
 
 		}
 		else

@@ -8,11 +8,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.opengis.feature.simple.SimpleFeatureType;
+
 import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.util.PolygonExtracter;
+import com.vividsolutions.jts.operation.overlay.PolygonBuilder;
 
 
 public class Cat2OsmUtils {
@@ -500,18 +509,69 @@ public class Cat2OsmUtils {
 	 * @return boolean si se ha podido parsear
 	 */
 	public boolean mPolygonShapeParser(Shape shape){
-		
-		// Caso general
+
 		if (!shape.getGeometry().isEmpty()){
-			
+
+			// Caso especial de ShapeParent que contiene varios shapes dentro
+			if(shape instanceof ShapeParent){
+
+				if(shape instanceof ShapeParcela && null != ((ShapeParcela) shape).getEntrances()){
+
+					for(ShapeElemtex entrance : ((ShapeParcela) shape).getEntrances()){
+
+						// Parseamos y creamos el nodeOsm con sus tags. Como este nodo se va a anadir a la geometria
+						// de la parcela, al convertirla luego a OSM se reutilizara el id teniendo ya los tags cargados
+						pointShapeParser(entrance);
+
+						// Anadimos el punto a la geometria de la parcela
+						Coordinate[] coorsArray = shape.getGeometry().getGeometryN(0).getCoordinates();
+						List<Coordinate> coors = new ArrayList<Coordinate>();
+						for(Coordinate c : coorsArray) coors.add(c);
+
+						int pos = -1; // Posicion donde se metera la entrada
+						double minDist = Double.MAX_VALUE; // Distancia de la entrada a un par de coordenadas de la parcela
+
+						// Comprobamos entre que dos coordenadas esta la nueva de la entrada
+						for(int x = 0; x < coors.size()-1; x++){
+							Coordinate[] c = {coors.get(x), coors.get(x+1)};
+
+							LineString line = shape.getGeometry().getFactory().createLineString(c);
+							if(entrance.getGeometry().distance(line) < minDist){
+								pos = x+1;
+								minDist = entrance.getGeometry().distance(line);
+							}
+						}
+
+						// Si hemos encontrado posicion para la entrada
+						if (pos > -1){
+							coors.add(pos, entrance.getGeometry().getCoordinate());
+							coorsArray = new Coordinate[coors.size()];
+							for(int x = 0; x < coors.size(); x++)
+								coorsArray[x] = coors.get(x);
+
+							shape.setGeometry(shape.getGeometry().getFactory().createPolygon(
+									shape.getGeometry().getFactory().createLinearRing(coorsArray), null));
+						}
+					}
+				}
+
+				if(null != ((ShapeParent) shape).getSubshapes()){
+					Iterator<ShapePolygonal> it = ((ShapeParent) shape).getSubshapes().iterator();
+					while(it.hasNext()){
+						mPolygonShapeParser(it.next());
+					}
+				}
+			}
+
+			// Caso general
 			// Obtenemos las coordenadas de cada punto del shape
 			if(shape.getGeometry().getNumGeometries() == 1){
-				
+
 				int numPolygons = 0;
-				
+
 				for (int x = 0; x < shape.getGeometry().getNumGeometries(); x++){
 					Polygon p = (Polygon) shape.getGeometry().getGeometryN(x);
-					
+
 					// Outer
 					Coordinate[] coors = p.getExteriorRing().getCoordinates();
 					numPolygons++;
@@ -520,13 +580,13 @@ public class Cat2OsmUtils {
 						// Insertamos en la lista de nodos del shape, los ids de sus nodos
 						shape.addNode(0, generateNodeId(shape.getCodigoMasa(), coor, null));
 					}
-					
+
 					// Posibles Inners
 					for (int y = 0; y < p.getNumInteriorRing(); y++){
 						coors = p.getInteriorRingN(y).getCoordinates();
-						
+
 						numPolygons++;
-						
+
 						// Miramos por cada punto si existe un nodo, si no lo creamos
 						for (Coordinate coor : coors){
 							// Insertamos en la lista de nodos del shape, los ids de sus nodos
@@ -548,25 +608,15 @@ public class Cat2OsmUtils {
 				List <String> roles = new ArrayList<String>(); // Roles de los members
 				for (int y = 0; y < shape.getWays().size(); y++){
 					long wayId = shape.getWays().get(y);
-						if (!ids.contains(wayId)){
-							ids.add(wayId);
-							types.add("way");
-							if (y == 0)roles.add("outer");
-							else roles.add("inner");
-						}
-				}
-				shape.setRelation(generateRelationId(shape.getCodigoMasa(), ids, types, roles, shape));
-				
-				// Caso especial de ShapeParent que contiene varios shapes dentro
-				if(shape instanceof ShapeParent){
-					
-					if(null != ((ShapeParent) shape).getSubshapes()){
-						Iterator<ShapePolygonal> it = ((ShapeParent) shape).getSubshapes().iterator();
-						while(it.hasNext()){
-							mPolygonShapeParser(it.next());
-						}
+					if (!ids.contains(wayId)){
+						ids.add(wayId);
+						types.add("way");
+						if (y == 0)roles.add("outer");
+						else roles.add("inner");
 					}
 				}
+				shape.setRelation(generateRelationId(shape.getCodigoMasa(), ids, types, roles, shape));
+
 				return true;
 			}
 			else

@@ -29,6 +29,7 @@ public class ShapeElemtex extends ShapePoint {
 		if ( f.getDefaultGeometry().getClass().getName().equals("com.vividsolutions.jts.geom.MultiLineString")){
 
 			geometry = (Point)((MultiLineString) f.getDefaultGeometry()).getCentroid();
+			geometry.normalize();
 			
 		}
 		else {
@@ -71,7 +72,13 @@ public class ShapeElemtex extends ShapePoint {
 		geometry = gf.createPoint(c);
 	}
 
+	
+	public boolean isAligned(Coordinate a, Coordinate b){
+		return (getGeometry().getCoordinate().y - a.y)*(b.x-a.x) ==
+				(b.y-a.y)*(getGeometry().getCoordinate().x-a.x);
+	}
 
+	
 	public String getRotulo() {
 		return rotulo;
 	}

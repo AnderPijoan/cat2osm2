@@ -36,6 +36,7 @@ public class ShapeEjes extends ShapeLinear {
 		if ( f.getDefaultGeometry().getClass().getName().equals("com.vividsolutions.jts.geom.MultiLineString")){
 
 			geometry = (MultiLineString) f.getDefaultGeometry();
+			geometry.normalize();
 		}
 		else {
 			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "+

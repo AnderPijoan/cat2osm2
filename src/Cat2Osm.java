@@ -18,7 +18,9 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -138,7 +140,7 @@ public class Cat2Osm {
 
 						// Cogemos la geometria exterior de la parcela
 						Polygon p = (Polygon) shapeParcela.getGeometry().getGeometryN(0);
-						
+
 						// Outer
 						Coordinate[] coors = p.getExteriorRing().getCoordinates();
 						Geometry geom = (LineString) gf.createLineString(coors);
@@ -157,7 +159,10 @@ public class Cat2Osm {
 		// Buscamos la parcela mas cercana
 		// Los shapes con key = "ELEMTEX189401" seran todos los elementos textuales de
 		// entradas a parcelas
-		for (Shape shapeTex : shapes.get("ELEMTEX-189401")){
+		Iterator<Shape> it = shapes.get("ELEMTEX-189401").iterator();
+		while (it.hasNext()){
+
+			Shape shapeTex = it.next();
 
 			int progress = (int) ((pos++/size)*100);
 			if (bar != progress){
@@ -208,9 +213,9 @@ public class Cat2Osm {
 				double distance = tempSnappedCoor.distance(point.getCoordinate());
 
 				if (distance < minDist) {
-					
-					ShapeParcela tempParcela = (ShapeParcela) getClosestParcela(shapes, tempSnappedCoor);
-					
+
+					ShapeParcela tempParcela = (ShapeParcela) getUnderlyingParcela(shapes, point.getCoordinate(), tempSnappedCoor);
+
 					// Si hemos encontrado una parcela que cumple, actualizamos
 					if (tempParcela != null){
 
@@ -249,7 +254,7 @@ public class Cat2Osm {
 
 				if (dist < minDist) {
 
-					ShapeParcela tempParcela = (ShapeParcela) getClosestParcela(shapes, tempSnappedCoor);
+					ShapeParcela tempParcela = (ShapeParcela) getUnderlyingParcela(shapes, point.getCoordinate(), tempSnappedCoor);
 
 					// Si hemos encontrado una parcela que cumple miramos su addr:housenumber
 					if (tempParcela != null){
@@ -297,7 +302,7 @@ public class Cat2Osm {
 
 				if (dist < minDist) {
 
-					ShapeParcela tempParcela = (ShapeParcela) getClosestParcela(shapes, tempSnappedCoor);
+					ShapeParcela tempParcela = (ShapeParcela) getUnderlyingParcela(shapes, point.getCoordinate(), tempSnappedCoor);
 
 					// Si hemos encontrado una parcela que cumple miramos su addr:housenumber
 					if (tempParcela != null){
@@ -394,17 +399,15 @@ public class Cat2Osm {
 					finalParcel = nearestParcela;
 				}
 
-				// Copiamos el resultado final
-				//				System.out.println("OO" + point.getCoordinate() + "\n+C" + nearestSnappedCoor + "\nPI" + nearestPairSnappedCoor + "\nMM" + nearestSameNumberSnappedCoor);
-
-				// Original
-								((ShapeElemtex)shapeTex).setCoor(finalCoord);
-								shapeTex.addAttribute("PARCELA",finalParcel.getShapeId());
-								finalParcel.setEntrance((ShapeElemtex) shapeTex);
-
-				// Mas cercana
-				//				((ShapeElemtex)shapeTex).setCoor(nearestSnappedCoor);
-				//				nearestParcela.setEntrance((ShapeElemtex) shapeTex);
+				// Actualizamos la coordenada de la geometria del portal
+				((ShapeElemtex)shapeTex).setCoor(finalCoord);
+				// Anadimos el portal a su parcela
+				finalParcel.addEntrance((ShapeElemtex) shapeTex);
+				// Modificamos el codigo de masa para que su nodo se cree en el mismo Map que el de
+				// su parcela, sino al imprimir no lo encontrara
+				shapeTex.setCodigoMasa(finalParcel.getCodigoMasa());
+				// Lo borramos de la lista de shapes porque ya esta asignado a una parcela
+				it.remove();
 			}
 			// No se han encontrado parcelas para ese portal
 			else{
@@ -419,15 +422,25 @@ public class Cat2Osm {
 
 	/** Devuelve el shape de parcela que toca el punto indicado
 	 * @param shapesTotales Lista de shapes original
-	 * @param coor coordenada a comprobar
+	 * @param coorPoint coordenada del elemtex del portal tal y como esta en catastro
+	 * @param coorSnapped coordenada movida a la linea de la parcela
 	 * @return Shape que coincide
 	 */
-	public Shape getClosestParcela(HashMap <String, List<Shape>> shapesTotales, Coordinate coor){
+	public Shape getUnderlyingParcela(HashMap <String, List<Shape>> shapesTotales, Coordinate coorPoint, Coordinate coorSnapped){
 
 		// Coordinate[] pts = DistanceOp.nearestPoints(poly, outsidePoint);
 		// Creamos la factoria para crear objetos de GeoTools (hay otra factoria pero falla)
 		// com.vividsolutions.jts.geom.GeometryFactory factory = JTSFactoryFinder.getGeometryFactory(null);
 		GeometryFactory gf = new GeometryFactory();
+
+
+		// Con el punto original del portal y el punto pegado a la parcela sacamos el simetrico
+		// con respecto del borde de la parcela para tener un punto sobre ella
+		// Puede ser el punto inicial del portal (que a veces esta sobre la parcela) o
+		// el nuevo punto que calculamos al sacar el simetrico
+		Coordinate insideCoor = new Coordinate(coorSnapped.x+(coorSnapped.x-coorPoint.x),
+				coorSnapped.y+(coorSnapped.y-coorPoint.y),
+				0);
 
 		for (String key : shapesTotales.keySet())
 			for (Shape s: shapesTotales.get(key))
@@ -435,11 +448,10 @@ public class Cat2Osm {
 				if (s instanceof ShapeParcela && s.getGeometry() != null){
 
 					// Cogemos el outer de la parcela que esta en la posicion[0]
-					Geometry parcelaEnvelope = s.getGeometry().getEnvelope();
+					Geometry parcelaOuter = s.getGeometry().getGeometryN(0);
 
-					Point point = gf.createPoint(coor);
 					// Si cumple lo anadimos
-					if (point.touches(parcelaEnvelope)){
+					if (parcelaOuter.contains(gf.createPoint(insideCoor)) || parcelaOuter.contains(gf.createPoint(coorPoint))){
 						return s;
 					}
 				}

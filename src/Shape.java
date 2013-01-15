@@ -195,6 +195,11 @@ public abstract class Shape {
 	}
 	
 	
+	public void setCodigoMasa(String cod){
+		codigoMasa = cod;
+	}
+	
+	
 	public String printAttributes(){
 		String s = "";
 		

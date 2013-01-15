@@ -22,6 +22,7 @@ public class ShapeElempun extends ShapePoint {
 		if ( f.getDefaultGeometry().getClass().getName().equals("com.vividsolutions.jts.geom.Point")){
 
 			geometry = (Point) f.getDefaultGeometry();
+			geometry.normalize();
 		}
 		else {
 			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "+ 

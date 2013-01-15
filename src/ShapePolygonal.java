@@ -128,6 +128,7 @@ public abstract class ShapePolygonal extends Shape {
 			for (ShapeAttribute atr : attributes)
 				if (!atr.getKey().equals("addr:postcode") &&
 						!atr.getKey().equals("addr:country") &&
+						!atr.getKey().equals("catastro:ref") &&
 						!atr.getKey().equals("source") &&
 						!atr.getKey().equals("source:date") &&
 						!atr.getKey().equals("masa") &&

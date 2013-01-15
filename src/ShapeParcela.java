@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.util.PolygonExtracter;
 
 public class ShapeParcela extends ShapeParent {
 
@@ -41,7 +42,7 @@ public class ShapeParcela extends ShapeParent {
 
 	// Las parcelas pueden contener otros shapes en su interior
 	// El portal que es un elemtex
-	private ShapeElemtex entrance;
+	private List<ShapeElemtex> entrances;
 
 
 	/**
@@ -67,6 +68,11 @@ public class ShapeParcela extends ShapeParent {
 			// Poligono, trae el primer punto de cada poligono repetido al
 			// final.
 			geometry = (MultiPolygon) f.getDefaultGeometry();
+			
+			// Eliminamos posibles poligonos multiples
+			List<?> polys = PolygonExtracter.getPolygons(geometry.union());
+			geometry = geometry.getFactory().buildGeometry(polys);
+			geometry.normalize();
 
 		} else
 			System.out.println("[" + new Timestamp(new Date().getTime())
@@ -189,13 +195,17 @@ public class ShapeParcela extends ShapeParent {
 	}
 
 
-	public ShapeElemtex getEntrance() {
-		return entrance;
+	public List<ShapeElemtex> getEntrances() {
+		return entrances;
 	}
 
 
-	public void setEntrance(ShapeElemtex entrance) {
-		this.entrance = entrance;
+	public void addEntrance(ShapeElemtex entrance) {
+		if(null == this.entrances)
+			entrances = new ArrayList<ShapeElemtex>();
+		
+		if(!entrances.contains(entrance))
+		this.entrances.add(entrance);
 	}
 
 
@@ -688,7 +698,7 @@ public class ShapeParcela extends ShapeParent {
 
 		case "GS1":
 		case "HS1":
-			s[0] = "tourism"; s[1] = "hostel";
+			s[0] = "tourism"; s[1] = "hotel";
 			l.add(s);
 			s = new String[2];
 			s[0] = "stars"; s[1] = "1";
@@ -697,7 +707,7 @@ public class ShapeParcela extends ShapeParent {
 
 		case "GS2":
 		case "HS2":
-			s[0] = "tourism"; s[1] = "hostel";
+			s[0] = "tourism"; s[1] = "hotel";
 			l.add(s);
 			s = new String[2];
 			s[0] = "stars"; s[1] = "2";
@@ -706,7 +716,7 @@ public class ShapeParcela extends ShapeParent {
 
 		case "GS3":
 		case "HS3":
-			s[0] = "tourism"; s[1] = "hostel";
+			s[0] = "tourism"; s[1] = "hotel";
 			l.add(s);
 			s = new String[2];
 			s[0] = "stars"; s[1] = "3";
