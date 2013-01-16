@@ -1047,10 +1047,10 @@ public class Cat2Osm {
 			//c.addAttribute("TEXTO DE DIRECCION NO ESTRUCTURADA",line.substring(215,240));
 			c.addAttribute("name",eliminarComillas(line.substring(215,240)));
 			//c.addAttribute("CODIGO POSTAL",line.substring(240,245));
-			if (!line.substring(240,245).equals("00000"))
-				c.addAttribute("addr:postcode", line.substring(240,245));
-			if (!line.substring(240,245).isEmpty() && !line.substring(240,245).equals("00000"))
-				c.addAttribute("addr:country","ES");
+//			if (!line.substring(240,245).equals("00000"))
+//				c.addAttribute("addr:postcode", line.substring(240,245));
+//			if (!line.substring(240,245).isEmpty() && !line.substring(240,245).equals("00000"))
+//				c.addAttribute("addr:country","ES");
 			//c.addAttribute("DISTRITO MUNICIPAL",line.substring(245,247));
 			//c.addAttribute("CODIGO DEL MUNICIPIO ORIGEN EN CASO DE AGREGACION",line.substring(247,250));
 			//c.addAttribute("CODIGO DE LA ZONA DE CONCENTRACION",line.substring(250,252));
@@ -1209,10 +1209,10 @@ public class Cat2Osm {
 			//c.addAttribute("TEXTO DE DIRECCION NO ESTRUCTURADA",line.substring(257,282));
 			c.addAttribute("name",eliminarComillas(line.substring(257,282).trim()));
 			//c.addAttribute("CODIGO POSTAL",line.substring(282,287));
-			if (!line.substring(282,287).equals("00000"))
-				c.addAttribute("addr:postcode",line.substring(282,287));
-			if (!line.substring(282,287).isEmpty() && !line.substring(282,287).equals("00000"))
-				c.addAttribute("addr:country" ,"ES");
+//			if (!line.substring(282,287).equals("00000"))
+//				c.addAttribute("addr:postcode",line.substring(282,287));
+//			if (!line.substring(282,287).isEmpty() && !line.substring(282,287).equals("00000"))
+//				c.addAttribute("addr:country" ,"ES");
 			//c.addAttribute("DISTRITO MUNICIPAL",line.substring(287,289));
 			//c.addAttribute("CODIGO DEL MUNICIPIO DE ORIGEN EN CASO DE AGREGACION",line.substring(289,292));
 			//c.addAttribute("CODIGO DE LA ZONA DE CONCENTRACION",line.substring(292,294));

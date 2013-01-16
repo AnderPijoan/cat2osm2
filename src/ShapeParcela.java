@@ -1260,7 +1260,7 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "*amenity"; s[1] = "public_building";
 			l.add(s);
 			s = new String[2];
-			s[0] = "*building"; s[1] = "public";
+			s[0] = "@building"; s[1] = "public";
 			l.add(s);
 			return l;
 

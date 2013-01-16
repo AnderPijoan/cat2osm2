@@ -551,8 +551,8 @@ public class Cat2OsmUtils {
 								coorsArray[x] = coors.get(x);
 
 							if(coorsArray[coorsArray.length-1].equals(coorsArray[0])){						
-							shape.setGeometry(shape.getGeometry().getFactory().createPolygon(
-									shape.getGeometry().getFactory().createLinearRing(coorsArray), null));
+								shape.setGeometry(shape.getGeometry().getFactory().createPolygon(
+										shape.getGeometry().getFactory().createLinearRing(coorsArray), null));
 							}
 						}
 					}
@@ -568,32 +568,37 @@ public class Cat2OsmUtils {
 
 			// Caso general
 			// Obtenemos las coordenadas de cada punto del shape
-			if(shape.getGeometry().getNumGeometries() == 1){
+			switch(shape.getGeometry().getGeometryType()){
 
+			case "MultiPolygon":
+			case "Polygon":{
 				int numPolygons = 0;
-
 				for (int x = 0; x < shape.getGeometry().getNumGeometries(); x++){
 					Polygon p = (Polygon) shape.getGeometry().getGeometryN(x);
 
 					// Outer
 					Coordinate[] coors = p.getExteriorRing().getCoordinates();
-					numPolygons++;
 					// Miramos por cada punto si existe un nodo, si no lo creamos
 					for (Coordinate coor : coors){
 						// Insertamos en la lista de nodos del shape, los ids de sus nodos
-						shape.addNode(0, generateNodeId(shape.getCodigoMasa(), coor, null));
+						shape.addNode(numPolygons, generateNodeId(shape.getCodigoMasa(), coor, null));
 					}
+					numPolygons++;
 
 					// Posibles Inners
 					for (int y = 0; y < p.getNumInteriorRing(); y++){
-						coors = p.getInteriorRingN(y).getCoordinates();
 
-						numPolygons++;
+						// Comprobar que los agujeros tengan cierto tamano, sino pueden ser fallose
+						// de union de parcelas mal dibujadas en catastro
+						if (p.getInteriorRingN(y).getArea() != 0){
+							coors = p.getInteriorRingN(y).getCoordinates();
 
-						// Miramos por cada punto si existe un nodo, si no lo creamos
-						for (Coordinate coor : coors){
-							// Insertamos en la lista de nodos del shape, los ids de sus nodos
-							shape.addNode(y+1, generateNodeId(shape.getCodigoMasa(), coor, null));
+							// Miramos por cada punto si existe un nodo, si no lo creamos
+							for (Coordinate coor : coors){
+								// Insertamos en la lista de nodos del shape, los ids de sus nodos
+								shape.addNode(numPolygons, generateNodeId(shape.getCodigoMasa(), coor, null));
+							}
+							numPolygons++;
 						}
 					}
 				}
@@ -604,6 +609,7 @@ public class Cat2OsmUtils {
 					List <Long> nodeList = shape.getNodesIds(y);
 					shape.addWay(y, generateWayId(shape.getCodigoMasa(), nodeList, null));
 				}
+
 
 				// Creamos una relation para el shape, metiendoe en ella todos los members
 				List <Long> ids = new ArrayList<Long>(); // Ids de los members
@@ -622,8 +628,9 @@ public class Cat2OsmUtils {
 
 				return true;
 			}
-			else
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Shape con mas de una geometria : "+ shape.getGeometry().getNumGeometries());
+			default:
+				System.out.println("CASO");
+			}
 		}
 
 		return false;
