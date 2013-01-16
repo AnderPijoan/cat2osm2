@@ -1,0 +1,13 @@
+ResultPath=/home/ander/workspace/cat2osm2/result
+ResultFileName=Cadiz
+InputDirPath=/home/ander/workspace/cat2osm2/files/Cadiz
+NadgridsPath=auto:peninsula
+Proyeccion=auto
+FechaDesde=00000000
+FechaHasta=99999999
+FechaConstruDesde=00000000
+FechaConstruHasta=99999999
+TipoRegistro=0
+Catastro3d=0
+PrintShapeIds=0
+
