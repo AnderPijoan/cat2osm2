@@ -881,9 +881,12 @@ public class Cat2Osm {
 										tags.add(new ShapeAttribute(c.getRefCatastral()+":"+c.getNumOrdenConstru()+":"+s[0], s[1]));
 									}
 
-									// Anadimos la referencia catastral
-									//tags.add(new String[] {"catastro:ref", c.getRefCatastral() + line.substring(44,48)});
+									// Anadimos el piso de esa unidad constructiva
 									tags.add(new ShapeAttribute(c.getRefCatastral()+":"+c.getNumOrdenConstru()+":addr:floor", line.substring(64,67).trim()));
+									
+									// Anadimos el area de esa unidad constructiva
+									tags.add(new ShapeAttribute(c.getRefCatastral()+":"+c.getNumOrdenConstru()+":area", c.getArea()+""));
+									
 									
 									shape.addAttributes(tags);
 								}
