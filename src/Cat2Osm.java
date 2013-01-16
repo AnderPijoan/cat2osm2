@@ -849,73 +849,47 @@ public class Cat2Osm {
 	 */
 	public void catUsosParser(String tipo, File cat, HashMap <String, List<Shape>> shapesTotales) throws IOException{
 
-		//		BufferedReader bufRdr  = createCatReader(cat);
-		//		String line = null; // Para cada linea leida del archivo .cat
-		//
-		//		// Lectura del archivo .cat
-		//		while((line = bufRdr.readLine()) != null)
-		//		{
-		//			Cat c = catLineParser(line);
-		//			String key = "";
-		//
-		//			if (tipo.equals("UR") && c.getRefCatastral() != null) // El codigo de masa son los primeros 5 caracteres
-		//				key = c.getRefCatastral().substring(0, 5).replaceAll("[^\\p{L}\\p{N}]", "");
-		//			if (tipo.equals("RU") && c.getRefCatastral() != null) // El codigo de masa son los caracteres 6, 7 y 8
-		//				key = c.getRefCatastral().substring(6, 9).replaceAll("[^\\p{L}\\p{N}]", "");
-		//
-		//			// Si es registro 14
-		//			if (!key.equals("") && shapesTotales.get(key) != null && esNumero(line.substring(0,2)) && line.substring(0,2).equals("14")){
-		//
-		//				// Cogemos las geometrias con esa referencia catastral.
-		//				List<Shape> matches = buscarRefCat(shapesTotales.get(key), c.getRefCatastral());
-		//
-		//				// Puede que no haya shapes para esa refCatastral
-		//				if (matches != null)
-		//					for (Shape shape : matches)
-		//						if (shape != null &&  shape.getGeometry() != null && !shape.getGeometry().isEmpty()){
-		//
-		//							// Cogemos la geometria exterior de la parcela
-		//							Geometry geom = shape.getGeometry();
-		//
-		//							// Creamos los tags que tendra el nodo
-		//							List<String[]> tags = new ArrayList<String[]>();
-		//
-		//							// Metemos los tags de uso de inmuebles con el numero de inmueble por delante
-		//							tags.addAll(destinoParser(c.getUsoDestino()));
-		//
-		//							// Determinamos los tags exclusivos de los edificios
-		//							// y los borramos de los tags, ya que no son aplicables a nodos
-		//							Iterator<String[]> iter = tags.iterator();
-		//							while (iter.hasNext()) {
-		//								String [] tag = iter.next();
-		//								if (tag[0].startsWith("@")) {
-		//									iter.remove();
-		//								}
-		//							}
-		//
-		//							for (String[] tag : tags){
-		//								tag[0] = tag[0].replace("*", "");
-		//							}
-		//
-		//							// Anadimos la referencia catastral
-		//							//tags.add(new String[] {"catastro:ref", c.getRefCatastral() + line.substring(44,48)});
-		//
-		//							tags.add(new String[] {"addr:floor", line.substring(64,67).trim() });
-		//
-		//
-		//							// Creamos el nodo en la lista de nodos de utils, pero no se lo anadimos al shape sino luego 
-		//							// lo borraria ya que eliminamos todos los nodos que sean de geometrias de shape.
-		//							// Ademas a las coordenadas del nodo les sumamos un pequeno valor en funcion del numero de inmueble
-		//							// para que cree nodos distintos en el mismo punto. De ser la misma coordenada reutilizaria el nodo
-		//							float r = (float) (c.getNumOrdenConstru()*0.0000002);
-		//
-		//							List<String> l = new ArrayList<String>();
-		//							l.add(shape.getShapeId());
-		//							utils.generateNodeId("USOS", new Coordinate(geom.getCentroid().getX()+r,geom.getCentroid().getY()), tags, l);
-		//						}
-		//			}
-		//		}
-		//		bufRdr.close();
+				BufferedReader bufRdr  = createCatReader(cat);
+				String line = null; // Para cada linea leida del archivo .cat
+		
+				// Lectura del archivo .cat
+				while((line = bufRdr.readLine()) != null)
+				{
+					Cat c = catLineParser(line);
+					String key = "";
+		
+					if (tipo.equals("UR") && c.getRefCatastral() != null) // El codigo de masa son los primeros 5 caracteres
+						key = c.getRefCatastral().substring(0, 5).replaceAll("[^\\p{L}\\p{N}]", "") + "-";
+					if (tipo.equals("RU") && c.getRefCatastral() != null) // El codigo de masa son los caracteres 6, 7 y 8
+						key = c.getRefCatastral().substring(6, 9).replaceAll("[^\\p{L}\\p{N}]", "") + "-";
+		
+					// Si es registro 14
+					if (!"".equals(key) && null != shapesTotales.get(key) && esNumero(line.substring(0,2)) && line.substring(0,2).equals("14")){
+		
+						// Cogemos las geometrias con esa referencia catastral.
+						List<Shape> matches = buscarRefCat(shapesTotales.get(key), c.getRefCatastral());
+		
+						// Puede que no haya shapes para esa refCatastral
+						if (matches != null)
+							for (Shape shape : matches)
+								if (shape != null && shape instanceof ShapeParcela && shape.getGeometry() != null && !shape.getGeometry().isEmpty()){
+		
+									List<ShapeAttribute> tags = new ArrayList<ShapeAttribute>();
+									
+									// Metemos los tags de uso de inmuebles con el numero de inmueble por delante
+									for(String[] s : ShapeParcela.destinoParser(c.getUsoDestino())){
+										tags.add(new ShapeAttribute(c.getRefCatastral()+":"+c.getNumOrdenConstru()+":"+s[0], s[1]));
+									}
+
+									// Anadimos la referencia catastral
+									//tags.add(new String[] {"catastro:ref", c.getRefCatastral() + line.substring(44,48)});
+									tags.add(new ShapeAttribute(c.getRefCatastral()+":"+c.getNumOrdenConstru()+":addr:floor", line.substring(64,67).trim()));
+									
+									shape.addAttributes(tags);
+								}
+					}
+				}
+				bufRdr.close();
 	}
 
 
