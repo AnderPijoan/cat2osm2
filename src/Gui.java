@@ -36,7 +36,7 @@ public class Gui extends JFrame {
 		this.setLayout(new BorderLayout());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		this.add(new JLabel("GUÍA DE USO EN: http://wiki.openstreetmap.org/wiki/Cat2Osm"), BorderLayout.NORTH);
+		this.add(new JLabel("GUÍA DE USO EN: http://wiki.openstreetmap.org/wiki/Cat2Osm2"), BorderLayout.NORTH);
 
 		JPanel options = new JPanel();
 		options.setLayout(new BorderLayout());
@@ -47,7 +47,7 @@ public class Gui extends JFrame {
 
 		String[] descriptionsTexts = {"<html><b>NECESARIO</b><br/>Carpeta donde se exportarán los archivos temporales y el resultado.\n(Tiene que tener privilegios lectura/escritura).</html>",
 				"<html><b>NECESARIO</b><br/>Nombre del archivo que exportará Cat2Osm como resultado</html>",
-				"<html><b>NECESARIO</b><br/>Ruta a una carpeta que contenga los ARCHIVOS DE CATASTRO DE UNA POBLACIÓN. Sin descomprimir y con el nombre tal cual se descargan de catastro, es decir: XX_XXX_UA_XXXX-XX-XX_SHF.zip, XX_XXX_RA_XXXX-XX-XX_SHF.zip, XX_XXX_R_XXXX-XX-XX.CAT.gz y XX_XXX_R_XXXX-XX-XX.CAT.gz (Si falta alguno se procesará sin él)</html>", 
+				"<html><b>NECESARIO</b><br/>Ruta a una carpeta que contenga los ARCHIVOS DE CATASTRO DE UNA POBLACIÓN. Sin descomprimir y con el nombre tal cual se descargan de catastro, es decir: XX_XXX_UA_XXXX-XX-XX_SHF.zip, XX_XXX_RA_XXXX-XX-XX_SHF.zip, XX_XXX_U_XXXX-XX-XX.CAT.gz y XX_XXX_R_XXXX-XX-XX.CAT.gz (Si falta alguno se procesará sin él)</html>", 
 				"<html><b>NECESARIO</b><br/>Zona en la que se encuentra la población (peninsula para Península + Islas Canarias o baleares para las Islas Baleares)</html>",
 				"<html><b>DEJAR ASÍ PARA FUNCIONAMIENTO POR DEFECTO</b><br/>Proyección en la que se encuentran los archivos shapefile.<ul>" +
 						"<li><b>\"auto\"</b> para que busque automáticamente"+

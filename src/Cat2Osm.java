@@ -34,7 +34,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 public class Cat2Osm {
 
-	public static final String VERSION = "2013-01-15";
+	public static final String VERSION = "2013-01-16";
 	public static Cat2OsmUtils utils;
 
 	private final double MINDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
@@ -133,7 +133,7 @@ public class Cat2Osm {
 				for (Shape shapeParcela : shapes.get(key)){
 
 					// Si es un shape de parcela y tiene geometria
-					if (shapeParcela instanceof ShapeParcela &&  shapeParcela.getGeometry() != null && !shapeParcela.getGeometry().isEmpty()){
+					if (shapeParcela instanceof ShapeParcela && "UR".equals(shapeParcela.getTipo()) && shapeParcela.getGeometry() != null && !shapeParcela.getGeometry().isEmpty()){
 
 						// Cogemos la geometria exterior de la parcela
 						Polygon p = (Polygon) shapeParcela.getGeometry().getGeometryN(0);
