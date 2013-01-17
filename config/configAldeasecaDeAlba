@@ -8,6 +8,6 @@ FechaHasta=99999999
 FechaConstruDesde=00000000
 FechaConstruHasta=99999999
 TipoRegistro=0
-Catastro3d=0
+Catastro3d=1
 PrintShapeIds=0
 

@@ -49,8 +49,7 @@ public abstract class ShapeParent extends ShapePolygonal {
 		// son practicamente la misma
 		// directamente solo anadimos los tags a su padre
 		if (s.getGeometry().equals(this.geometry) || 
-				s.getGeometry().equalsExact(this.geometry) || 
-				s.getGeometry().difference(this.getGeometry()).getArea() != 0){
+				s.getGeometry().equalsExact(this.geometry) ){
 			addAttributes(s.getAttributes());
 		} else {
 			subshapes.add(s);

@@ -1565,7 +1565,8 @@ public class Cat2Osm {
 						}
 					}
 					// Intenta unir todos los subshapes con los mismos tags en uno
-					((ShapeParent) shape).joinSubshapes(false);
+					if(Config.get("Catastro3D").equals("0"))
+						((ShapeParent) shape).joinSubshapes(false);
 				}					
 		}
 
