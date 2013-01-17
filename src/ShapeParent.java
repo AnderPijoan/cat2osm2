@@ -102,7 +102,9 @@ public abstract class ShapeParent extends ShapePolygonal {
 					// Comprobamos que la geometria de el ultimo subshape creado
 					// no sea la de la parcela
 					if (subshape1.getGeometry().equals(this.geometry) ||
-							subshape1.getGeometry().equalsExact(this.geometry)){
+							subshape1.getGeometry().equalsExact(this.geometry) ||
+							// Si son la misma pero mal dibujada
+							Math.abs(this.geometry.getArea() - subshape1.getGeometry().intersection(this.geometry).getArea()) <= 0.00000000001){
 						addAttributes(subshape1.getAttributes());
 						subshapes.remove(subshape1);
 						x = 0;
