@@ -1453,7 +1453,7 @@ public class ShapeSubparce extends ShapePolygonal {
 				s[0] = "landuse"; s[1] = "meadow";
 			l.add(s);
 			s = new String[2];
-			s[0] = "use"; s[1] = "agricultural";
+			s[0] = "meadow"; s[1] = "agricultural";
 			l.add(s);
 			return l;
 
@@ -1488,7 +1488,6 @@ public class ShapeSubparce extends ShapePolygonal {
 			return l;
 
 		case"PR":
-		case"PT":
 			s = new String[2];
 			if (this.area <= 400){
 				s[0] = "landuse"; s[1] = "allotments";}
@@ -1496,7 +1495,7 @@ public class ShapeSubparce extends ShapePolygonal {
 				s[0] = "landuse"; s[1] = "meadow";
 			l.add(s);
 			s = new String[2];
-			s[0] = "use"; s[1] = "agricultural";
+			s[0] = "meadow"; s[1] = "agricultural";
 			l.add(s);
 			s = new String[2];
 			s[0] = "irrigated"; s[1] = "yes";
@@ -1595,7 +1594,7 @@ public class ShapeSubparce extends ShapePolygonal {
 			l.add(s);
 			return l;
 
-		case"TP":
+		case"PT":
 			s = new String[2];
 			if (this.area <= 400){
 				s[0] = "landuse"; s[1] = "allotments";}
