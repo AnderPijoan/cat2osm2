@@ -1236,6 +1236,9 @@ public class ShapeSubparce extends ShapePolygonal {
 
 		case"MI":
 			s = new String[2];
+			s[0] = "natural"; s[1] = "wetland";
+			l.add(s);
+			s = new String[2];
 			s[0] = "wetland"; s[1] = "marsh";
 			l.add(s);
 			return l;

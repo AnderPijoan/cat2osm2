@@ -1352,7 +1352,7 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "religion"; s[1] = "christian";
 			l.add(s);
 			s = new String[2];
-			s[0] = "denomination"; s[1] = "catholic";
+			s[0] = "denomination"; s[1] = "roman_catholic";
 			l.add(s);
 			s = new String[2];
 			s[0] = "@building"; s[1] = "basilica";
@@ -1367,7 +1367,7 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "religion"; s[1] = "christian";
 			l.add(s);
 			s = new String[2];
-			s[0] = "denomination"; s[1] = "catholic";
+			s[0] = "denomination"; s[1] = "roman_catholic";
 			l.add(s);
 			s = new String[2];
 			s[0] = "@building"; s[1] = "chapel";
@@ -1382,7 +1382,7 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "religion"; s[1] = "christian";
 			l.add(s);
 			s = new String[2];
-			s[0] = "denomination"; s[1] = "catholic";
+			s[0] = "denomination"; s[1] = "roman_catholic";
 			l.add(s);
 			s = new String[2];
 			s[0] = "@building"; s[1] = "cathedral";
@@ -1397,7 +1397,7 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "religion"; s[1] = "christian";
 			l.add(s);
 			s = new String[2];
-			s[0] = "denomination"; s[1] = "catholic";
+			s[0] = "denomination"; s[1] = "roman_catholic";
 			l.add(s);
 			s = new String[2];
 			s[0] = "@building"; s[1] = "hermitage";
@@ -1412,7 +1412,7 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "religion"; s[1] = "christian";
 			l.add(s);
 			s = new String[2];
-			s[0] = "denomination"; s[1] = "catholic";
+			s[0] = "denomination"; s[1] = "roman_catholic";
 			l.add(s);
 			s = new String[2];
 			s[0] = "@building"; s[1] = "parish_church";
