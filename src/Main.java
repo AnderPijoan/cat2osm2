@@ -263,7 +263,7 @@ public class Main {
 
 			String folder = key.startsWith("ELEM")? "elementos" : ( key.startsWith("EJES")? "ejes" : "masas" );
 
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Exportando " + Config.get("ResultFileName") + "-" + key + " [" + pos++ +"/" + shapes.keySet().size() + "]");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] Exportando " + Config.get("ResultFileName") + "-" + key + " [" + ++pos +"/" + shapes.keySet().size() + "]");
 
 			// Por si acaso si hubiera archivos de un fallo en ejecucion anterior
 			if (new File(Config.get("ResultPath") + "/" + folder + "/" + Config.get("ResultFileName") + key +"tempRelations.osm").exists()
@@ -276,7 +276,6 @@ public class Main {
 
 			}
 			else if (shapes.get(key) != null){
-
 
 				// Montar la jerarquia de parcelas.
 				if (archivo.equals("*") && !key.startsWith("EJES") && !key.startsWith("ELEM")){

@@ -34,7 +34,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 public class Cat2Osm {
 
-	public static final String VERSION = "2013-01-18";
+	public static final String VERSION = "2013-02-01";
 	public static Cat2OsmUtils utils;
 
 	private final double MINDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
@@ -578,7 +578,7 @@ public class Cat2Osm {
 		// Juntamos los archivos en uno, al de los nodos le concatenamos el de ways y el de relations
 		// Cabecera del archivo Osm
 		outOsm.write("<?xml version='1.0' encoding='UTF-8'?>");outOsm.newLine();
-		outOsm.write("<osm version=\"0.6\" generator=\"cat2osm-"+VERSION+"\">");outOsm.newLine();	
+		outOsm.write("<osm version=\"0.6\" upload=\"false\" generator=\"cat2osm-"+VERSION+"\">");outOsm.newLine();
 
 		// Concatenamos todos los archivos
 		String str;
@@ -1517,7 +1517,7 @@ public class Cat2Osm {
 
 								Shape subsubshape = shapes.get(z);
 
-								// Si una coincide
+								// Si encontramos una construccion
 								if(x != y && y != z && null != subsubshape && 
 										subsubshape instanceof ShapeConstru && 
 										subsubshape.getRefCat().equals(refCat)){
@@ -1541,14 +1541,14 @@ public class Cat2Osm {
 							// Una vez unidos y transferidos los datos de la parcela a sus construcciones
 							// las parcelas no se van a usar, por lo que pasamos las construcciones de la
 							// parcela a la masa
-							if(null != ((ShapeParent) subshape).getSubshapes())
-								for(ShapePolygonal constru : ((ShapeParent) subshape).getSubshapes())
-									((ShapeParent) shape).addSubshape(constru);
+//							if(null != ((ShapeParent) subshape).getSubshapes())
+//								for(ShapePolygonal constru : ((ShapeParent) subshape).getSubshapes())
+//									((ShapeParent) shape).addSubshape(constru);
 
 							// Eliminamos la parcela
 							// INTRODUCIMOS NULL PARA NO ALTERAR EL ORDEN DE LOS ELEMENTOS DE LA LISTA
 							// DESPUES LOS BORRAMOS
-							shapes.set(y, null);
+//							shapes.set(y, null);
 						}
 
 						// Si una subparcela coincide

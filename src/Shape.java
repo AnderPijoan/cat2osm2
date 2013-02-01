@@ -451,7 +451,7 @@ public abstract class Shape {
 		switch (ttggss){
 
 		// Divisiones administrativas
-		case "010401": 
+		case "010401":
 			s[0] = "admin_level"; s[1] ="2";
 			l.add(s);
 			s = new String[2];
@@ -460,56 +460,56 @@ public abstract class Shape {
 			s = new String[2];
 			s[0] = "border_type"; s[1] ="nation";
 			l.add(s);
-			return l;	
-		case "010301": 
+			return l;
+		case "010301":
 			s[0] = "admin_level"; s[1] ="4";
 			l.add(s);
 			s = new String[2];
 			s[0] = "boundary"; s[1] ="administrative";
 			l.add(s);
 			return l;
-		case "010201": 
+		case "010201":
 			s[0] = "admin_level"; s[1] ="6";
 			l.add(s);
 			s = new String[2];
 			s[0] = "boundary"; s[1] ="administrative";
 			l.add(s);
 			return l;
-		case "010101": 
+		case "010101":
 			s[0] = "admin_level"; s[1] ="8";
 			l.add(s);
 			s = new String[2];
 			s[0] = "boundary"; s[1] ="administrative";
 			l.add(s);
 			return l;
-		case "010102": 
+		case "010102":
 			s[0] = "admin_level"; s[1] ="10";
 			l.add(s);
 			s = new String[2];
 			s[0] = "boundary"; s[1] ="administrative";
 			l.add(s);
 			return l;
-		case "018507": 
+		case "018507":
 			s[0] = "historic"; s[1] ="boundary_stone";
 			l.add(s);
 			return l;
-		case "018506": 
+		case "018506":
 			s[0] = "historic"; s[1] ="boundary_stone";
 			l.add(s);
 			return l;
 
 			// Relieve
-		case "028110": 
+		case "028110":
 			s[0] = "man_made"; s[1] ="survey_point";
 			l.add(s);
 			return l;
-		case "028112": 
+		case "028112":
 			s[0] = "man_made"; s[1] ="survey_point";
 			l.add(s);
 			return l;
 
 			// Hidrografia
-		case "030102": 
+		case "030102":
 			s[0] = "waterway"; s[1] ="river";
 			l.add(s);
 			return l;
@@ -526,7 +526,7 @@ public abstract class Shape {
 			l.add(s);
 			return l;
 		case "033301": 
-			s[0] = "landuse"; s[1] ="reservoir";
+			s[0] = "natural"; s[1] ="water";
 			l.add(s);
 			s = new String[2];
 			s[0] = "fixme"; s[1] ="Especificar tipo de agua (natural=water / leisure=swimming_pool / man_made=water_well / amenity=fountain / ...), eliminar landuse=reservoir y/o comprobar que no este duplicado o contenido en otra geometria de agua.";
@@ -545,7 +545,7 @@ public abstract class Shape {
 			l.add(s);
 			return l;
 		case "037102": 
-			s[0] = "landuse"; s[1] ="reservoir";
+			s[0] = "natural"; s[1] ="water";
 			l.add(s);
 			s = new String[2];
 			s[0] = "fixme"; s[1] ="Especificar tipo de agua (natural=water / leisure=swimming_pool / man_made=water_well / amenity=fountain / ...), eliminar landuse=reservoir y/o comprobar que no este duplicado o contenido en otra geometria de agua.";
