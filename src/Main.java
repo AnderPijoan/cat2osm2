@@ -137,7 +137,7 @@ public class Main {
 
 		// Cabecera del archivo
 		outOsmGlobal.write("<?xml version='1.0' encoding='UTF-8'?>");outOsmGlobal.newLine();
-		outOsmGlobal.write("<osm version=\"0.6\" generator=\"cat2osm-"+Cat2Osm.VERSION+"\">");outOsmGlobal.newLine();
+		outOsmGlobal.write("<osm version=\"0.6\" upload=\"false\" generator=\"cat2osm-"+Cat2Osm.VERSION+"\">");outOsmGlobal.newLine();
 
 
 		Pattern p = Pattern.compile("\\d{4}-\\d{1,2}");
