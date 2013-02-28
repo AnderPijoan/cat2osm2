@@ -272,9 +272,6 @@ public class ShapeParcela extends ShapeParent {
 
 		case "AIG":
 		case "BIG":
-			s[0] = "@building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			return l;
@@ -287,18 +284,12 @@ public class ShapeParcela extends ShapeParent {
 
 		case "CAT":
 		case "DAT":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "car";
 			l.add(s);
 			return l;
 
 		case "CBZ":
 		case "DBZ":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "electronics";
 			l.add(s);
 			return l;
@@ -314,18 +305,12 @@ public class ShapeParcela extends ShapeParent {
 
 		case "CCL":
 		case "DCL":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "shoes";
 			l.add(s);
 			return l;
 
 		case "CCR":
-		case "DCR":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
+		case "DCR":;
 			s[0] = "shop"; s[1] = "butcher";
 			l.add(s);
 			return l;
@@ -335,87 +320,60 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "landuse"; s[1] = "retail";
 			l.add(s);
 			s = new String[2];
-			s[0] = "fixme"; s[1] = "*";
+			s[0] = "fixme"; s[1] = "*Comercio al por menor";
 			l.add(s);
 			return l;
 
 		case "CDR":
 		case "DDR":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "chemist";
 			l.add(s);
 			return l;
 
 		case "CFN":
-		case "DFN":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
+		case "DFN":;
 			s[0] = "amenity"; s[1] = "bank";
 			l.add(s);
 			return l;
 
 		case "CFR":
 		case "DFR":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
-			s[0] = "shop"; s[1] = "pharmacy";
+			s[0] = "amenity"; s[1] = "pharmacy";
 			l.add(s);
 			return l;
 
 		case "CFT":
 		case "DFT":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "craft"; s[1] = "plumber";
 			l.add(s);
 			return l;
 
 		case "CGL":
 		case "DGL":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "amenity"; s[1] = "marketplace";
 			l.add(s);
 			return l;
 
 		case "CIM":
 		case "DIM":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "copyshop";
 			l.add(s);
 			return l;
 
 		case "CJY":
 		case "DJY":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "jewelry";
 			l.add(s);
 			return l;
 
 		case "CLB":
 		case "DLB":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "books";
 			l.add(s);
 			return l;
 
 		case "CMB":
 		case "DMB":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "furniture";
 			l.add(s);
 			return l;
@@ -425,42 +383,30 @@ public class ShapeParcela extends ShapeParent {
 			s[0] = "landuse"; s[1] = "retail";
 			l.add(s);
 			s = new String[2];
-			s[0] = "fixme"; s[1] = "*";
+			s[0] = "fixme"; s[1] = "*Comercio al por mayor";
 			l.add(s);
 			return l;
 
 		case "CPR":
 		case "DPR":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "chemist";
 			l.add(s);
 			return l;
 
 		case "CRL":
 		case "DRL":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "craft"; s[1] = "watchmaker";
 			l.add(s);
 			return l;
 
 		case "CSP":
 		case "DSP":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "clothes";
 			l.add(s);
 			return l;
 
 		case "CTJ":
 		case "DTJ":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
 			s[0] = "shop"; s[1] = "supermarket";
 			l.add(s);
 			return l;
@@ -1044,15 +990,12 @@ public class ShapeParcela extends ShapeParent {
 
 		case "K":
 		case "L":
-			s[0] = "*landuse"; s[1] = "sports";
+			s[0] = "*leisure"; s[1] = "sports_centre";
 			l.add(s);
 			return l;
 
 		case "KDP":
 		case "LDP":
-			s[0] = "landuse"; s[1] = "sports";
-			l.add(s);
-			s = new String[2];
 			s[0] = "leisure"; s[1] = "pitch";
 			l.add(s);
 			s = new String[2];
@@ -1062,9 +1005,6 @@ public class ShapeParcela extends ShapeParent {
 
 		case "KES":
 		case "LES":
-			s[0] = "landuse"; s[1] = "sports";
-			l.add(s);
-			s = new String[2];
 			s[0] = "leisure"; s[1] = "stadium";
 			l.add(s);
 			s = new String[2];
@@ -1074,9 +1014,6 @@ public class ShapeParcela extends ShapeParent {
 
 		case "KPL":
 		case "LPL":
-			s[0] = "landuse"; s[1] = "sports";
-			l.add(s);
-			s = new String[2];
 			s[0] = "leisure"; s[1] = "sports_centre";
 			l.add(s);
 			s = new String[2];
@@ -1086,9 +1023,6 @@ public class ShapeParcela extends ShapeParent {
 
 		case "KPS":
 		case "LPS":
-			s[0] = "landuse"; s[1] = "sports";
-			l.add(s);
-			s = new String[2];
 			s[0] = "leisure"; s[1] = "swimming_pool";
 			l.add(s);
 			s = new String[2];
@@ -1484,9 +1418,6 @@ public class ShapeParcela extends ShapeParent {
 			s = new String[2];
 			s[0] = "medical_system:western"; s[1] = "yes";
 			l.add(s);
-			s = new String[2];
-			s[0] = "health_facility:type"; s[1] = "clinic";
-			l.add(s);
 			return l;
 
 		case "YBE":
@@ -1565,13 +1496,10 @@ public class ShapeParcela extends ShapeParent {
 
 		case "YDS":
 		case "ZDS":
-			s[0] = "landuse"; s[1] = "health";
+			s[0] = "amenity"; s[1] = "pharmacy";
 			l.add(s);
 			s = new String[2];
-			s[0] = "medical_system:western"; s[1] = "yes";
-			l.add(s);
-			s = new String[2];
-			s[0] = "health_facility:type"; s[1] = "dispensary";
+			s[0] = "dispensing"; s[1] = "yes";
 			l.add(s);
 			return l;
 
@@ -1608,10 +1536,7 @@ public class ShapeParcela extends ShapeParent {
 			l.add(s);
 			s = new String[2];
 			s[0] = "medical_system:western"; s[1] = "yes";
-			l.add(s);
-			s = new String[2];
-			s[0] = "health_facility:type"; s[1] = "hospital";
-			l.add(s);
+			l.add(s);;
 			return l;
 
 		case "YMA":
@@ -1645,7 +1570,7 @@ public class ShapeParcela extends ShapeParent {
 		case "ZSA":
 		case "YSO":
 		case "ZSO":
-			s[0] = "office"; s[1] = "labor_union";
+			s[0] = "office"; s[1] = "labour_union";
 			l.add(s);
 			return l;
 
