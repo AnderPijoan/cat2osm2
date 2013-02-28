@@ -7,6 +7,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.util.PolygonExtracter;
+import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 
 public class ShapeConstru extends ShapePolygonal {
@@ -191,9 +192,13 @@ public class ShapeConstru extends ShapePolygonal {
 		List<String[]> l = new ArrayList<String[]>();
 		constru = constru.trim();
 		String[] construs = constru.split("\\+");
-		int alturaMax = -9999;
-		int alturaMin = 9999;
-
+		int alturaMax = Integer.MIN_VALUE;
+		int alturaMin = Integer.MAX_VALUE;
+		// Variable para saber si ya se ha escrito algun tag building=*
+		// Ya que sino, podriamos tener building=warehouse + building=yes por ejemplo
+		boolean building = false;
+		
+		
 		for (String s: construs){
 
 			List<String[]> temp = construElemParser(s.toUpperCase());
@@ -205,12 +210,17 @@ public class ShapeConstru extends ShapePolygonal {
 				alturaMax = (alturaMax>Integer.parseInt(num[1]))? alturaMax : Integer.parseInt(num[1]);
 				alturaMin = (alturaMin<Integer.parseInt(num[1]))? alturaMin : Integer.parseInt(num[1]);
 			}
-			else
+			else{
+				for (String[] tag : temp)
+					if (tag[0].equals("building"))
+						building = true;
+				
 				l.addAll(temp);
+			}
 		}
 
 		// Comparamos si tenemos algun numero almacenado
-		if (alturaMax != -9999 && alturaMin != 9999){
+		if (alturaMax != Integer.MIN_VALUE && alturaMin != Integer.MAX_VALUE){
 
 			// Si los dos valores han quedado iguales, es que solo se
 			// ha recogido un numero, se entiende si es mayor que 0, que alturaMin
@@ -230,9 +240,11 @@ public class ShapeConstru extends ShapePolygonal {
 					s[0] = "height"; s[1] = alturaMax*3+"";
 					l.add(s);
 				}
-				s = new String[2];
-				s[0] = "building"; s[1] ="yes";
-				l.add(s);
+				if (!building){
+					s = new String[2];
+					s[0] = "building"; s[1] ="yes";
+					l.add(s);
+				}
 			}
 
 			if(alturaMin != 0) {
@@ -245,9 +257,11 @@ public class ShapeConstru extends ShapePolygonal {
 					s[0] = "min_height"; s[1] = alturaMin*3+"";
 					l.add(s);
 				}
-				s = new String[2];
-				s[0] = "building"; s[1] ="yes";
-				l.add(s);
+				if (!building){
+					s = new String[2];
+					s[0] = "building"; s[1] ="yes";
+					l.add(s);
+				}
 			}
 		}
 
@@ -294,9 +308,6 @@ public class ShapeConstru extends ShapePolygonal {
 		case "CO":
 			s[0] = "building"; s[1] = "warehouse";
 			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
 			return l;
 
 		case "EPT":
@@ -310,6 +321,9 @@ public class ShapeConstru extends ShapePolygonal {
 
 		case "PI":
 			s[0] = "leisure"; s[1] = "swimming_pool";
+			l.add(s);
+			s = new String[2];
+			s[0] = "access"; s[1] = "private";
 			l.add(s);
 			return l;
 

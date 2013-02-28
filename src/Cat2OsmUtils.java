@@ -22,6 +22,7 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.PolygonExtracter;
 import com.vividsolutions.jts.operation.overlay.PolygonBuilder;
+import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 
 public class Cat2OsmUtils {
@@ -508,15 +509,32 @@ public class Cat2OsmUtils {
 	 * @param shape Shape creado pero sin los valores de los nodos, ways o relation
 	 * @return boolean si se ha podido parsear
 	 */
-	public boolean mPolygonShapeParser(Shape shape){
+	public boolean mPolygonShapeParser(Shape shape, Shape shapeParent, double threshold){
 
 		if (!shape.getGeometry().isEmpty()){
+			
+			if (shape != null){
+				//Simplificamos las geometrias que entren
+				TopologyPreservingSimplifier tps = new TopologyPreservingSimplifier(shape.getGeometry());
+				tps.setDistanceTolerance(threshold);
+				shape.setGeometry(tps.getResultGeometry());
+				
+				// Comprobamos si se quiere exportar en formato catastro3d
+				// En caso de que no se quiera, los subshapes no pueden sobresalir de su shape padre
+				// Por ejemplo un edificio no puede sobresalir de su parcela ya que hay casos que
+				// los balcones de este si que salen.
+				if(shapeParent != null && Config.get("Catastro3d").equals("0")){
+					List polys = PolygonExtracter.getPolygons(shapeParent.getGeometry().intersection(shape.getGeometry()));
+					shape.setGeometry(shape.getGeometry().getFactory().buildGeometry(polys));
+				}
+			}
 
+			
 			// Caso especial de ShapeParent que contiene varios shapes dentro
 			if(shape instanceof ShapeParent){
 
 				if(shape instanceof ShapeParcela && null != ((ShapeParcela) shape).getEntrances()){
-
+					
 					for(ShapeElemtex entrance : ((ShapeParcela) shape).getEntrances()){
 
 						// Parseamos y creamos el nodeOsm con sus tags. Como este nodo se va a anadir a la geometria
@@ -560,8 +578,8 @@ public class Cat2OsmUtils {
 
 				if(null != ((ShapeParent) shape).getSubshapes()){
 					Iterator<ShapePolygonal> it = ((ShapeParent) shape).getSubshapes().iterator();
-					while(it.hasNext()){
-						mPolygonShapeParser(it.next());
+					while(it.hasNext()){						
+						mPolygonShapeParser(it.next(), shape, threshold);
 					}
 				}
 			}
@@ -629,7 +647,7 @@ public class Cat2OsmUtils {
 				return true;
 			}
 			default:
-				System.out.println("CASO");
+				System.out.println("Caso al que no debería llegar");
 			}
 		}
 

@@ -34,7 +34,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 public class Cat2Osm {
 
-	public static final String VERSION = "2013-02-01";
+	public static final String VERSION = "2013-02-24";
 	public static Cat2OsmUtils utils;
 
 	private final double MINDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
@@ -578,7 +578,7 @@ public class Cat2Osm {
 		// Juntamos los archivos en uno, al de los nodos le concatenamos el de ways y el de relations
 		// Cabecera del archivo Osm
 		outOsm.write("<?xml version='1.0' encoding='UTF-8'?>");outOsm.newLine();
-		outOsm.write("<osm version=\"0.6\" upload=\"false\" generator=\"cat2osm-"+VERSION+"\">");outOsm.newLine();
+		outOsm.write("<osm version=\"0.6\" generator=\"cat2osm-"+VERSION+"\">");outOsm.newLine();
 
 		// Concatenamos todos los archivos
 		String str;
@@ -1580,7 +1580,7 @@ public class Cat2Osm {
 
 	// Convertir los shapes a elementos de OSM. De esta manera luego a la hora de imprimir se
 	// reutilizan elementos que se compartan entre varios shapes
-	public void convertShapes2OSM(List<Shape> shapes) {
+	public void convertShapes2OSM(List<Shape> shapes, double threshold) {
 
 		Iterator<Shape> it = shapes.iterator();
 		while(it.hasNext()){
@@ -1592,7 +1592,7 @@ public class Cat2Osm {
 			case "ShapeParcela":
 			case "ShapeSubparce":
 
-				if(!utils.mPolygonShapeParser(shape))
+				if(!utils.mPolygonShapeParser(shape, null, threshold))
 					it.remove();
 				break;
 
