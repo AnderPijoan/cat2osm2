@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.PolygonExtracter;
 
 public abstract class ShapeParent extends ShapePolygonal {
@@ -49,7 +48,9 @@ public abstract class ShapeParent extends ShapePolygonal {
 		// son practicamente la misma
 		// directamente solo anadimos los tags a su padre
 		if (s.getGeometry().equals(this.geometry) || 
-				s.getGeometry().equalsExact(this.geometry) ){
+				s.getGeometry().equalsExact(this.geometry) ||
+				// Si son la misma pero mal dibujada
+				Math.abs(this.geometry.getArea() - s.getGeometry().intersection(this.geometry).getArea()) <= 0.00000000001){
 			addAttributes(s.getAttributes());
 		} else {
 			subshapes.add(s);
@@ -90,7 +91,7 @@ public abstract class ShapeParent extends ShapePolygonal {
 				
 				if(	x != y &&
 						subshape1.sameAttributes(subshape2.getAttributes()) &&
-					(subshape1.getGeometry().touches(subshape2.getGeometry()) || 
+						(subshape1.getGeometry().touches(subshape2.getGeometry()) || 
 							subshape1.getGeometry().intersects(subshape2.getGeometry()))
 							){
 			

@@ -275,9 +275,6 @@ public class ShapeSubparce extends ShapePolygonal {
 				s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "livestock"; s[1] = "cattle";
 			l.add(s);
 			s = new String[2];
@@ -291,9 +288,6 @@ public class ShapeSubparce extends ShapePolygonal {
 				s[0] = "landuse"; s[1] = "allotments";}
 			else
 				s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
 			l.add(s);
 			s = new String[2];
 			s[0] = "livestock"; s[1] = "cattle";
@@ -311,9 +305,6 @@ public class ShapeSubparce extends ShapePolygonal {
 				s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "livestock"; s[1] = "cattle";
 			l.add(s);
 			s = new String[2];
@@ -327,9 +318,6 @@ public class ShapeSubparce extends ShapePolygonal {
 				s[0] = "landuse"; s[1] = "allotments";}
 			else
 				s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
 			l.add(s);
 			s = new String[2];
 			s[0] = "livestock"; s[1] = "cattle";
@@ -456,9 +444,6 @@ public class ShapeSubparce extends ShapePolygonal {
 			s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "livestock"; s[1] = "goats";
 			l.add(s);
 			s = new String[2];
@@ -469,9 +454,6 @@ public class ShapeSubparce extends ShapePolygonal {
 		case"CM":
 			s = new String[2];
 			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
 			l.add(s);
 			s = new String[2];
 			s[0] = "livestock"; s[1] = "goats";
@@ -1115,9 +1097,6 @@ public class ShapeSubparce extends ShapePolygonal {
 			s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "livestock"; s[1] = "sheep";
 			l.add(s);
 			s = new String[2];
@@ -1128,9 +1107,6 @@ public class ShapeSubparce extends ShapePolygonal {
 		case"LE":
 			s = new String[2];
 			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
 			l.add(s);
 			s = new String[2];
 			s[0] = "livestock"; s[1] = "sheep";
@@ -1148,9 +1124,6 @@ public class ShapeSubparce extends ShapePolygonal {
 			s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "livestock"; s[1] = "sheep";
 			l.add(s);
 			s = new String[2];
@@ -1164,9 +1137,6 @@ public class ShapeSubparce extends ShapePolygonal {
 		case"LM":
 			s = new String[2];
 			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
 			l.add(s);
 			s = new String[2];
 			s[0] = "livestock"; s[1] = "sheep";
@@ -1184,9 +1154,6 @@ public class ShapeSubparce extends ShapePolygonal {
 			s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "livestock"; s[1] = "sheep";
 			l.add(s);
 			s = new String[2];
@@ -1200,9 +1167,6 @@ public class ShapeSubparce extends ShapePolygonal {
 		case"LT":
 			s = new String[2];
 			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
 			l.add(s);
 			s = new String[2];
 			s[0] = "livestock"; s[1] = "sheep";
@@ -1436,9 +1400,6 @@ public class ShapeSubparce extends ShapePolygonal {
 			s[0] = "landuse"; s[1] = "farmyard";
 			l.add(s);
 			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
-			l.add(s);
-			s = new String[2];
 			s[0] = "livestock"; s[1] = "pigs";
 			l.add(s);
 			s = new String[2];
@@ -1508,9 +1469,6 @@ public class ShapeSubparce extends ShapePolygonal {
 		case"PV":
 			s = new String[2];
 			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "livestock";
 			l.add(s);
 			s = new String[2];
 			s[0] = "livestock"; s[1] = "pigs";

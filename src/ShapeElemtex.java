@@ -123,9 +123,9 @@ public class ShapeElemtex extends ShapePoint {
 			s = new String[2];
 			s[0] = "entrance"; s[1] = "yes";
 			l.add(s);
-			s = new String[2];
-			s[0] = "addr:housenumber"; s[1] = rotulo;
-			l.add(s);
+			//s = new String[2];
+			//s[0] = "addr:housenumber"; s[1] = rotulo;
+			//l.add(s);
 
 			return l;}
 

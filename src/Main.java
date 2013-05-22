@@ -137,7 +137,7 @@ public class Main {
 
 		// Cabecera del archivo
 		outOsmGlobal.write("<?xml version='1.0' encoding='UTF-8'?>");outOsmGlobal.newLine();
-		outOsmGlobal.write("<osm version=\"0.6\" generator=\"cat2osm-"+Cat2Osm.VERSION+"\">");outOsmGlobal.newLine();
+		outOsmGlobal.write("<osm version=\"0.6\" upload=\"false\" generator=\"cat2osm-"+Cat2Osm.VERSION+"\">");outOsmGlobal.newLine();
 
 
 		Pattern p = Pattern.compile("\\d{4}-\\d{1,2}");
@@ -293,7 +293,7 @@ public class Main {
 
 					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando geometrías.");
 					catastro.simplifyGeometries(shapes.get(key), 0.000002);
-				} 
+				}
 				//				else {
 				//					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando geometrías.");
 				//					catastro.simplifyGeometries(shapes.get(key), 0.0000005);
@@ -304,11 +304,9 @@ public class Main {
 					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando Shapes sin tags relevantes.");
 					catastro.simplificarShapesSinTags(key, shapes.get(key));
 				}
-
-
+				
 				// Desmontar las geometrias en elementos de OSM
-				catastro.convertShapes2OSM(shapes.get(key));
-
+				catastro.convertShapes2OSM(shapes.get(key), 0.000002);
 
 				// Escribir los datos en los archivos temporales
 				System.out.print("["+new Timestamp(new Date().getTime())+"]    Escribiendo archivos temporales.\r");
@@ -317,7 +315,6 @@ public class Main {
 				System.out.print("["+new Timestamp(new Date().getTime())+"]    Escribiendo el archivo resultado.\r");
 				catastro.juntarFilesTemporales(key, folder, Config.get("ResultFileName") + "-" + key, outOsmGlobal);
 				System.out.println("["+new Timestamp(new Date().getTime())+"]    Terminado " + Config.get("ResultFileName") + "-" + key + " [" + pos +"/" + shapes.keySet().size() + "]\r");
-
 			}
 		}
 
@@ -374,7 +371,7 @@ public class Main {
 
 				// Cabecera del archivo
 				outOsmGlobal.write("<?xml version='1.0' encoding='UTF-8'?>");outOsmGlobal.newLine();
-				outOsmGlobal.write("<osm version=\"0.6\" generator=\"cat2osm-"+Cat2Osm.VERSION+"\">");outOsmGlobal.newLine();
+				outOsmGlobal.write("<osm version=\"0.6\" upload=\"false\" generator=\"cat2osm-"+Cat2Osm.VERSION+"\">");outOsmGlobal.newLine();
 
 
 				Pattern p = Pattern.compile("\\d{4}-\\d{1,2}");
@@ -474,7 +471,7 @@ public class Main {
 					else if (shapes.get(key) != null){
 
 						// Desmontar las geometrias en elementos de OSM
-						catastro.convertShapes2OSM(shapes.get(key));
+						catastro.convertShapes2OSM(shapes.get(key), 0.000002);
 
 						// Escribir los datos en los archivos temporales
 						System.out.print("["+new Timestamp(new Date().getTime())+"]    Escribiendo archivos temporales.\r");
