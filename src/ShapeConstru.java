@@ -236,9 +236,6 @@ public class ShapeConstru extends ShapePolygonal {
 				if(!Config.get("Catastro3d").equals("0")){
 					s[0] = "building:levels"; s[1] = alturaMax+""; 
 					l.add(s);
-					s = new String[2];
-					s[0] = "height"; s[1] = alturaMax*3+"";
-					l.add(s);
 				}
 				if (!building){
 					s = new String[2];
@@ -252,9 +249,6 @@ public class ShapeConstru extends ShapePolygonal {
 				if(!Config.get("Catastro3d").equals("0")){
 					s = new String[2];
 					s[0] = "building:min_level"; s[1] = alturaMin+"";
-					l.add(s);
-					s = new String[2];
-					s[0] = "min_height"; s[1] = alturaMin*3+"";
 					l.add(s);
 				}
 				if (!building){
