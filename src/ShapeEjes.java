@@ -73,7 +73,7 @@ public class ShapeEjes extends ShapeLinear {
 
 		if (via != null && !via.isEmpty()){
 			// Nombre de la via
-			addAttribute("name", nombreTipoViaParser(via.substring(0, 2)) +" "+ formatearNombreCalle(via.substring(3)));
+			addAttribute("name", nombreTipoViaParser(via.substring(0, 2)) +" "+ formatearNombreCalle(eliminarComillas(via.substring(3))));
 			// En funcion del tipo de via, meter tags que la describan
 			addAttributesAsStringArray(atributosViaParser(via.substring(0, 2)));
 		}
@@ -283,5 +283,17 @@ public class ShapeEjes extends ShapeLinear {
 		}
 
 		return ret.trim();
+	}
+	
+	/** Eliminar las comillas '"' de los textos, sino al leerlo JOSM devuelve error
+	 * pensando que ha terminado un valor antes de tiempo.
+	 * @param s String al que quitar las comillas
+	 * @return String sin las comillas
+	 */
+	public static String eliminarComillas(String s){
+		String ret = new String();
+		for (int x = 0; x < s.length(); x++)
+			if (s.charAt(x) != '"') ret += s.charAt(x);
+		return ret;
 	}
 }
