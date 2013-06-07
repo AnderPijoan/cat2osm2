@@ -22,67 +22,119 @@ public class Main {
 	 */
 	public static void main(String[] args) throws IOException, InterruptedException {
 
-		if ((args.length == 1 && args[0].replaceAll("-", "").equals("v")) || (args.length == 2 && (args[1].replaceAll("-", "").equals("v") || args[0].replaceAll("-", "").equals("v") ))){
+		for(int x = 0; x < args.length; x++){
 
-			System.out.println("Cat2Osm versión "+Cat2Osm.VERSION+".");
+			if (args[x].toLowerCase().equals("-v")){
+				System.out.println("Cat2Osm2 versión "+Cat2Osm.VERSION+".");
+				System.exit(0);
+			}
 
+			if (new File(args[x]).isDirectory()){
+				Config.loadConfig(new File(args[x]));
+			}
+
+			if (args[x].toLowerCase().equals("-rslt")){
+				Config.set("ResultFileName", args[x+1]);
+			}
+			if (args[x].toLowerCase().equals("-3d")){
+				Config.set("Catastro3d", args[x+1]);
+			}
+			if (args[x].toLowerCase().equals("-dbg")){
+				Config.set("PrintShapeIds", args[x+1]);
+			}
+			if (args[x].toLowerCase().equals("-reg")){
+				Config.set("TipoRegistro", args[x+1]);
+			}
+
+			if (args[x].toLowerCase().equals("-constru")){
+				Config.set("ExportType", "CONSTRU");
+			}
+			if (args[x].toLowerCase().equals("-ejes")){
+				Config.set("ExportType", "EJES");
+			}
+			if (args[x].toLowerCase().equals("-elemlin")){
+				Config.set("ExportType", "ELEMLIN");
+			}
+			if (args[x].toLowerCase().equals("-elempun")){
+				Config.set("ExportType", "ELEMPUN");
+			}
+			if (args[x].toLowerCase().equals("-elemtex")){
+				Config.set("ExportType", "ELEMTEX");
+			}
+			if (args[x].toLowerCase().equals("-masa")){
+				Config.set("ExportType", "MASA");
+			}
+			if (args[x].toLowerCase().equals("-parcela")){
+				Config.set("ExportType", "PARCELA");
+			}
+			if (args[x].toLowerCase().equals("-subparce")){
+				Config.set("ExportType", "SUBPARCE");
+			}
+			if (args[x].toLowerCase().equals("-usos")){
+				Config.set("ExportType", "USOS");
+			}
 		}
-		else if (args.length == 1 && new File(args[0]).isDirectory()){
 
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + args[0] + ".");
-			// Ruta al directorio donde encontrar los archivos
-			Config.loadConfig(new File(args[0]));
-			// Iniciar cat2osm
-			ejecutarCat2Osm("*");
+		if (!Config.get("ResultPath").isEmpty()){
 
-		}
-		else if (args.length == 2 && (
-				args[1].replaceAll("-", "").equals("constru") ||
-				args[1].replaceAll("-", "").equals("ejes") ||
-				args[1].replaceAll("-", "").equals("elemlin") ||
-				args[1].replaceAll("-", "").equals("elempun") ||
-				args[1].replaceAll("-", "").equals("elemtex") ||
-				args[1].replaceAll("-", "").equals("masa") ||
-				args[1].replaceAll("-", "").equals("parcela") ||
-				args[1].replaceAll("-", "").equals("subparce"))
-				&& new File(args[0]).exists()){
+			switch (Config.get("ExportType")) {
 
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + args[0] + " para exportar únicamente "+ args[1].replaceAll("-", "").toUpperCase()+ ".");
-			// Ruta al directorio donde encontrar los archivos
-			Config.loadConfig(new File(args[0]));
-			// Iniciar cat2osm
-			ejecutarCat2Osm(args[1].replaceAll("-", "").toUpperCase());
+			case "CONSTRU":
+			case "EJES":
+			case "ELEMLIN":
+			case "ELEMPUN":
+			case "ELEMTEX":
+			case "MASA":
+			case "PARCELA":
+			case "SUBPARCE":
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath") + " para exportar únicamente "+ Config.get("ExportType") + ".");
+				ejecutarCat2Osm(Config.get("ExportType").toUpperCase());
+				break;
 
-		}
-		else if (args.length == 2 && args[1].replaceAll("-", "").equals("usos") && new File(args[0]).exists()){
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + args[0] + " para exportar únicamente el archivo de destinos a corregir.");
-			// Ruta al directorio donde encontrar los archivos
-			Config.loadConfig(new File(args[0]));
-			// Iniciar metodo de creacion de puntos de entrada
-			crearUsos();
+			case "USOS":
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath")  + " para exportar únicamente el archivo de destinos a corregir.");
+				crearUsos();
+				break;
 
-		}
-		else {
+			default:
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath")  + ".");
+				ejecutarCat2Osm("*");
+				break;
+			}
 
-			if (args.length != 0 && !(new File(args[0]).isDirectory()))
-				System.out.println("Directorio "+args[0]+" no encontrado.\n");
+		} else {
+
 			System.out.println("Cat2Osm versión "+Cat2Osm.VERSION+".\n");
 			System.out.println("Forma de uso:");
-			System.out.println("java -jar [-XmxMemoria] cat2osm.jar [Opción] / [Directorio]\n");
-			System.out.println("Es necesrio indicar el directorio donde están los 4 archivos de catastro TAL CUAL se descargan de la web y SOLO de una poblacion:");
-			System.out.println("Directorio                        Ejecutar Cat2Osm de forma normal");
-			System.out.println("-v                                Muestra la version de Cat2Osm");
-			System.out.println("rutaarchivoconfig -constru        Generar un archivo con las geometrías CONSTRU");
-			System.out.println("rutaarchivoconfig -ejes           Generar un archivo con las geometrías EJES");
-			System.out.println("rutaarchivoconfig -elemlin        Generar un archivo con las geometrías ELEMLIN");
-			System.out.println("rutaarchivoconfig -elempun        Generar un archivo con las geometrías ELEMPUN");
-			System.out.println("rutaarchivoconfig -elemtex        Generar un archivo con las geometrías ELEMTEX y mostrando todos los textos de Parajes y Comarcas, Información urbana y rústica y Vegetación y Accidentes demográficos");
-			System.out.println("rutaarchivoconfig -masa           Generar un archivo con las geometrías MASA");
-			System.out.println("rutaarchivoconfig -parcela        Generar un archivo con las geometrías PARCELA");
-			System.out.println("rutaarchivoconfig -subparce       Generar un archivo con las geometrías SUBPARCE");
-			System.out.println("rutaarchivoconfig -usos           Generar un archivo con los usos de inmuebles que no se pueden asignar directamente a una construcción");
+			System.out.println("");
+			System.out.println("Es necesrio indicar el directorio donde se encuentren los 4 archivos de catastro TAL CUAL se descargan de la web y para una única población.");
+			System.out.println("");
+			System.out.println("   java -jar [-XmxMemoria] cat2osm2.jar [Opciones] / [Directorio]\n");
+			System.out.println("");
+			System.out.println("Ejemplo:");
+			System.out.println("");
+			System.out.println("   java -jar -Xmx10240M cat2osm2.jar /home/yo/carpetaArchivos -rslt MiPueblo -3d 1 -reg 0 -constru -dbg 1 \n");
+			System.out.println("");
+			System.out.println("Parámetros opcionales");
+			System.out.println("");
+			System.out.println("-v            Muestra la version de Cat2Osm2");
+			System.out.println("-rslt         Nombre del resultado (si no se indica, será 'Resultado')");
+			System.out.println("-3d           Exportar las alturas de los edificios (1=Si, 0=No), por defecto es 0");
+			System.out.println("-reg          Utilizar un único tipo de registro de catastro (11,14,15 o 17), por defecto es 0=todos");
+			System.out.println("-dbg          Añadir a las geometrías el ID que tienen internamente en Cat2Osm2 para debuggin (1=Si, 0=No), por defecto es 0");
+			System.out.println("-constru      Generar un archivo SOLO con las geometrías CONSTRU");
+			System.out.println("-ejes         Generar un archivo con las geometrías EJES");
+			System.out.println("-elemlin      Generar un archivo con las geometrías ELEMLIN");
+			System.out.println("-elempun      Generar un archivo con las geometrías ELEMPUN");
+			System.out.println("-elemtex      Generar un archivo con las geometrías ELEMTEX y mostrando todos los textos de Parajes y Comarcas, Información urbana y rústica y Vegetación y Accidentes demográficos");
+			System.out.println("-masa         Generar un archivo con las geometrías MASA");
+			System.out.println("-parcela      Generar un archivo con las geometrías PARCELA");
+			System.out.println("-subparce     Generar un archivo con las geometrías SUBPARCE");
+			System.out.println("-usos         Generar un archivo con los usos de inmuebles que no se pueden asignar directamente a una construcción");
+			System.out.println("");
 			System.out.println("Para mas informacion acceder a:");
-			System.out.println("http://wiki.openstreetmap.org/wiki/Cat2Osm");
+			System.out.println("");
+			System.out.println("http://wiki.openstreetmap.org/wiki/Cat2Osm2");
 
 		}
 	}
