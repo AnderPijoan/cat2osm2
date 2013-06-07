@@ -1,20 +1,35 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFactorySpi;
+import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureReader;
+import org.geotools.data.FeatureWriter;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
+import org.geotools.data.Transaction;
+import org.geotools.data.shapefile.ShapefileDataStoreFactory;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 public class ShapeParser extends Thread{
 
@@ -22,7 +37,7 @@ public class ShapeParser extends Thread{
 	File file;
 	Cat2OsmUtils utils;
 	HashMap <String, List<Shape>> shapeList;
-	
+
 	static int num = 0;
 
 	public ShapeParser (String t, File f, Cat2OsmUtils u, HashMap<String, List<Shape>> s){
@@ -31,7 +46,7 @@ public class ShapeParser extends Thread{
 		this.file = reproyectarWGS84(f, t);
 		this.utils = u;
 		shapeList = s;
-		
+
 		start();
 	}
 
@@ -57,7 +72,7 @@ public class ShapeParser extends Thread{
 				// Shapes del archivo MASA.SHP
 				while (reader.hasNext()) {
 					Shape shape = new ShapeMasa(reader.next(), tipo);
-					
+
 					// Si cumple estar entre las fechas
 					if (shape != null && shape.checkCatastroDate(fechaDesde, fechaHasta) && shape.isValid()){
 						// Anadimos el shape creado a la lista
@@ -70,7 +85,7 @@ public class ShapeParser extends Thread{
 
 				// Shapes del archivo PARCELA.SHP
 				while (reader.hasNext()) {
-					
+
 					Shape shape = new ShapeParcela(reader.next(), tipo);
 
 					// Si cumple estar entre las fechas
@@ -101,7 +116,7 @@ public class ShapeParser extends Thread{
 				// Shapes del archivo CONSTRU.SHP
 				while (reader.hasNext()) {
 					Shape shape = new ShapeConstru(reader.next(), tipo);
-					
+
 					// Si cumple estar entre las fechas
 					if (shape != null && shape.checkCatastroDate(fechaDesde, fechaHasta) && shape.isValid()){
 						// Anadimos el shape creado a la lista
@@ -189,83 +204,60 @@ public class ShapeParser extends Thread{
 
 		try
 		{			
-			String os = System.getProperty("os.name").toLowerCase();
-			BufferedReader bf;
-			String line;
-			int pro = Integer.parseInt(Config.get("Proyeccion"));
+			FileDataStore store = FileDataStoreFinder.getDataStore(f);
+			SimpleFeatureSource featureSource = store.getFeatureSource();
+			SimpleFeatureType schema = featureSource.getSchema();
+			CoordinateReferenceSystem dataCRS = schema.getCoordinateReferenceSystem();
 
-			// Windows
-			if (os.indexOf("win") >= 0){
-				// Archivo temporal para escribir el script
-				FileWriter fstreamScript = new FileWriter(tipo + f.getName() + "script.bat");
-				BufferedWriter outScript = new BufferedWriter(fstreamScript);
+			CoordinateReferenceSystem wgs84CRS = DefaultGeographicCRS.WGS84; 
+			boolean lenient = true; // allow for some error due to different datums
+			MathTransform transform = CRS.findMathTransform(dataCRS, wgs84CRS, lenient);
 
-				outScript.write("@echo off \r\n"+
-						"SET FWTOOLS_DIR="     +Config.get("FWToolsPath")+"\r\n" +
-						"PATH="                +Config.get("FWToolsPath")+"\\bin;" + Config.get("FWToolsPath") + "\\python;%PATH%\r\n"+
-						"SET PYTHONPATH="      +Config.get("FWToolsPath")+"\\pymod\r\n"+
-						"SET PROJ_LIB="        +Config.get("FWToolsPath")+"\\proj_lib\r\n"+
-						"SET GEOTIFF_CSV="     +Config.get("FWToolsPath")+"\\data\r\n"+
-						"SET GDAL_DATA="       +Config.get("FWToolsPath")+"\\data\r\n"+
-						"SET GDAL_DRIVER_PATH="+Config.get("FWToolsPath")+"\\gdal_plugins\r\n");
+			SimpleFeatureCollection featureCollection = featureSource.getFeatures();
 
-				if (pro == 32628)                       // Canarias
-					outScript.write("ogr2ogr.exe -t_srs EPSG:4326 " +                          // proyeccion
-							f.getPath().substring(0, f.getPath().length()-4) + " " +   // archivo origen
-							Config.get("ResultPath") + "\\" +  Config.get("ResultFileName") + "\\" + tipo + f.getName());        // archivo fin
-				else if (23029 <= pro && pro <= 23031)	// ED50				
-					outScript.write("ogr2ogr.exe -s_srs \"+init=epsg:" + pro + " +nadgrids=.\\" + Config.get("NadgridsPath") + " +wktext\" -t_srs EPSG:4326 " + 
-							f.getPath().substring(0, f.getPath().length()-4) + " " +
-							Config.get("ResultPath") + "\\" +  Config.get("ResultFileName") + "\\" + tipo + f.getName());
-				else if (25829 <= pro && pro <= 25831)  // ETRS89
-					outScript.write("ogr2ogr.exe -s_srs \"+init=epsg:" + pro + " +wktext\" -t_srs EPSG:4326 " +
-							f.getPath().substring(0, f.getPath().length()-4) + " " +
-							Config.get("ResultPath") + "\\" +  Config.get("ResultFileName") + "\\" + tipo + f.getName());
-				outScript.close();
+			DataStoreFactorySpi factory = new ShapefileDataStoreFactory();
+			Map<String, Serializable> create = new HashMap<String, Serializable>();
 
-				Runtime run = Runtime.getRuntime();
-				Process pr  = run.exec(tipo + f.getName() + "script.bat");
-				pr.waitFor();
-				bf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-				while ((line = bf.readLine()) != null)
-					System.out.println(line);
-			}
-			
-			// Mac y Linux
-			else {
-				String proyeccion = "";
-				if      (23029 <= pro && pro <= 23031)  // ED50 
-					proyeccion = "-s_srs \"+init=epsg:" + pro + " +nadgrids=" + Config.get("NadgridsPath") + " +wktext\""; 
-				else if (25829 <= pro && pro <= 25831)  // ETRS89
-					proyeccion = "-s_srs \"+init=epsg:" + pro + " +wktext\"";
+			File out = new File(Config.get("ResultPath") + File.separatorChar +  Config.get("ResultFileName") + File.separator + tipo + f.getName());
 
-				String command = "ogr2ogr " + proyeccion + " -t_srs EPSG:4326 " + 
-						"\"" + Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + tipo + f.getName() + "\" " +  // archivo fin
-						"\"" + f.toPath() + "\"";                                                 // archivo origen
+			create.put("url", out.toURI().toURL());
+			create.put("create spatial index", Boolean.TRUE);
+			DataStore dataStore = factory.createNewDataStore(create);
+			SimpleFeatureType featureType = SimpleFeatureTypeBuilder.retype(schema, wgs84CRS);
+			dataStore.createSchema(featureType);
 
-				FileWriter fstreamScript = new FileWriter(Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/script" + tipo+f.getName() + ".sh");
-				BufferedWriter outScript = new BufferedWriter(fstreamScript);
 
-				outScript.write("#!/bin/bash\n");
-				outScript.write(command);
-				outScript.close();
-				Process pr = Runtime.getRuntime().exec( new String[] { "chmod", "+x", Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/script" + tipo+f.getName() + ".sh" } );
-				pr.waitFor();
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Ejecutando proyeccion de los shapefiles " +
-						tipo+f.getName() +": " + command);
+			Transaction transaction = new DefaultTransaction("Reproject");
+			FeatureWriter<SimpleFeatureType, SimpleFeature> writer =
+					dataStore.getFeatureWriterAppend(featureType.getTypeName(), transaction);
+			SimpleFeatureIterator iterator = featureCollection.features();
+			try {
+				while (iterator.hasNext()) {
+					// copy the contents of each feature and transform the geometry
+					SimpleFeature feature = iterator.next();
+					SimpleFeature copy = writer.next();
+					copy.setAttributes(feature.getAttributes());
 
-				Runtime run = Runtime.getRuntime();
-				pr  = run.exec( new String[] { Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/script" + tipo+f.getName() + ".sh" } );
-				pr.waitFor();
-				bf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-				while ((line = bf.readLine()) != null)
-					System.out.println(line);
+					Geometry geometry = (Geometry) feature.getDefaultGeometry();
+					Geometry geometry2 = JTS.transform(geometry, transform);
+
+					copy.setDefaultGeometry(geometry2);
+					writer.write();
+				}
+				transaction.commit();
+			} catch (Exception problem) {
+				problem.printStackTrace();
+				transaction.rollback();
+				System.out.println("["+new Timestamp(new Date().getTime())+"] No se han podido reproyectar los shapefiles "+tipo+f.getName()+".");
+			} finally {
+				writer.close();
+				iterator.close();
+				transaction.close();
 			}
 
-			//line = "scripts/ogr2ogr.bat " + f.getPath().substring(0, f.getPath().length()-4) +" "+ Config.get("ResultPath")+"/"+tipo+f.getName() +" "+ f.getPath();
 		} catch (Exception er){ System.out.println("["+new Timestamp(new Date().getTime())+"] No se ha podido proyectar los shapefiles "+tipo+f.getName()+"."); er.printStackTrace(); }
 
-		return new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + tipo+f.getName());
+		return new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + tipo+f.getName());
 	}
 
 
@@ -276,23 +268,23 @@ public class ShapeParser extends Thread{
 	 */
 	public void borrarShpFiles(String filename){
 
-		String path = Config.get("ResultPath") + "/" + Config.get("ResultFileName");
+		String path = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName");
 
 		System.out.println("["+new Timestamp(new Date().getTime())+"] Terminado de leer los archivos "+filename+".");
 
 		boolean borrado = true;
 
 		// Borrar archivo con el mismo nombre si existe, porque sino concatenaria el nuevo
-		borrado = borrado && new File(path +"/"+ filename.substring(0, filename.length()-4) +".shp").delete();
-		borrado = borrado && new File(path +"/"+ filename.substring(0, filename.length()-4) +".dbf").delete();
-		borrado = borrado && new File(path +"/"+ filename.substring(0, filename.length()-4) +".prj").delete();
-		borrado = borrado && new File(path +"/"+ filename.substring(0, filename.length()-4) +".shx").delete();
-		borrado = borrado && new File(path +"/script"+ filename +".sh").delete();
+		borrado &= new File(path + File.separatorChar + filename.substring(0, filename.length()-4) +".SHP").delete();
+		borrado &= new File(path + File.separatorChar + filename.substring(0, filename.length()-4) +".SHX").delete();
+		borrado &= new File(path + File.separatorChar + filename.substring(0, filename.length()-4) +".PRJ").delete();
+		borrado &= new File(path + File.separatorChar + filename.substring(0, filename.length()-4) +".DBF").delete();
+		borrado &= new File(path + File.separatorChar + filename.substring(0, filename.length()-4) +".FIX").delete();
+		borrado &= new File(path + File.separatorChar + filename.substring(0, filename.length()-4) +".QIX").delete();
 
 		if (!borrado)
 			System.out.println("["+new Timestamp(new Date().getTime())+"] No se pudo borrar alguno de los archivos temporales de "+filename+"." +
 					" Estos estaran en la carpeta "+ path +".");
-
 	}
 
 }

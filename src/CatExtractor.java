@@ -29,6 +29,8 @@ public class CatExtractor {
 			zis.close();			
 		}
 	}
+	
+	
 	private static void extract (File directorio, ZipInputStream zis) throws IOException {
 		
 		ZipEntry entry = null;

@@ -1,6 +1,6 @@
-ResultPath=/home/ander/workspace/cat2osm2/result
+ResultPath=/home/ander/Eclipse/cat2osm2/result
 ResultFileName=AldeasecaDeAlba
-InputDirPath=/home/ander/workspace/cat2osm2/files/AldeasecaDeAlba
+InputDirPath=/home/ander/Eclipse/cat2osm/files/AldeasecaDeAlba
 NadgridsPath=auto:peninsula
 Proyeccion=auto
 FechaDesde=00000000

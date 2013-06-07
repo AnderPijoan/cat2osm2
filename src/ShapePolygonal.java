@@ -54,7 +54,7 @@ public abstract class ShapePolygonal extends Shape {
 	 * @return Lista de ids de nodos del poligono en posicion pos
 	 */
 	public synchronized List<Long> getNodesIds(int pos){
-		if (nodes.size() > pos)
+		if (nodes != null && nodes.size() > pos)
 			return nodes.get(pos);
 		else
 			return null;

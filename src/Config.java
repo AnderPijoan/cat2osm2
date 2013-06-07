@@ -21,45 +21,10 @@ public class Config {
 	
 	/**
 	 * Carga la configuración.
-	 * @param file archivo de configuracion.
+	 * @param file directorio donde encontrar los archivos
 	 */
-	public static void loadConfig(String file) {
-		FileReader reader = null;
-		try {
-			reader = new FileReader(new File(file));
-			configuration.load(reader);
-		} catch (Exception e) {
-			System.out
-					.println("["
-							+ new Timestamp(new Date().getTime())
-							+ "] Linea inadecuada"
-							+ " en el archivo de configuracion: \""
-							+ ""
-							+ "\"."
-							+ "\n Los comentarios en el archivo de"
-							+ " configuracion deben estar indicados con el caracter '#' al inicio.");
-		} finally {
-			try {
-				if (null != reader) {
-					reader.close();
-				}
-			} catch (Exception e2) {
-				e2.printStackTrace();
-			}
-		}
-		
-		postProcessConfig();
-	}
-	/**
-	 * Post-procesa el archivo de configuración:
-	 * - Descomprime los archivos zip de catastro si están comprimidos.
-	 * - Obtiene el sistema de coordenadas de los shapes leyendo de sus prj.
-	 * - Descarga la rejilla si no está descargada y está en modmo auto.
-	 * 
-	 */
-	private static void postProcessConfig() {
-		createDirAtHome();
-		searchAndBuildFilesPath();
+	public static void loadConfig(File dir) {
+		searchAndBuildFilesPath(dir);
 		normalizeVariableContent("UrbanoSHPPath");
 		normalizeVariableContent("RusticoSHPPath");
 		try {
@@ -69,46 +34,48 @@ public class Config {
 		catch (IOException ioe){
 			ioe.printStackTrace();
 		}
-		String proyeccion = configuration.getProperty("Proyeccion", "");
+
 		String directorio = Config.get("UrbanoSHPPath");
 		if (StringUtils.isBlank(directorio)){
 			directorio = Config.get("RusticoSHPPath");
-		}		
-		if (!StringUtils.isBlank(directorio) && (StringUtils.isBlank(proyeccion) || "auto".equals(proyeccion))){
-			configuration.setProperty(
-				"Proyeccion", 
-				CatProjectionReader.autodetectProjection(directorio)
-			);
 		}
-		configureGrid();
+		
+		Config.set("ResultPath", dir.getPath());
+		Config.set("ResultFileName", "result");
+		
+		Config.set("FechaDesde", "00000101");
+		Config.set("FechaHasta", "99999999");
+		
+		Config.set("FechaConstruDesde", "00000101");
+		Config.set("FechaConstruHasta", "99999999");
+		
+		Config.set("TipoRegistro", "0");
+		Config.set("Catastro3d", "1");
+		Config.set("PrintShapeIds", "0");
 	}
+	
+	
 	/**
 	 * Si se indica un directorio como parametro InputDirPath, busca en el
 	 * los archivos cat.gz y SHF.zip necesarios, y completa la configuración.
 	 * Ojo, el directorio solo debe contener los archivos de un municipio/localidad
 	 * 
 	 */
-	private static void searchAndBuildFilesPath(){
-		// Si no esta definida ignoramos.
-		if ("".equals(configuration.getProperty("InputDirPath", ""))){
-			return;
+	private static void searchAndBuildFilesPath(File dir){
+		
+		if (!dir.isDirectory()){
+			System.out.println("["+new Timestamp(new Date().getTime())+"] El directorio indicado donde buscar los archivos no existe.");
+			System.exit(-1);
 		}
 		
-		// Si se han indicado los archivos por separado ignoramos.
-		if (!"".equals(configuration.getProperty("UrbanosSHPPath", ""))){
-			return;
-		}
-		File directorio = new File(configuration.getProperty("InputDirPath"));
-		if (!directorio.exists()){
-			return;
-		}
-		File[] entradas = directorio.listFiles();
-		for (File fichero:entradas){
+		// Ver si se encuentran los 4 archivos de catastro
+		File[] entradas = dir.listFiles();
+		
+		for (File fichero : entradas){
 			if (fichero.isFile()){
 				String nombre = fichero.getName().toUpperCase();
 				if (nombre.matches("^\\d+_\\d+_RA_\\d+-\\d+-\\d+_SHF\\.ZIP$")){
 					configuration.setProperty("RusticoSHPPath", fichero.getAbsolutePath());
-					
 				}
 				else if (nombre.matches("^\\d+_\\d+_UA_\\d+-\\d+-\\d+_SHF\\.ZIP$")){
 					configuration.setProperty("UrbanoSHPPath", fichero.getAbsolutePath());
@@ -121,16 +88,27 @@ public class Config {
 				}
 			}
 		}
+		
+		if (configuration.getProperty("UrbanoSHPPath") == null){
+			System.out.println("["+new Timestamp(new Date().getTime())+"] No se encontró el archivo de geometrías urbanas (XX_XXX_UA_AAAA-MM-DD_SHF.zip).");
+			System.exit(-1);
+		}
+		if (configuration.getProperty("RusticoSHPPath") == null){
+			System.out.println("["+new Timestamp(new Date().getTime())+"] No se encontró el archivo de geometrías rústicas (XX_XXX_RA_AAAA-MM-DD_SHF.zip).");
+			System.exit(-1);
+		}
+		if (configuration.getProperty("UrbanoCATFile") == null){
+			System.out.println("["+new Timestamp(new Date().getTime())+"] No se encontró el archivo de registros urbanos (XX_XXX_U_XXXX-XX-XX.CAT.gz).");
+			System.exit(-1);
+		}
+		if (configuration.getProperty("RusticoCATFile") == null){
+			System.out.println("["+new Timestamp(new Date().getTime())+"] No se encontró el archivo de registros rústicos (XX_XXX_R_XXXX-XX-XX.CAT.gz ).");
+			System.exit(-1);
+		}
+		
 	}
-	/** 
-	 * Crea un directorio para catosm (".catosm") en el directorio del usuario.
-	 * En este directorio se guardarán los archivos de rejilla.
-	 */
-	private static void createDirAtHome() {
-		File directorioCatOsm = new File(System.getProperty("user.home") + File.separator + ".cat2osm");
-		directorioCatOsm.mkdirs();
-		configuration.setProperty("home", directorioCatOsm.getAbsolutePath());
-	}
+	
+	
 	/**
 	 * Elimina la extensión zip del nombre de archivo de shp de catastro.
 	 * Para usar en el resto del programa el directorio en lugar del zip
@@ -142,61 +120,21 @@ public class Config {
 			Config.set(varName, value.replaceFirst("\\.[Zz][Ii][Pp]$", ""));
 		}
 	}
-	/**
-	 * Cambia la configuración de la rejilla si está en modo auto.
-	 * Si es necesario, descarga la rejilla de http://www.01.ign.es/ign/resources/herramientas/
-	 * y lo descarga en ${home}/.catosm/
-	 */
-	private static void configureGrid() {
-		String rejilla = configuration.getProperty("NadgridsPath");
-		if (StringUtils.isBlank(rejilla)){
-			rejilla = "auto:peninsula";
-		}
-		if (!rejilla.startsWith("auto")){
-			return;
-		}
-		File homeDir = new File(System.getProperty("user.home") + File.separator + ".cat2osm");
-		File archivoRejilla = null;
-		String nombreRecursoRejilla = "";
-		if ("auto:peninsula".equals(rejilla) || "auto:peninsula.gsb".equals(rejilla)){
-			archivoRejilla = new File(homeDir, "peninsula.gsb");
-			nombreRecursoRejilla = "peninsula.gsb";
-		}
-		else if ("auto:baleares".equals(rejilla) || "auto:baleares.gsb".equals(rejilla)){
-			archivoRejilla = new File(homeDir, "baleares.gsb");
-			nombreRecursoRejilla = "baleares.gsb";
-		}		
-		configuration.setProperty("NadgridsPath", archivoRejilla.getAbsolutePath());
-		try {
-			extractGrid(nombreRecursoRejilla, archivoRejilla);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
-	private static void extractGrid(String recurso, File destino) throws IOException {
-		if (destino.exists()){
-			return;
-		}
-		InputStream inputStream = Config.class.getClassLoader().getResourceAsStream("cat2osm/grids/"+recurso);
-		OutputStream outputStream = new FileOutputStream(destino);
-		IOUtils.copy(inputStream, outputStream);
-		inputStream.close();
-		outputStream.close();
-	}
-
+	
+	
 	/** Obtiene la opcion de configuracion. Si no existe devuelve "".
 	 *  @param option Opcion de configuracion a buscar.
 	 *  @param required Indica si la opción es obligatoria (true) u opcional (false).
 	 *  @return Valor que tiene en el hashMap o "". */
 	public static String get(String option, boolean required){
-		
+
 		if (configuration.get(option) == null && required){
-			System.out.println("["+new Timestamp(new Date().getTime())+"] No se ha encontrado el campo "+option+" en el archivo de configuración. Compruebe que existe o si no ejecute cat2osm con el parámetro -ui para crear un nuevo archivo de configuración.");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] " +
+					"El programa no ha conseguido inicializar la variable "+option+". ");
 		}
 		return configuration.getProperty(option, "");
 	}
-	
+
 	public static String get(String option) {
 		return get(option, true);
 	}
@@ -208,8 +146,8 @@ public class Config {
 	public static void set(String option, String value){ 
 		configuration.put(option,value);
 	}
-	
-	
+
+
 	/** Anade la lista al hashMap de configuracion.
 	 * @param l Lista de pares de strings*/
 	public static void set(List<String[]> l){
