@@ -3,24 +3,28 @@ Cat2Osm2
 
 Cat2Osm2 es una herramienta que permite relacionar los Shapefiles del Catastro español con sus Registros y transformarlos en ficheros con formato OSM para su edición mediante JOSM y posterior inclusión en la base de datos de OpenStreetMap.
 
-Wiki : 
+Wiki
+====
 
 http://wiki.openstreetmap.org/wiki/Cat2Osm2
 
 
-Forma de uso :
+Forma de uso
+============
 
 Es necesrio indicar el directorio donde se encuentren los 4 archivos de catastro TAL CUAL se descargan de la web y para una única población.
 
    java -jar [-XmxMemoria] cat2osm2.jar [Opciones] / [Directorio]
 
 
-Ejemplo :
+Ejemplo
+=======
 
    java -jar -Xmx10240M cat2osm2.jar /home/yo/carpetaArchivos -rslt MiPueblo -3d 1 -reg 0 -constru -dbg 1 
 
 
-Parámetros opcionales :
+Parámetros opcionales
+=====================
 
 -v            Muestra la version de Cat2Osm2
 
