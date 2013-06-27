@@ -40,7 +40,7 @@ public abstract class ShapeParent extends ShapePolygonal {
 		// Por ejemplo un edificio no puede sobresalir de su parcela ya que hay casos que
 		// los balcones de este si que salen.
 		if(Config.get("Catastro3d").equals("0")){
-			List polys = PolygonExtracter.getPolygons(getGeometry().intersection(subshape.getGeometry()));
+			List<?> polys = PolygonExtracter.getPolygons(getGeometry().intersection(subshape.getGeometry()));
 			s.setGeometry(subshape.getGeometry().getFactory().buildGeometry(polys));
 		}
 		
