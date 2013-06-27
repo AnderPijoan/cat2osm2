@@ -7,7 +7,6 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.util.PolygonExtracter;
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 
 public class ShapeConstru extends ShapePolygonal {
@@ -232,7 +231,7 @@ public class ShapeConstru extends ShapePolygonal {
 			String[] s = new String[2];
 
 			if (alturaMax != 0){
-				// Comprobamos si se quiere exportar en formato catastro3d
+				// Comprobamos si se quiere exportar en formato catastro3d los pisos positivos
 				if(!Config.get("Catastro3d").equals("0")){
 					s[0] = "building:levels"; s[1] = alturaMax+""; 
 					l.add(s);
@@ -245,8 +244,8 @@ public class ShapeConstru extends ShapePolygonal {
 			}
 
 			if(alturaMin != 0) {
-				// Comprobamos si se quiere exportar en formato catastro3d
-				if(!Config.get("Catastro3d").equals("0")){
+				// Comprobamos si se quiere exportar en formato catastro3d los pisos negativos
+				if(Config.get("Catastro3d").equals("-1")){
 					s = new String[2];
 					s[0] = "building:min_level"; s[1] = alturaMin+"";
 					l.add(s);

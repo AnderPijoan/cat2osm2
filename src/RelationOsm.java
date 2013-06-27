@@ -189,7 +189,8 @@ public class RelationOsm {
 
 				if(types.get(x).equals("relation")){
 
-					RelationOsm relation = ((RelationOsm) utils.getKeyFromValue((Map<String, Map<Object, Long>>) ((Object)utils.getTotalRelations()), key, ids.get(x)));
+					//RelationOsm relation = ((RelationOsm) utils.getKeyFromValue((Map<String, Map<Object, Long>>) ((Object)utils.getTotalRelations()), key, ids.get(x)));
+				
 				}
 				else if(types.get(x).equals("way")){
 
