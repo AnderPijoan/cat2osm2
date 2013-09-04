@@ -119,7 +119,7 @@ public class Main {
 			System.out.println("");
 			System.out.println("-v            Muestra la version de Cat2Osm2");
 			System.out.println("-rslt         Nombre del resultado (si no se indica, será 'Resultado')");
-			System.out.println("-3d           Exportar las alturas de los edificios (1=Pisos sobre tierra, 0=No, -1=Pisos sobre y bajo tierra), por defecto es 0");
+			System.out.println("-3d           Exportar las alturas de los edificios (1=Pisos sobre tierra, 0=No, -1=Pisos sobre y bajo tierra), por defecto es 1");
 			System.out.println("-reg          Utilizar un único tipo de registro de catastro (11,14,15 o 17), por defecto es 0=todos");
 			System.out.println("-dbg          Añadir a las geometrías el ID que tienen internamente en Cat2Osm2 para debuggin (1=Si, 0=No), por defecto es 0");
 			System.out.println("-constru      Generar un archivo SOLO con las geometrías CONSTRU");

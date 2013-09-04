@@ -57,6 +57,10 @@ public class Config {
 
 		if (configuration.get("Catastro3d") == null)
 			Config.set("Catastro3d", "1");
+		
+		/* Esto une las parcelas rusticas, no hay forma de tocarlo si no es desde codigo */
+		if (configuration.get("SplitRU") == null)
+			Config.set("SplitRU", "0");
 
 		if (configuration.get("PrintShapeIds") == null)
 			Config.set("PrintShapeIds", "0");

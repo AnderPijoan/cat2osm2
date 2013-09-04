@@ -34,7 +34,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 public class Cat2Osm {
 
-	public static final String VERSION = "2013-06-27";
+	public static final String VERSION = "2013-09-04";
 	public static Cat2OsmUtils utils;
 
 	private final double MINDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
@@ -1564,10 +1564,10 @@ public class Cat2Osm {
 							shapes.set(y, null);
 						}
 					}
-					// Intenta unir todos los subshapes con los mismos tags en uno
-					if(Config.get("Catastro3d").equals("0"))
+					// Unir todos los subshapes con los mismos tags en uno
+					if(Config.get("SplitRU").equals("0"))
 						((ShapeParent) shape).joinSubshapes(false);
-				}					
+				}
 		}
 
 		// Eliminar los null que hemos introducido

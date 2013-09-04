@@ -35,10 +35,10 @@ public abstract class ShapeParent extends ShapePolygonal {
 		
 		ShapePolygonal s = subshape;
 		
-		// Comprobamos si se quiere exportar en formato catastro3d
-		// En caso de que no se quiera, los subshapes no pueden sobresalir de su shape padre
-		// Por ejemplo un edificio no puede sobresalir de su parcela ya que hay casos que
-		// los balcones de este si que salen.
+		// Comprobamos si NO se quiere exportar en formato catastro3d
+		// En caso de que NO se quiera, los subshapes urbanos NO pueden sobresalir de su shape padre
+		// Por ejemplo un edificio en Catastro podria sobresalir de su parcela ya que hay casos que
+		// los balcones sobresalen.
 		if(Config.get("Catastro3d").equals("0")){
 			List<?> polys = PolygonExtracter.getPolygons(getGeometry().intersection(subshape.getGeometry()));
 			s.setGeometry(subshape.getGeometry().getFactory().buildGeometry(polys));
