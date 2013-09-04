@@ -49,29 +49,32 @@ public class Main {
 			if (args[x].toLowerCase().equals("-constru")){
 				Config.set("ExportType", "CONSTRU");
 			}
-			if (args[x].toLowerCase().equals("-ejes")){
+			else if (args[x].toLowerCase().equals("-ejes")){
 				Config.set("ExportType", "EJES");
 			}
-			if (args[x].toLowerCase().equals("-elemlin")){
+			else if (args[x].toLowerCase().equals("-elemlin")){
 				Config.set("ExportType", "ELEMLIN");
 			}
-			if (args[x].toLowerCase().equals("-elempun")){
+			else if (args[x].toLowerCase().equals("-elempun")){
 				Config.set("ExportType", "ELEMPUN");
 			}
-			if (args[x].toLowerCase().equals("-elemtex")){
+			else if (args[x].toLowerCase().equals("-elemtex")){
 				Config.set("ExportType", "ELEMTEX");
 			}
-			if (args[x].toLowerCase().equals("-masa")){
+			else if (args[x].toLowerCase().equals("-masa")){
 				Config.set("ExportType", "MASA");
 			}
-			if (args[x].toLowerCase().equals("-parcela")){
+			else if (args[x].toLowerCase().equals("-parcela")){
 				Config.set("ExportType", "PARCELA");
 			}
-			if (args[x].toLowerCase().equals("-subparce")){
+			else if (args[x].toLowerCase().equals("-subparce")){
 				Config.set("ExportType", "SUBPARCE");
 			}
-			if (args[x].toLowerCase().equals("-usos")){
+			else if (args[x].toLowerCase().equals("-usos")){
 				Config.set("ExportType", "USOS");
+			}
+			else {
+				Config.set("ExportType", "COMPLETA");
 			}
 		}
 
@@ -96,10 +99,14 @@ public class Main {
 				crearUsos();
 				break;
 
-			default:
+			case "COMPLETA":
 				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath")  + ".");
 				ejecutarCat2Osm("*");
 				break;
+			
+			default:
+				System.out.println("No se ha definido un tipo de exportación");
+				System.exit(-1);
 			}
 
 		} else {
