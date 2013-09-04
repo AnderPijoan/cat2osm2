@@ -73,14 +73,15 @@ public class Main {
 			else if (args[x].toLowerCase().equals("-usos")){
 				Config.set("ExportType", "USOS");
 			}
-			else {
-				Config.set("ExportType", "COMPLETA");
+			
+			if (Config.get("ExportType", false).isEmpty()){
+					Config.set("ExportType", "COMPLETA");
 			}
 		}
 
 		if (!Config.get("ResultPath").isEmpty()){
 
-			switch (Config.get("ExportType")) {
+			switch (Config.get("ExportType", true)) {
 
 			case "CONSTRU":
 			case "EJES":
@@ -142,7 +143,6 @@ public class Main {
 			System.out.println("Para mas informacion acceder a:");
 			System.out.println("");
 			System.out.println("http://wiki.openstreetmap.org/wiki/Cat2Osm2");
-
 		}
 	}
 
