@@ -34,7 +34,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 public class Cat2Osm {
 
-	public static final String VERSION = "2013-09-04";
+	public static final String VERSION = "2013-09-13";
 	public static Cat2OsmUtils utils;
 
 	private final double MINDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
@@ -564,14 +564,14 @@ public class Cat2Osm {
 	 */
 	public void juntarFilesTemporales(String key, String folder, String filename, BufferedWriter outOsmGlobal) throws IOException{
 
-		String path = Config.get("ResultPath") + "/" + Config.get("ResultFileName");
+		String path = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName");
 
 		// Borrar archivo con el mismo nombre si existe, porque sino concatenaria el nuevo
-		new File(path + "/" + folder + "/" + filename +".osm").delete();
-		new File(path + "/" + folder + "/" + filename +".osm.gz").delete();
+		new File(path + File.separatorChar + folder + File.separatorChar + filename +".osm").delete();
+		new File(path + File.separatorChar + folder + File.separatorChar + filename +".osm.gz").delete();
 
 		// Archivo al que se le concatenan los nodos, ways y relations
-		String fstreamOsm = path + "/" + folder + "/" + filename + ".osm.gz";
+		String fstreamOsm = path + File.separatorChar + folder + File.separatorChar + filename + ".osm.gz";
 		// Indicamos que el archivo se codifique en UTF-8
 		BufferedWriter outOsm = new BufferedWriter( new OutputStreamWriter (new GZIPOutputStream(new FileOutputStream(fstreamOsm)), "UTF-8"));
 
@@ -583,9 +583,9 @@ public class Cat2Osm {
 		// Concatenamos todos los archivos
 		String str;
 
-		if (new File(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempNodes.osm").exists())
+		if (new File(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempNodes.osm").exists())
 		{
-			BufferedReader inNodes = new BufferedReader(new FileReader(path + "/" + folder + "/" +Config.get("ResultFileName") + "-" + key + "tempNodes.osm"));
+			BufferedReader inNodes = new BufferedReader(new FileReader(path + File.separatorChar + folder + File.separatorChar +Config.get("ResultFileName") + "-" + key + "tempNodes.osm"));
 			while ((str = inNodes.readLine()) != null){
 				outOsm.write(str);
 				outOsm.newLine();
@@ -596,9 +596,9 @@ public class Cat2Osm {
 			inNodes.close();
 		}
 
-		if (new File(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempWays.osm").exists())
+		if (new File(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempWays.osm").exists())
 		{
-			BufferedReader inWays = new BufferedReader(new FileReader(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempWays.osm"));
+			BufferedReader inWays = new BufferedReader(new FileReader(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempWays.osm"));
 			while ((str = inWays.readLine()) != null){
 				outOsm.write(str);
 				outOsm.newLine();
@@ -609,9 +609,9 @@ public class Cat2Osm {
 			inWays.close();
 		}
 
-		if (new File(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempRelations.osm").exists())
+		if (new File(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempRelations.osm").exists())
 		{
-			BufferedReader inRelations = new BufferedReader(new FileReader(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempRelations.osm"));
+			BufferedReader inRelations = new BufferedReader(new FileReader(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempRelations.osm"));
 			while ((str = inRelations.readLine()) != null){
 				outOsm.write(str);
 				outOsm.newLine();
@@ -626,13 +626,13 @@ public class Cat2Osm {
 		outOsm.close();
 
 		boolean borrado = true;
-		borrado = borrado && (new File(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempNodes.osm")).delete();
-		borrado = borrado && (new File(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempWays.osm")).delete();
-		borrado = borrado && (new File(path + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempRelations.osm")).delete();
+		borrado = borrado && (new File(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempNodes.osm")).delete();
+		borrado = borrado && (new File(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempWays.osm")).delete();
+		borrado = borrado && (new File(path + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempRelations.osm")).delete();
 
 		if (!borrado)
 			System.out.println("["+new Timestamp(new Date().getTime())+"] NO se pudo borrar alguno de los archivos temporales." +
-					" Estos estarán en la carpeta "+ path + "/" + folder +".");
+					" Estos estarán en la carpeta "+ path + File.separatorChar + folder +".");
 
 	}
 
@@ -640,7 +640,7 @@ public class Cat2Osm {
 	public void printResults(String key, String folder, List<Shape> shapes) throws IOException{
 
 		// Comprobar si existe el directorio para guardar los archivos
-		File dir = new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + folder);
+		File dir = new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + folder);
 		if (!dir.exists()) 
 		{
 			try                { dir.mkdirs(); }
@@ -648,17 +648,17 @@ public class Cat2Osm {
 		}
 
 		// Archivo temporal para escribir relations
-		String fstreamRelations = Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key + "tempRelations.osm";
+		String fstreamRelations = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key + "tempRelations.osm";
 		// Indicamos que el archivo se codifique en UTF-8
 		BufferedWriter outRelations = new BufferedWriter(new OutputStreamWriter (new FileOutputStream(fstreamRelations), "UTF-8"));
 
 		// Archivo temporal para escribir los ways
-		String fstreamWays = Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key +"tempWays.osm";
+		String fstreamWays = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key +"tempWays.osm";
 		// Indicamos que el archivo se codifique en UTF-8
 		BufferedWriter outWays = new BufferedWriter(new OutputStreamWriter (new FileOutputStream(fstreamWays), "UTF-8"));
 
 		// Archivo temporal para escribir los nodos
-		String fstreamNodes = Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + folder + "/" + Config.get("ResultFileName") + "-" + key+ "tempNodes.osm";
+		String fstreamNodes = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + "-" + key+ "tempNodes.osm";
 		// Indicamos que el archivo se codifique en UTF-8
 		BufferedWriter outNodes = new BufferedWriter(new OutputStreamWriter (new FileOutputStream(fstreamNodes), "UTF-8"));
 

@@ -178,10 +178,10 @@ public class Main {
 		}
 
 		// Nos aseguramos de que existe la carpeta result/nombreresult
-		File dir2 = new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName"));
+		File dir2 = new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName"));
 		if (!dir2.exists()) 
 		{
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Creando el directorio donde almacenar este resultado concreto ("+Config.get("ResultPath")+ "/" + Config.get("ResultFileName")+").");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] Creando el directorio donde almacenar este resultado concreto ("+Config.get("ResultPath")+ File.separatorChar + Config.get("ResultFileName")+").");
 			try                { dir2.mkdirs(); }
 			catch (Exception e){ e.printStackTrace(); }
 		}
@@ -189,11 +189,11 @@ public class Main {
 
 		// Archivo global de resultado
 		// Borrar archivo con el mismo nombre si existe, porque sino concatenaria el nuevo
-		new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + Config.get("ResultFileName") + ".osm").delete();
-		new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + Config.get("ResultFileName") + ".osm.gz").delete();
+		new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + Config.get("ResultFileName") + ".osm").delete();
+		new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + Config.get("ResultFileName") + ".osm.gz").delete();
 
 		// Archivo al que se le concatenan todos los archivos de nodos, ways y relations
-		String fstreamOsm = Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + Config.get("ResultFileName") + ".osm.gz";
+		String fstreamOsm = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + Config.get("ResultFileName") + ".osm.gz";
 		// Indicamos que el archivo se codifique en UTF-8
 		BufferedWriter outOsmGlobal = new BufferedWriter( new OutputStreamWriter (new GZIPOutputStream(new FileOutputStream(fstreamOsm)), "UTF-8"));
 
@@ -251,7 +251,7 @@ public class Main {
 					try{
 
 						System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo "+ filesU[i].getName() +" Urbano.");
-						parsers.add(new ShapeParser("UR", new File(filesU[i] + "/" + filesU[i].getName() + ".SHP"), utils, shapes));
+						parsers.add(new ShapeParser("UR", new File( filesU[i] + File.separator + filesU[i].getName() + ".SHP"), utils, shapes));
 
 					}
 			catch(Exception e)
@@ -282,7 +282,7 @@ public class Main {
 						)
 					try{
 						System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo "+ filesR[i].getName() +" Rustico.");
-						parsers.add(new ShapeParser("RU", new File(filesR[i] + "/" + filesR[i].getName() + ".SHP"), utils, shapes));
+						parsers.add(new ShapeParser("RU", new File(filesR[i] + File.separator + filesR[i].getName() + ".SHP"), utils, shapes));
 					}
 			catch(Exception e)
 			{
@@ -322,16 +322,30 @@ public class Main {
 
 		int pos = 0;
 		for (String key : shapes.keySet()){
+			
+			String folder = "";
+			
+			// Separamos los archivos resultado por sus codigo de masa 
+			// ELEM para elementos lineales, puntuales y textuales
+			// EJES para calles
+			// Numeros para manzanas (3 digitos + '-' para rusticas, 4 digitos + '-' para urbana-rustica y 5 digitos + '-' para urbana)
+			if (key.startsWith("ELEM"))
+				folder = "elementos";
+			else if (key.startsWith("EJES"))
+				folder = "ejes";
+			else if (key.length() == 4)
+				folder = "masas" + File.separatorChar + "rustica";
+			else if (key.length() == 5)
+				folder = "masas" + File.separatorChar + "urbana-rustica";
+			else
+				folder = "masas" + File.separatorChar + "urbana";
 
-
-			String folder = key.startsWith("ELEM")? "elementos" : ( key.startsWith("EJES")? "ejes" : "masas" );
-
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Exportando " + Config.get("ResultFileName") + "-" + key + " [" + ++pos +"/" + shapes.keySet().size() + "]");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] Exportando " + Config.get("ResultFileName") + "-" + key + " [" + ++pos + File.separatorChar + shapes.keySet().size() + "]");
 
 			// Por si acaso si hubiera archivos de un fallo en ejecucion anterior
-			if (new File(Config.get("ResultPath") + "/" + folder + "/" + Config.get("ResultFileName") + key +"tempRelations.osm").exists()
-					&& new File(Config.get("ResultPath") + "/" + folder + "/" + Config.get("ResultFileName") + key +"tempWays.osm").exists()
-					&& new File(Config.get("ResultPath") + "/" + folder + "/" + Config.get("ResultFileName") + key +"tempNodes.osm").exists()){
+			if (new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempRelations.osm").exists()
+					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempWays.osm").exists()
+					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempNodes.osm").exists()){
 
 				System.out.println("["+new Timestamp(new Date().getTime())+"] Se han encontrado 3 archivos temporales de una posible ejecución interrumpida, se procederá a juntarlos en un archivo resultado.");
 				catastro.juntarFilesTemporales(key, folder, Config.get("ResultFileName"), outOsmGlobal);
@@ -374,7 +388,7 @@ public class Main {
 					catastro.convertShapes2OSM(shapes.get(key), 0.000002);
 
 				} catch (Exception e) {
-					System.out.print("["+new Timestamp(new Date().getTime())+"]    La exportación de " + Config.get("ResultFileName") + "-" + key + " [" + ++pos +"/" + shapes.keySet().size() + "] falló.\r");
+					System.out.print("["+new Timestamp(new Date().getTime())+"]    La exportación de " + Config.get("ResultFileName") + "-" + key + " [" + ++pos + File.separatorChar + shapes.keySet().size() + "] falló.\r");
 					e.printStackTrace();
 				} finally {
 
@@ -384,7 +398,7 @@ public class Main {
 
 					System.out.print("["+new Timestamp(new Date().getTime())+"]    Escribiendo el archivo resultado.\r");
 					catastro.juntarFilesTemporales(key, folder, Config.get("ResultFileName") + "-" + key, outOsmGlobal);
-					System.out.println("["+new Timestamp(new Date().getTime())+"]    Terminado " + Config.get("ResultFileName") + "-" + key + " [" + pos +"/" + shapes.keySet().size() + "]\r");
+					System.out.println("["+new Timestamp(new Date().getTime())+"]    Terminado " + Config.get("ResultFileName") + "-" + key + " [" + pos + File.separatorChar + shapes.keySet().size() + "]\r");
 				}
 			}
 		}
@@ -421,10 +435,10 @@ public class Main {
 		}
 
 		// Nos aseguramos de que existe la carpeta result/nombreresult
-		File dir2 = new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName"));
+		File dir2 = new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName"));
 		if (!dir2.exists()) 
 		{
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Creando el directorio donde almacenar este resultado concreto ("+Config.get("ResultPath")+ "/" + Config.get("ResultFileName")+").");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] Creando el directorio donde almacenar este resultado concreto ("+Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName")+").");
 			try                { dir2.mkdirs(); }
 			catch (Exception e){ e.printStackTrace(); }
 		}
@@ -432,11 +446,11 @@ public class Main {
 
 		// Archivo global de resultado
 		// Borrar archivo con el mismo nombre si existe, porque sino concatenaria el nuevo
-		new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + Config.get("ResultFileName") + ".osm").delete();
-		new File(Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + Config.get("ResultFileName") + ".osm.gz").delete();
+		new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + Config.get("ResultFileName") + ".osm").delete();
+		new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + Config.get("ResultFileName") + ".osm.gz").delete();
 
 		// Archivo al que se le concatenan todos los archivos de nodos, ways y relations
-		String fstreamOsm = Config.get("ResultPath") + "/" + Config.get("ResultFileName") + "/" + Config.get("ResultFileName") + ".osm.gz";
+		String fstreamOsm = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + Config.get("ResultFileName") + ".osm.gz";
 		// Indicamos que el archivo se codifique en UTF-8
 		BufferedWriter outOsmGlobal = new BufferedWriter( new OutputStreamWriter (new GZIPOutputStream(new FileOutputStream(fstreamOsm)), "UTF-8"));
 
@@ -475,7 +489,7 @@ public class Main {
 				if ( filesU[i].getName().toUpperCase().equals("PARCELA"))
 					try{
 						System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo "+ filesU[i].getName() +" Urbano.");
-						parsers.add(new ShapeParser("UR", new File(filesU[i] + "/" + filesU[i].getName() + ".SHP"), utils, shapes));
+						parsers.add(new ShapeParser("UR", new File(filesU[i] + File.separator + filesU[i].getName() + ".SHP"), utils, shapes));
 					}
 			catch(Exception e)
 			{
@@ -494,7 +508,7 @@ public class Main {
 				if ( filesR[i].getName().toUpperCase().equals("PARCELA"))
 					try{
 						System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo "+ filesR[i].getName() +" Rustico.");
-						parsers.add(new ShapeParser("RU", new File(filesR[i] + "/" + filesR[i].getName() + ".SHP"), utils, shapes));
+						parsers.add(new ShapeParser("RU", new File(filesR[i] + File.separator + filesR[i].getName() + ".SHP"), utils, shapes));
 					}
 			catch(Exception e)
 			{
@@ -527,12 +541,12 @@ public class Main {
 
 			String folder = key.startsWith("ELEM")? "elementos" : ( key.startsWith("EJES")? "ejes" : "masas" );
 
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Exportando " + Config.get("ResultFileName") + "-" + key + " [" + pos++ +"/" + shapes.keySet().size() + "]");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] Exportando " + Config.get("ResultFileName") + "-" + key + " [" + pos++ + File.separatorChar + shapes.keySet().size() + "]");
 
 			// Por si acaso si hubiera archivos de un fallo en ejecucion anterior
-			if (new File(Config.get("ResultPath") + "/" + folder + "/" + Config.get("ResultFileName") + key +"tempRelations.osm").exists()
-					&& new File(Config.get("ResultPath") + "/" + folder + "/" + Config.get("ResultFileName") + key +"tempWays.osm").exists()
-					&& new File(Config.get("ResultPath") + "/" + folder + "/" + Config.get("ResultFileName") + key +"tempNodes.osm").exists()){
+			if (new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempRelations.osm").exists()
+					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempWays.osm").exists()
+					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempNodes.osm").exists()){
 
 				System.out.println("["+new Timestamp(new Date().getTime())+"] Se han encontrado 3 archivos temporales de una posible ejecución interrumpida, se procederá a juntarlos en un archivo resultado.");
 				catastro.juntarFilesTemporales(key, folder, Config.get("ResultFileName"), outOsmGlobal);
@@ -550,7 +564,7 @@ public class Main {
 
 				System.out.print("["+new Timestamp(new Date().getTime())+"]    Escribiendo el archivo resultado.\r");
 				catastro.juntarFilesTemporales(key, folder, Config.get("ResultFileName") + "-" + key, outOsmGlobal);
-				System.out.println("["+new Timestamp(new Date().getTime())+"]    Terminado " + Config.get("ResultFileName") + "-" + key + " [" + pos +"/" + shapes.keySet().size() + "]\r");
+				System.out.println("["+new Timestamp(new Date().getTime())+"]    Terminado " + Config.get("ResultFileName") + "-" + key + " [" + pos + File.separatorChar + shapes.keySet().size() + "]\r");
 
 			}
 		}
