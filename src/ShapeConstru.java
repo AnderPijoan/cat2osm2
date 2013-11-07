@@ -56,7 +56,7 @@ public class ShapeConstru extends ShapePolygonal {
 	}
 	
 
-	public boolean isValid (){
+	public boolean isValid(){
 		
 		if (Cat2OsmUtils.getOnlyConstru())
 			return true;
@@ -271,45 +271,15 @@ public class ShapeConstru extends ShapePolygonal {
 		List<String[]> l = new ArrayList<String[]>();
 		String[] s = new String[2];
 		
-
-		switch(elem){
-
-		case "B":
+		if (elem.isEmpty()){
 			return l;
-
-		case "T":
-			return l;
-
-		case "TZA":
-			return l;
-
-		case "POR":
-			return l;
-
-		case "SOP":
-			return l;
-
-		case "PJE":
-			return l;
-
-		case "MAR":
-			return l;
-
-		case "P":
-			return l;
-
+		}
+		
+		switch(elem)
+		{
 		case "CO":
 			s[0] = "building"; s[1] = "warehouse";
 			l.add(s);
-			return l;
-
-		case "EPT":
-			return l;
-
-		case "SS":
-			return l;
-
-		case "ALT":
 			return l;
 
 		case "PI":
@@ -346,9 +316,6 @@ public class ShapeConstru extends ShapePolygonal {
 		case "SOLAR":
 			s[0] = "landuse"; s[1] = "greenfield";
 			l.add(s);
-			return l;
-
-		case "PRG":
 			return l;
 
 		case "DEP":
@@ -390,9 +357,6 @@ public class ShapeConstru extends ShapePolygonal {
 			l.add(s);
 			return l;
 
-		case "VOL":
-			return l;
-
 		case "ZD":
 			s[0] = "leisure"; s[1] = "sports_centre";
 			l.add(s);
@@ -427,9 +391,6 @@ public class ShapeConstru extends ShapePolygonal {
 			l.add(s);
 			return l;
 
-		case "ZPAV":
-			return l;
-
 		case "GOLF":
 			s[0] = "leisure"; s[1] = "golf_course";
 			l.add(s);
@@ -438,9 +399,6 @@ public class ShapeConstru extends ShapePolygonal {
 		case "CAMPING":
 			s[0] = "tourism"; s[1] = "camp_site";
 			l.add(s);
-			return l;
-
-		case "HORREO":
 			return l;
 
 		case "PTLAN":
@@ -458,13 +416,63 @@ public class ShapeConstru extends ShapePolygonal {
 			s[0] = "building"; s[1] = "yes";
 			l.add(s);
 			return l;
-			
-		case "LV":
-			return l;
-
-		default: if (!elem.isEmpty()) 
-			l.addAll(numRomanoParser(elem));
 		}
+		
+		// Si no ha coincidido exactamente con ninguno de los codigos anteriores
+		// Descartamos los que no hay que representar (en este caso se hace con
+		// CONTAINS ya que estos codigos se puede concatenar con alturas, lo que 
+		// haria que el parser de numeros romanos de datos incorrectos)
+		if (elem.toUpperCase().contains("HORREO")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("ZPAV")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("TZA")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("SOP")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("PJE")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("POR")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("MAR")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("EPT")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("ALT")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("PRG")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("VOL")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("SS")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("LV")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("T")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("B")){
+			return l;
+		}
+		else if (elem.toUpperCase().contains("P")){
+			return l;
+		}
+
+		// Si no, finalmente vamos al parser de numeros romanos
+		l.addAll(numRomanoParser(elem));
 
 		return l;
 
