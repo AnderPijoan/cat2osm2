@@ -254,18 +254,12 @@ public class ShapeParcela extends ShapeParent {
 
 		case "ACT":
 		case "BCT":
-			s[0] = "@building"; s[1] = "yes";
-			l.add(s);
-			s = new String[2];
 			s[0] = "power"; s[1] = "sub_station";
 			l.add(s);
 			return l;
 
 		case "AES":
 		case "BES":
-			s[0] = "@building"; s[1] = "yes";
-			l.add(s);
-			s = new String[2];
 			s[0] = "public_transport"; s[1] = "station";
 			l.add(s);
 			return l;

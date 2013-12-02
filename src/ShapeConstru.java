@@ -236,9 +236,9 @@ public class ShapeConstru extends ShapePolygonal {
 					s[0] = "building:levels"; s[1] = alturaMax+""; 
 					l.add(s);
 				}
-				if (!building){
+				if (!building){				
 					s = new String[2];
-					s[0] = "building"; s[1] ="yes";
+					s[0] = "building"; s[1] ="residential";
 					l.add(s);
 				}
 			}
@@ -252,7 +252,7 @@ public class ShapeConstru extends ShapePolygonal {
 				}
 				if (!building){
 					s = new String[2];
-					s[0] = "building"; s[1] ="yes";
+					s[0] = "building"; s[1] ="residential";
 					l.add(s);
 				}
 			}
@@ -321,9 +321,6 @@ public class ShapeConstru extends ShapePolygonal {
 		case "DEP":
 			s[0] = "man_made"; s[1] = "storage_tank";
 			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
 			return l;
 
 		case "ESC":
@@ -333,9 +330,6 @@ public class ShapeConstru extends ShapePolygonal {
 
 		case "TRF":
 			s[0] = "power"; s[1] ="sub_station";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
 			l.add(s);
 			return l;
 
@@ -381,9 +375,6 @@ public class ShapeConstru extends ShapePolygonal {
 		case "PRESA":
 			s[0] = "waterway"; s[1] = "dam";
 			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
 			return l;
 
 		case "ZBE":
@@ -404,16 +395,10 @@ public class ShapeConstru extends ShapePolygonal {
 		case "PTLAN":
 			s[0] = "man_made"; s[1] = "pier";
 			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
 			return l;
 
 		case "DARSENA":
 			s[0] = "waterway"; s[1] = "dock";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
 			l.add(s);
 			return l;
 		}
