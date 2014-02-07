@@ -501,207 +501,39 @@ public class Cat2OsmUtils {
 			return 4;
 		return 0;	
 	}
-
-
-	/** Metodo para parsear los shapes cuyas geografias vienen dadas como
-	 * MultiPolygon, como MASA.SHP, PARCELA.SHP, SUBPARCE.SHP y CONSTRU.SHP
-	 * Asigna los valores al shape, sus nodos, sus ways y relation
-	 * @param shape Shape creado pero sin los valores de los nodos, ways o relation
-	 * @return boolean si se ha podido parsear
+	
+	
+	/** Comprueba si solo contiene caracteres numericos
+	 * @param str String en el cual comprobar
+	 * @return boolean de si es o no
 	 */
-	public boolean mPolygonShapeParser(Shape shape, Shape shapeParent, double threshold){
+	public boolean esNumero(String s)
+	{
+		if (s.isEmpty() || s == null)
+			return false;
 
-		if (!shape.getGeometry().isEmpty()){
-			
-			if (shape != null){
-				//Simplificamos las geometrias que entren
-				TopologyPreservingSimplifier tps = new TopologyPreservingSimplifier(shape.getGeometry());
-				tps.setDistanceTolerance(threshold);
-				shape.setGeometry(tps.getResultGeometry());
-				
-				// Comprobamos si se quiere exportar en formato catastro3d
-				// En caso de que no se quiera, los subshapes no pueden sobresalir de su shape padre
-				// Por ejemplo un edificio no puede sobresalir de su parcela ya que hay casos que
-				// los balcones de este si que salen.
-				if(shapeParent != null && Config.get("Catastro3d").equals("0")){
-					List polys = PolygonExtracter.getPolygons(shapeParent.getGeometry().intersection(shape.getGeometry()));
-					shape.setGeometry(shape.getGeometry().getFactory().buildGeometry(polys));
-				}
-			}
-
-			
-			// Caso especial de ShapeParent que contiene varios shapes dentro
-			if(shape instanceof ShapeParent){
-
-				if(shape instanceof ShapeParcela && null != ((ShapeParcela) shape).getEntrances()){
-					
-					for(ShapeElemtex entrance : ((ShapeParcela) shape).getEntrances()){
-
-						// Parseamos y creamos el nodeOsm con sus tags. Como este nodo se va a anadir a la geometria
-						// de la parcela, al convertirla luego a OSM se reutilizara el id teniendo ya los tags cargados
-						pointShapeParser(entrance);
-
-						// Anadimos el punto a la geometria de la parcela
-						List polys = PolygonExtracter.getPolygons(shape.getGeometry().union());
-						Coordinate[] coorsArray = shape.getGeometry().getFactory().buildGeometry(polys).getCoordinates();
-						List<Coordinate> coors = new ArrayList<Coordinate>();
-						for(Coordinate c : coorsArray) coors.add(c);
-
-						int pos = -1; // Posicion donde se metera la entrada
-						double minDist = Double.MAX_VALUE; // Distancia de la entrada a un par de coordenadas de la parcela
-
-						// Comprobamos entre que dos coordenadas esta la nueva de la entrada
-						for(int x = 0; x < coors.size()-1; x++){
-							Coordinate[] c = {coors.get(x), coors.get(x+1)};
-
-							LineString line = shape.getGeometry().getFactory().createLineString(c);
-							if(entrance.getGeometry().distance(line) < minDist){
-								pos = x+1;
-								minDist = entrance.getGeometry().distance(line);
-							}
-						}
-
-						// Si hemos encontrado posicion para la entrada
-						if (pos > -1){
-							coors.add(pos, entrance.getGeometry().getCoordinate());
-							coorsArray = new Coordinate[coors.size()];
-							for(int x = 0; x < coors.size(); x++)
-								coorsArray[x] = coors.get(x);
-
-							if(coorsArray[coorsArray.length-1].equals(coorsArray[0])){						
-								shape.setGeometry(shape.getGeometry().getFactory().createPolygon(
-										shape.getGeometry().getFactory().createLinearRing(coorsArray), null));
-							}
-						}
-					}
-				}
-
-				if(null != ((ShapeParent) shape).getSubshapes()){
-					Iterator<ShapePolygonal> it = ((ShapeParent) shape).getSubshapes().iterator();
-					while(it.hasNext()){						
-						mPolygonShapeParser(it.next(), shape, threshold);
-					}
-				}
-			}
-
-			// Caso general
-			// Obtenemos las coordenadas de cada punto del shape
-			switch(shape.getGeometry().getGeometryType()){
-
-			case "MultiPolygon":
-			case "Polygon":{
-				int numPolygons = 0;
-				for (int x = 0; x < shape.getGeometry().getNumGeometries(); x++){
-					Polygon p = (Polygon) shape.getGeometry().getGeometryN(x);
-
-					// Outer
-					Coordinate[] coors = p.getExteriorRing().getCoordinates();
-					// Miramos por cada punto si existe un nodo, si no lo creamos
-					for (Coordinate coor : coors){
-						// Insertamos en la lista de nodos del shape, los ids de sus nodos
-						shape.addNode(numPolygons, generateNodeId(shape.getCodigoMasa(), coor, null));
-					}
-					numPolygons++;
-
-					// Posibles Inners
-					for (int y = 0; y < p.getNumInteriorRing(); y++){
-
-						// Comprobar que los agujeros tengan cierto tamano, sino pueden ser fallose
-						// de union de parcelas mal dibujadas en catastro
-						if (p.getInteriorRingN(y).getArea() != 0){
-							coors = p.getInteriorRingN(y).getCoordinates();
-
-							// Miramos por cada punto si existe un nodo, si no lo creamos
-							for (Coordinate coor : coors){
-								// Insertamos en la lista de nodos del shape, los ids de sus nodos
-								shape.addNode(numPolygons, generateNodeId(shape.getCodigoMasa(), coor, null));
-							}
-							numPolygons++;
-						}
-					}
-				}
-
-				// Por cada poligono creamos su way
-				for (int y = 0; y < numPolygons; y++){
-					// Con los nodos creamos un way
-					List <Long> nodeList = shape.getNodesIds(y);
-					shape.addWay(y, generateWayId(shape.getCodigoMasa(), nodeList, null));
-				}
-
-
-				// Creamos una relation para el shape, metiendoe en ella todos los members
-				List <Long> ids = new ArrayList<Long>(); // Ids de los members
-				List <String> types = new ArrayList<String>(); // Tipos de los members
-				List <String> roles = new ArrayList<String>(); // Roles de los members
-				for (int y = 0; y < shape.getWays().size(); y++){
-					long wayId = shape.getWays().get(y);
-					if (!ids.contains(wayId)){
-						ids.add(wayId);
-						types.add("way");
-						if (y == 0)roles.add("outer");
-						else roles.add("inner");
-					}
-				}
-				shape.setRelation(generateRelationId(shape.getCodigoMasa(), ids, types, roles, shape));
-
-				return true;
-			}
-			default:
-				System.out.println("Caso al que no debería llegar");
-			}
+		for (int x = 0; x < s.length(); x++) {
+			if (!Character.isDigit(s.charAt(x)))
+				return false;
 		}
-
-		return false;
+		return true;
 	}
-
-
-	/** Metodo para parsear los shapes cuyas geografias vienen dadas como Point
-	 * o MultiLineString pero queremos solo un punto, como ELEMPUN.SHP y ELEMTEX.SHP
-	 * Asigna los valores al shape y su unico nodo
-	 * @param shape Shape creado pero sin el valor del nodo
-	 * @return boolean si se ha podido parsear
+	
+	
+	/** Elimina ceros a la izquierda en un String
+	 * @param s String en el cual eliminar los ceros de la izquierda
+	 * @return String sin los ceros de la izquierda
 	 */
-	public boolean pointShapeParser(Shape shape){
-
-		if (!shape.getGeometry().isEmpty()){
-			Coordinate coor = shape.getGeometry().getCoordinate();
-
-			// Anadimos solo un nodo
-			shape.addNode(0, generateNodeId(shape.getCodigoMasa(), coor, shape));
-
-			return true;
+	public String eliminarCerosString(String s){
+		String temp = s.trim();
+		if (esNumero(temp) && !temp.isEmpty()){
+			Integer i = Integer.parseInt(temp);
+			if (i != 0)
+				temp = i.toString();
+			else 
+				temp = "";
 		}
-		return false;
+		return temp;
 	}
-
-
-	/** Metodo para parsear los shapes cuyas geografias vienen dadas como
-	 * MultiLineString, como ELEMLIN.SHP y EJES.SHP
-	 * Asigna los valores al shape, sus nodos, sus ways y relation
-	 * @param shape Shape creado pero sin los valores de los nodos, ways o relation
-	 * @return boolean si se ha podido parsear
-	 */
-	public boolean mLineStringShapeParser(Shape shape){
-
-		if(!shape.getGeometry().isEmpty()){
-
-			// Anadimos todos los nodos
-			Coordinate[] coor = shape.getGeometry().getCoordinates();
-
-			for (int x = 0; x < coor.length; x++){
-				shape.addNode(0, generateNodeId(shape.getCodigoMasa(), coor[x], null));
-			}
-
-			// Con los nodos creamos un way
-			List <Long> nodeList = shape.getNodesIds(0);
-			shape.addWay(0, generateWayId(shape.getCodigoMasa(), nodeList, shape));
-
-			return true;
-		}
-		return false;
-	}
-
-
-
 
 }

@@ -25,7 +25,7 @@ public class ShapeElempun extends ShapePoint {
 			geometry.normalize();
 		}
 		else {
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "+ 
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tFormato geometrico "+ 
 					f.getDefaultGeometry().getClass().getName() +" desconocido dentro del shapefile ELEMPUN");
 		}
 
@@ -34,7 +34,7 @@ public class ShapeElempun extends ShapePoint {
 		ttggss = (String) f.getAttribute("TTGGSS");
 		
 		if (ttggss != null){
-			addAttributesAsStringArray(ttggssParser(ttggss));
+			getAttributes().addAll(ttggssParser(ttggss, ""));
 		}
 
 		// Para agrupar geometrias segun su codigo de masa que como en este caso no existe se
@@ -91,4 +91,5 @@ public class ShapeElempun extends ShapePoint {
 			return true;
 		}
 	}
+
 }

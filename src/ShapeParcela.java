@@ -75,8 +75,7 @@ public class ShapeParcela extends ShapeParent {
 			geometry.normalize();
 
 		} else
-			System.out.println("[" + new Timestamp(new Date().getTime())
-			+ "] Formato geometrico "
+			System.out.println("[" + new Timestamp(new Date().getTime())+ "]\tFormato geometrico "
 			+ f.getDefaultGeometry().getClass().getName()
 			+ " desconocido dentro del shapefile PARCELA");
 
@@ -84,7 +83,7 @@ public class ShapeParcela extends ShapeParent {
 		referenciaCatastral = (String) f.getAttribute("REFCAT");
 
 		if (referenciaCatastral != null) {
-			addAttribute("catastro:ref", referenciaCatastral);
+			getAttributes().addAttribute("catastro:ref", referenciaCatastral);
 		}
 
 		////////////////////////////////////////////////////////////////////// 
@@ -208,1433 +207,913 @@ public class ShapeParcela extends ShapeParent {
 		this.entrances.add(entrance);
 	}
 
-
-	/** Traduce el codigo de destino de cada unidad constructiva de los registros 14 o codigo
-	 * de uso del bien inmueble de los registro 15 a sus tags en OSM
-	 * Como los cat se leen despues de los shapefiles, hay tags que los shapefiles traen
-	 * mas concretos, que esto los machacaria. Es por eso que si al tag le ponemos un '*'
-	 * por delante, se comprueba que no exista ese tag antes de meterlo. En caso de existir
-	 * dejaria el que ya estaba.
-	 * Si al tag le ponemos un '@' por delante, solo se aplica a aquellos shapes que sean edificios.
-	 * @param codigo Codigo de uso de inmueble
-	 * @return Lista de tags que genera
+	
+	/**
+	 * Sobreescribe el atributo a los constru SOLO si existe la clave k con el valor v
+	 * @param k Clave
+	 * @param v Valor existente
+	 * @param newV Valor con el que se sobreescribira
 	 */
-	public static List<String[]> destinoParser(String codigo){
-		List<String[]> l = new ArrayList<String[]>();
-		String[] s = new String[2];
-
-		switch (codigo){
-		case "A":
-		case "B":
-			return l;
-
-		case "AAL":
-		case "BAL":
-			s[0] = "@building"; s[1] = "warehouse";
-			l.add(s);
-			return l;
-
-		case "AAP":
-		case "BAP":
-			s[0] = "@building"; s[1] = "garage";
-			l.add(s);
-			s = new String[2];
-			s[0] = "landuse"; s[1] = "garages";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Comprobar si es sea parking público o al aire libre. En caso de serlo debería ser amenity= parking.";
-			l.add(s);
-			return l;
-
-		case"ACR":
-		case"BCR":
-			s[0] = "@building"; s[1] = "yes";
-			l.add(s);
-			return l;
-
-		case "ACT":
-		case "BCT":
-			s[0] = "power"; s[1] = "sub_station";
-			l.add(s);
-			return l;
-
-		case "AES":
-		case "BES":
-			s[0] = "public_transport"; s[1] = "station";
-			l.add(s);
-			return l;
-
-		case "AIG":
-		case "BIG":
-			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			return l;
-
-		case "C":
-		case "D":
-			s[0] = "*landuse"; s[1] = "retail";
-			l.add(s);
-			return l;
-
-		case "CAT":
-		case "DAT":
-			s[0] = "shop"; s[1] = "car";
-			l.add(s);
-			return l;
-
-		case "CBZ":
-		case "DBZ":
-			s[0] = "shop"; s[1] = "electronics";
-			l.add(s);
-			return l;
-
-		case "CCE":
-		case "DCE":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "*";
-			l.add(s);
-			return l;
-
-		case "CCL":
-		case "DCL":
-			s[0] = "shop"; s[1] = "shoes";
-			l.add(s);
-			return l;
-
-		case "CCR":
-		case "DCR":;
-			s[0] = "shop"; s[1] = "butcher";
-			l.add(s);
-			return l;
-
-		case "CDM":
-		case "DDM":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "*Comercio al por menor";
-			l.add(s);
-			return l;
-
-		case "CDR":
-		case "DDR":
-			s[0] = "shop"; s[1] = "chemist";
-			l.add(s);
-			return l;
-
-		case "CFN":
-		case "DFN":;
-			s[0] = "amenity"; s[1] = "bank";
-			l.add(s);
-			return l;
-
-		case "CFR":
-		case "DFR":
-			s[0] = "amenity"; s[1] = "pharmacy";
-			l.add(s);
-			return l;
-
-		case "CFT":
-		case "DFT":
-			s[0] = "craft"; s[1] = "plumber";
-			l.add(s);
-			return l;
-
-		case "CGL":
-		case "DGL":
-			s[0] = "amenity"; s[1] = "marketplace";
-			l.add(s);
-			return l;
-
-		case "CIM":
-		case "DIM":
-			s[0] = "shop"; s[1] = "copyshop";
-			l.add(s);
-			return l;
-
-		case "CJY":
-		case "DJY":
-			s[0] = "shop"; s[1] = "jewelry";
-			l.add(s);
-			return l;
-
-		case "CLB":
-		case "DLB":
-			s[0] = "shop"; s[1] = "books";
-			l.add(s);
-			return l;
-
-		case "CMB":
-		case "DMB":
-			s[0] = "shop"; s[1] = "furniture";
-			l.add(s);
-			return l;
-
-		case "CPA":
-		case "DPA":
-			s[0] = "landuse"; s[1] = "retail";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "*Comercio al por mayor";
-			l.add(s);
-			return l;
-
-		case "CPR":
-		case "DPR":
-			s[0] = "shop"; s[1] = "chemist";
-			l.add(s);
-			return l;
-
-		case "CRL":
-		case "DRL":
-			s[0] = "craft"; s[1] = "watchmaker";
-			l.add(s);
-			return l;
-
-		case "CSP":
-		case "DSP":
-			s[0] = "shop"; s[1] = "clothes";
-			l.add(s);
-			return l;
-
-		case "CTJ":
-		case "DTJ":
-			s[0] = "shop"; s[1] = "supermarket";
-			l.add(s);
-			return l;
-
-		case "E":
-		case "F":
-			s[0] = "*amenity"; s[1] = "school";
-			l.add(s);
-			return l;
-
-		case "EBL":
-		case "FBL":
-			s[0] = "amenity"; s[1] = "library";
-			l.add(s);
-			return l;
-
-		case "EBS":
-		case "FBS":
-			s[0] = "amenity"; s[1] = "school";
-			l.add(s);
-			s = new String[2];
-			s[0] = "isced:level"; s[1] = "1;2";
-			l.add(s);
-			return l;
-
-		case "ECL":
-		case "FCL":
-			s[0] = "amenity"; s[1] = "community_centre";
-			l.add(s);
-			return l;
-
-		case "EIN":
-		case "FIN":
-			s[0] = "amenity"; s[1] = "school";
-			l.add(s);
-			s = new String[2];
-			s[0] = "isced:level"; s[1] = "3;4";
-			l.add(s);
-			return l;
-
-		case "EMS":
-		case "FMS":
-			s[0] = "tourism"; s[1] = "museum";
-			l.add(s);
-			return l;
-
-		case "EPR":
-		case "FPR":
-			s[0] = "amenity"; s[1] = "school";
-			l.add(s);
-			s = new String[2];
-			s[0] = "isced:level"; s[1] = "4";
-			l.add(s);
-			return l;
-
-		case "EUN":
-		case "FUN":
-			s[0] = "amenity"; s[1] = "university";
-			l.add(s);
-			return l;
-
-		case "G":
-		case "H":
-			s[0] = "tourism"; s[1] = "hotel";
-			l.add(s);
-			return l;
-
-		case "GC1":
-		case "HC1":
-			s[0] = "amenity"; s[1] = "cafe";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "1";
-			l.add(s);
-			return l;
-
-		case "GC2":
-		case "HC2":
-			s[0] = "amenity"; s[1] = "cafe";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "2";
-			l.add(s);
-			return l;
-
-		case "GC3":
-		case "HC3":
-			s[0] = "amenity"; s[1] = "cafe";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "3";
-			l.add(s);
-			return l;
-
-		case "GC4":
-		case "HC4":
-			s[0] = "amenity"; s[1] = "cafe";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "4";
-			l.add(s);
-			return l;
-
-		case "GC5":
-		case "HC5":
-			s[0] = "amenity"; s[1] = "cafe";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "5";
-			l.add(s);
-			return l;
-
-		case "GH1":
-		case "HH1":
-			s[0] = "amenity"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "1";
-			l.add(s);
-			return l;
-
-		case "GH2":
-		case "HH2":
-			s[0] = "amenity"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "2";
-			l.add(s);
-			return l;
-
-		case "GH3":
-		case "HH3":
-			s[0] = "amenity"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "3";
-			l.add(s);
-			return l;
-
-		case "GH4":
-		case "HH4":
-			s[0] = "amenity"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "4";
-			l.add(s);
-			return l;
-
-		case "GH5":
-		case "HH5":
-			s[0] = "amenity"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "5";
-			l.add(s);
-			return l;
-
-		case "GP1":
-		case "HP1":
-			s[0] = "tourism"; s[1] = "apartments";
-			l.add(s);
-			s = new String[2];
-			s[0] = "category"; s[1] = "1";
-			l.add(s);
-			return l;
-
-		case "GP2":
-		case "HP2":
-			s[0] = "tourism"; s[1] = "apartments";
-			l.add(s);
-			s = new String[2];
-			s[0] = "category"; s[1] = "2";
-			l.add(s);
-			return l;
-
-		case "GP3":
-		case "HP3":
-			s[0] = "tourism"; s[1] = "apartments";
-			l.add(s);
-			s = new String[2];
-			s[0] = "category"; s[1] = "3";
-			l.add(s);
-			return l;
-
-		case "GPL":
-		case "HPL":
-			s[0] = "tourism"; s[1] = "apartments";
-			l.add(s);
-			return l;
-
-		case "GR1":
-		case "HR1":
-			s[0] = "amenity"; s[1] = "restaurant";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "1";
-			l.add(s);
-			return l;
-
-		case "GR2":
-		case "HR2":
-			s[0] = "amenity"; s[1] = "restaurant";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "2";
-			l.add(s);
-			return l;
-
-		case "GR3":
-		case "HR3":
-			s[0] = "amenity"; s[1] = "restaurant";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "3";
-			l.add(s);
-			return l;
-
-		case "GR4":
-		case "HR4":
-			s[0] = "amenity"; s[1] = "restaurant";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "4";
-			l.add(s);
-			return l;
-
-		case "GR5":
-		case "HR5":
-			s[0] = "amenity"; s[1] = "restaurant";
-			l.add(s);
-			s = new String[2];
-			s[0] = "forks"; s[1] = "5";
-			l.add(s);
-			return l;
-
-		case "GS1":
-		case "HS1":
-			s[0] = "tourism"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "1";
-			l.add(s);
-			return l;
-
-		case "GS2":
-		case "HS2":
-			s[0] = "tourism"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "2";
-			l.add(s);
-			return l;
-
-		case "GS3":
-		case "HS3":
-			s[0] = "tourism"; s[1] = "hotel";
-			l.add(s);
-			s = new String[2];
-			s[0] = "stars"; s[1] = "3";
-			l.add(s);
-			return l;
-
-		case "GT1":
-		case "HT1":
-		case "GT2":
-		case "HT2":
-		case "GT3":
-		case "HT3":
-		case "GTL":
-		case "HTL":
-			// Como no sabemos a que se puede referir esto, mejor ponemos un fixme
-			s[0] = "fixme"; s[1] = "Documentar codificación de destino de los bienes inmuebles en catastro código="+ codigo +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles";
-			l.add(s);
-			return l;
-
-		case "I":
-		case "J":
-			s[0] = "*landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			return l;
-
-		case "IAG":
-		case "JAG":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "farming";
-			l.add(s);
-			return l;
-
-		case "IAL":
-		case "JAL":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "food";
-			l.add(s);
-			return l;
-
-		case "IAM":
-		case "JAM":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
-			s = new String[2];
-			s[0] = "content"; s[1] = "OMW";
-			l.add(s);
-			return l;
-
-		case "IAR":
-		case "JAR":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "agricultural";
-			l.add(s);
-			return l;
-
-		case "IAS":
-		case "JAS":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "craft"; s[1] = "sawmill";
-			l.add(s);
-			return l;
-
-		case "IBB":
-		case "JBB":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "drinks";
-			l.add(s);
-			return l;
-
-		case "IBD":
-		case "JBD":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "winery";
-			l.add(s);
-			return l;
-
-		case "IBR":
-		case "JBR":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "ceramic";
-			l.add(s);
-			return l;
-
-		case "ICH":
-		case "JCH":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "mushrooms";
-			l.add(s);
-			return l;
-
-		case "ICN":
-		case "JCN":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "building";
-			l.add(s);
-			return l;
-
-		case "ICT":
-		case "JCT":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "quarry";
-			l.add(s);
-			return l;
-
-		case "IEL":
-		case "JEL":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "electric";
-			l.add(s);
-			return l;
-
-		case "IGR":
-		case "JGR":
-			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			return l;
-
-		case "IIM":
-		case "JIM":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "chemistry";
-			l.add(s);
-			return l;
-
-		case "IIN":
-		case "JIN":
-			s[0] = "landuse"; s[1] = "greenhouse_horticulture";
-			l.add(s);
-			return l;
-
-		case "IMD":
-		case "JMD":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "wood";
-			l.add(s);
-			return l;
-
-		case "IMN":
-		case "JMN":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "manufacturing";
-			l.add(s);
-			return l;
-
-		case "IMT":
-		case "JMT":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "metal";
-			l.add(s);
-			return l;
-
-		case "IMU":
-		case "JMU":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "machinery";
-			l.add(s);
-			return l;
-
-		case "IPL":
-		case "JPL":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "plastics";
-			l.add(s);
-			return l;
-
-		case "IPP":
-		case "JPP":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "paper";
-			l.add(s);
-			return l;
-
-		case "IPS":
-		case "JPS":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "fishing";
-			l.add(s);
-			return l;
-
-		case "IPT":
-		case "JPT":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "petroleum";
-			l.add(s);
-			return l;
-
-		case "ITB":
-		case "JTB":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "tobacco";
-			l.add(s);
-			return l;
-
-		case "ITX":
-		case "JTX":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "clothing";
-			l.add(s);
-			return l;
-
-		case "IVD":
-		case "JVD":
-			s[0] = "landuse"; s[1] = "industrial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "works";
-			l.add(s);
-			s = new String[2];
-			s[0] = "works"; s[1] = "glass";
-			l.add(s);
-			return l;
-
-		case "K":
-		case "L":
-			s[0] = "*leisure"; s[1] = "sports_centre";
-			l.add(s);
-			return l;
-
-		case "KDP":
-		case "LDP":
-			s[0] = "leisure"; s[1] = "pitch";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", afinar sport=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "KES":
-		case "LES":
-			s[0] = "leisure"; s[1] = "stadium";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", afinar sport=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "KPL":
-		case "LPL":
-			s[0] = "leisure"; s[1] = "sports_centre";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", afinar sport=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "KPS":
-		case "LPS":
-			s[0] = "leisure"; s[1] = "swimming_pool";
-			l.add(s);
-			s = new String[2];
-			s[0] = "sport"; s[1] = "swimming";
-			l.add(s);
-			return l;
-
-		case "M":
-		case "N":
-			s[0] = "*landuse"; s[1] = "greenfield";
-			l.add(s);
-			return l;
-
-		case "O":
-		case "X":
-			s[0] = "*landuse"; s[1] = "commercial";
-			l.add(s);
-			return l;
-
-		case "O02":
-		case "X02":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", Profesional superior. Afinar office=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "O03":
-		case "X03":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", Profesional medio. Afinar office=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "O06":
-		case "X06":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", Médicos, abogados... Afinar office=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "O07":
-		case "X07":
-			s[0] = "landuse"; s[1] = "health";
-			l.add(s);
-			s = new String[2];
-			s[0] = "health_facility:type"; s[1] = "office";
-			l.add(s);
-			s = new String[2];
-			s[0] = "health_person:type"; s[1] = "nurse";
-			l.add(s);
-			return l;
-
-		case "O11":
-		case "X11":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", Profesores Mercant. Afinar office=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "O13":
-		case "X13":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", Profesores Universitarios. Afinar office=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "O15":
-		case "X15":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "office"; s[1] = "writer";
-			l.add(s);
-			return l;
-
-		case "O16":
-		case "X16":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "craft"; s[1] = "painter";
-			l.add(s);
-			return l;
-
-		case "O17":
-		case "X17":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "office"; s[1] = "musician";
-			l.add(s);
-			return l;
-
-		case "O43":
-		case "X43":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "office"; s[1] = "salesman";
-			l.add(s);
-			return l;
-
-		case "O44":
-		case "X44":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", agentes. Afinar office=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "O75":
-		case "X75":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "craft"; s[1] = "weaver";
-			l.add(s);
-			return l;
-
-		case "O79":
-		case "X79":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "craft"; s[1] = "tailor";
-			l.add(s);
-			return l;
-
-		case "O81":
-		case "X81":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "craft"; s[1] = "carpenter";
-			l.add(s);
-			return l;
-
-		case "O88":
-		case "X88":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "craft"; s[1] = "jeweller";
-			l.add(s);
-			return l;
-
-		case "O99":
-		case "X99":
-			s[0] = "landuse"; s[1] = "commercial";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", otras actividades. Afinar office=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "P":
-		case "Q":
-			s[0] = "*amenity"; s[1] = "public_building";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "PAA":
-		case "QAA":
-			s[0] = "amenity"; s[1] = "townhall";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "PAD":
-		case "QAD":
-			s[0] = "amenity"; s[1] = "courthouse";
-			l.add(s);
-			s = new String[2];
-			s[0] = "operator"; s[1] = "autonomous_community";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "PAE":
-		case "QAE":
-			s[0] = "amenity"; s[1] = "townhall";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "PCB":
-		case "QCB":
-			s[0] = "office"; s[1] = "administrative";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "PDL":
-		case "QDL":
-		case "PGB":
-		case "QGB":
-			s[0] = "office"; s[1] = "government";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "PJA":
-		case "QJA":
-			s[0] = "amenity"; s[1] = "courthouse";
-			l.add(s);
-			s = new String[2];
-			s[0] = "operator"; s[1] = "county";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "PJO":
-		case "QJO":
-			s[0] = "amenity"; s[1] = "courthouse";
-			l.add(s);
-			s = new String[2];
-			s[0] = "operator"; s[1] = "province";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "public";
-			l.add(s);
-			return l;
-
-		case "R":
-		case "S":
-			s[0] = "amenity"; s[1] = "place_of_worship";
-			l.add(s);
-			return l;
-
-		case "RBS":
-		case "SBS":
-			s[0] = "amenity"; s[1] = "place_of_worship";
-			l.add(s);
-			s = new String[2];
-			s[0] = "religion"; s[1] = "christian";
-			l.add(s);
-			s = new String[2];
-			s[0] = "denomination"; s[1] = "roman_catholic";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "basilica";
-			l.add(s);
-			return l;
-
-		case "RCP":
-		case "SCP":
-			s[0] = "amenity"; s[1] = "place_of_worship";
-			l.add(s);
-			s = new String[2];
-			s[0] = "religion"; s[1] = "christian";
-			l.add(s);
-			s = new String[2];
-			s[0] = "denomination"; s[1] = "roman_catholic";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "chapel";
-			l.add(s);
-			return l;
-
-		case "RCT":
-		case "SCT":
-			s[0] = "amenity"; s[1] = "place_of_worship";
-			l.add(s);
-			s = new String[2];
-			s[0] = "religion"; s[1] = "christian";
-			l.add(s);
-			s = new String[2];
-			s[0] = "denomination"; s[1] = "roman_catholic";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "cathedral";
-			l.add(s);
-			return l;
-
-		case "RER":
-		case "SER":
-			s[0] = "amenity"; s[1] = "place_of_worship";
-			l.add(s);
-			s = new String[2];
-			s[0] = "religion"; s[1] = "christian";
-			l.add(s);
-			s = new String[2];
-			s[0] = "denomination"; s[1] = "roman_catholic";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "hermitage";
-			l.add(s);
-			return l;
-
-		case "RPR":
-		case "SPR":
-			s[0] = "amenity"; s[1] = "place_of_worship";
-			l.add(s);
-			s = new String[2];
-			s[0] = "religion"; s[1] = "christian";
-			l.add(s);
-			s = new String[2];
-			s[0] = "denomination"; s[1] = "roman_catholic";
-			l.add(s);
-			s = new String[2];
-			s[0] = "@building"; s[1] = "parish_church";
-			l.add(s);
-			return l;
-
-		case "RSN":
-		case "SSN":
-			s[0] = "amenity"; s[1] = "hospital";
-			l.add(s);
-			s = new String[2];
-			s[0] = "landuse"; s[1] = "health";
-			l.add(s);
-			return l;
-
-		case "T":
-		case "U":
-			return l;
-
-		case "TAD":
-		case "UAD":
-			s[0] = "amenity"; s[1] = "auditorium";
-			l.add(s);
-			return l;
-
-		case "TCM":
-		case "UCM":
-			s[0] = "amenity"; s[1] = "cinema";
-			l.add(s);
-			return l;
-
-		case "TCN":
-		case "UCN":
-			s[0] = "amenity"; s[1] = "cinema";
-			l.add(s);
-			return l;
-
-		case "TSL":
-		case "USL":
-			s[0] = "amenity"; s[1] = "hall";
-			l.add(s);
-			return l;
-
-		case "TTT":
-		case "UTT":
-			s[0] = "amenity"; s[1] = "theatre";
-			l.add(s);
-			return l;
-
-		case "V":
-		case "W":
-			s[0] = "*landuse"; s[1] = "residential";
-			l.add(s);
-			return l;
-
-		case "Y":
-		case "Z":
-			return l;
-
-		case "YAM":
-		case "ZAM":
-		case "YCL":
-		case "ZCL":
-			s[0] = "landuse"; s[1] = "health";
-			l.add(s);
-			s = new String[2];
-			s[0] = "amenity"; s[1] = "clinic";
-			l.add(s);
-			s = new String[2];
-			s[0] = "medical_system:western"; s[1] = "yes";
-			l.add(s);
-			return l;
-
-		case "YBE":
-		case "ZBE":
-			s[0] = "landuse"; s[1] = "pond";
-			l.add(s);
-			return l;
-
-		case "YCA":
-		case "ZCA":
-			s[0] = "amenity"; s[1] = "casino";
-			l.add(s);
-			return l;
-
-		case "YCB":
-		case "ZCB":
-			s[0] = "amenity"; s[1] = "club";
-			l.add(s);
-			return l;
-
-		case "YCE":
-		case "ZCE":
-			s[0] = "amenity"; s[1] = "casino";
-			l.add(s);
-			return l;
-
-		case "YCT":
-		case "ZCT":
-			s[0] = "landuse"; s[1] = "quarry";
-			l.add(s);
-			return l;
-
-		case "YDE":
-		case "ZDE":
-			s[0] = "man_made"; s[1] = "wastewater_plant";
-			l.add(s);
-			return l;
-
-		case "YDG":
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
-			s = new String[2];
-			s[0] = "content"; s[1] = "gas";
-			l.add(s);
-			return l;
-
-		case "ZDG":
-			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
-			s = new String[2];
-			s[0] = "content"; s[1] = "gas";
-			l.add(s);
-			return l;
-
-		case "YDL":
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
-			s = new String[2];
-			s[0] = "content"; s[1] = "liquid";
-			l.add(s);
-			return l;
-
-		case "ZDL":
-			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
-			s = new String[2];
-			s[0] = "content"; s[1] = "liquid";
-			l.add(s);
-			return l;
-
-		case "YDS":
-		case "ZDS":
-			s[0] = "amenity"; s[1] = "pharmacy";
-			l.add(s);
-			s = new String[2];
-			s[0] = "dispensing"; s[1] = "yes";
-			l.add(s);
-			return l;
-
-		case "YGR":
-		case "ZGR":
-			s[0] = "amenity"; s[1] = "kindergarten";
-			l.add(s);
-			return l;
-
-		case "YGV":
-		case "ZGV":
-			s[0] = "landuse"; s[1] = "surface_mining";
-			l.add(s);
-			s = new String[2];
-			s[0] = "mining_resource"; s[1] = "gravel";
-			l.add(s);
-			return l;
-
-		case "YHG":
-		case "ZHG":
-			// Como no sabemos a que se puede referir esto, mejor ponemos un fixme
-			s[0] = "fixme"; s[1] = "Documentar codificación de destino de los bienes inmuebles en catastro código="+ codigo +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles";
-			l.add(s);
-			return l;
-
-		case "YHS":
-		case "ZHS":
-		case "YSN":
-		case "ZSN":
-			s[0] = "landuse"; s[1] = "health";
-			l.add(s);
-			s = new String[2];
-			s[0] = "amenity"; s[1] = "hospital";
-			l.add(s);
-			s = new String[2];
-			s[0] = "medical_system:western"; s[1] = "yes";
-			l.add(s);;
-			return l;
-
-		case "YMA":
-		case "ZMA":
-			s[0] = "landuse"; s[1] = "surface_mining";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] = "Codigo="+codigo+", afinar mining_resource=X si es posible.";
-			l.add(s);
-			return l;
-
-		case "YME":
-		case "ZME":
-			s[0] = "man_made"; s[1] = "pier";
-			l.add(s);
-			return l;
-
-		case "YPC":
-		case "ZPC":
-			s[0] = "landuse"; s[1] = "aquaculture";
-			l.add(s);
-			return l;
-
-		case "YRS":
-		case "ZRS":
-			s[0] = "social_facility"; s[1] = "group_home";
-			l.add(s);
-			return l;
-
-		case "YSA":
-		case "ZSA":
-		case "YSO":
-		case "ZSO":
-			s[0] = "office"; s[1] = "labour_union";
-			l.add(s);
-			return l;
-
-		case "YSC":
-		case "ZSC":
-			s[0] = "health_facility:type"; s[1] = "first_aid";
-			l.add(s);
-			s = new String[2];
-			s[0] = "medical_system:western"; s[1] = "yes";
-			l.add(s);
-			s = new String[2];
-			s[0] = "yes"; s[1] = "yes";
-			l.add(s);
-			return l;
-
-		case "YSL":
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
-			s = new String[2];
-			s[0] = "content"; s[1] = "solid";
-			l.add(s);
-			return l;
-
-		case "ZSL":
-			s[0] = "landuse"; s[1] = "farmyard";
-			l.add(s);
-			s = new String[2];
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
-			s = new String[2];
-			s[0] = "content"; s[1] = "solid";
-			l.add(s);
-			return l;
-
-		case "YVR":
-		case "ZVR":
-			s[0] = "landuse"; s[1] = "landfill";
-			l.add(s);
-			return l;
-
-		default:
-			if (!codigo.isEmpty()){
-				s[0] = "fixme"; s[1] = "Documentar nuevo codificación de destino de los bienes inmuebles en catastro código="+ codigo +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles";
-				l.add(s);}
-
-			return l;}
+	public void overwriteAttributeInConstru(String k, String v, String newV){
+		if(subshapes != null)
+			for(Shape sub : subshapes){
+				if (sub instanceof ShapeConstru )
+					sub.getAttributes().overwriteAttribute(k, v, newV);
+			}
+	}
+	
+	
+	/**
+	 * Anade el atributo a los constru solo si existe la clave especificada
+	 * @param ifKey Clave que tiene que existir
+	 * @param k Clave
+	 * @param v Valor
+	 */
+	public void addAttributeInConstruIfKeyValue(String existKey, String existValue, String k, String v){
+		if(subshapes != null)
+			for(Shape sub : subshapes){
+				if (sub instanceof ShapeConstru )
+					sub.getAttributes().addAttributeIfKeyValue(existKey, existValue, k, v);
+			}
 	}
 
-
-	// Crea los attributes del uso o destino con mas area que existe
-	// y los inserta en los shapes que sea necesario
+	
+	/**
+	 * Comprueba si hay destinos o usos, coge el de mayor
+	 * area y actualiza sus propiedades y las de los subshapes en consecuencia.
+	 * 
+	 * Hay tags que vienen mas detallados en los shapefiles por eso puede que
+	 * no se sobreescriban o si.
+	 */
 	public void createAttributesFromUsoDestino() {
-		for(String[] s : destinoParser(getUsoDestinoMasArea())){
-			// Si empieza con @ debe aplicarse solo a construcciones
-			if(s[0].startsWith("@")){
-				if(subshapes != null)
-					for(Shape sub : subshapes){
-						if (sub instanceof ShapeConstru)
-							sub.addAttribute(s[0].replace("@", ""), s[1]);
+
+			String usodestino = getUsoDestinoMasArea();
+			
+			switch (usodestino){
+			case "A":
+			case "B":
+				break;
+			case "AAL":
+			case "BAL":
+				overwriteAttributeInConstru("building", "yes", "warehouse");
+				break;
+			case "AAP":
+			case "BAP":
+				getAttributes().addAttribute("landuse", "garages");
+				overwriteAttributeInConstru("building", "yes", "garage");
+				break;
+			case"ACR":
+			case"BCR":
+				break;
+			case "ACT":
+			case "BCT":
+				addAttributeInConstruIfKeyValue("building", "yes", "power", "sub_station");
+				overwriteAttributeInConstru("building", "yes", "sub_station");
+				break;
+			case "AES":
+			case "BES":
+				overwriteAttributeInConstru("building", "yes", "station");
+				addAttributeInConstruIfKeyValue("building", "yes", "public_transport", "station");
+				break;
+			case "AIG":
+			case "BIG":
+				getAttributes().addAttribute("landuse","farmyard");
+				overwriteAttributeInConstru("building", "yes", "livestock");
+				break;
+			case "C":
+			case "D":
+				getAttributes().addAttributeIfNotExistValue("landuse","retail");
+				break;
+			case "CAT":
+			case "DAT":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop", "car");
+				break;
+			case "CBZ":
+			case "DBZ":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","electronics");
+				break;
+			case "CCE":
+			case "DCE":
+				getAttributes().addAttribute("landuse","retail");
+				break;
+			case "CCL":
+			case "DCL":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","shoes");
+				break;
+			case "CCR":
+			case "DCR":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","butcher");
+				break;
+			case "CDM":
+			case "DDM":
+				getAttributes().addAttribute("landuse","retail");
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","yes");
+				break;
+			case "CDR":
+			case "DDR":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","chemist");
+				break;
+			case "CFN":
+			case "DFN":;
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","bank");
+				break;
+			case "CFR":
+			case "DFR":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","pharmacy");
+				break;
+			case "CFT":
+			case "DFT":
+				addAttributeInConstruIfKeyValue("building", "yes", "craft","plumber");
+				break;
+			case "CGL":
+			case "DGL":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","marketplace");
+				break;
+			case "CIM":
+			case "DIM":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","copyshop");
+				break;
+			case "CJY":
+			case "DJY":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","jewelry");
+				break;
+			case "CLB":
+			case "DLB":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","books");
+				break;
+			case "CMB":
+			case "DMB":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","furniture");
+				break;
+			case "CPA":
+			case "DPA":
+				getAttributes().addAttribute("landuse","retail");
+				break;
+			case "CPR":
+			case "DPR":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","chemist");
+				break;
+			case "CRL":
+			case "DRL":
+				addAttributeInConstruIfKeyValue("building", "yes", "craft","watchmaker");
+				break;
+			case "CSP":
+			case "DSP":
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","clothes");
+				break;
+			case "CTJ":
+			case "DTJ":
+				getAttributes().addAttribute("landuse","retail");
+				overwriteAttributeInConstru("building","yes", "supermarket");
+				addAttributeInConstruIfKeyValue("building", "yes", "shop","supermarket");
+				break;
+			case "E":
+			case "F":
+				getAttributes().addAttributeIfNotExistValue("amenity","school");
+				addAttributeInConstruIfKeyValue("building","yes","amenity","school");
+				overwriteAttributeInConstru("building","yes","school");
+				break;
+			case "EBL":
+			case "FBL":
+				overwriteAttributeInConstru("building","yes", "library");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","library");
+				break;
+			case "EBS":
+			case "FBS":
+				getAttributes().addAttribute("amenity","school");
+				getAttributes().addAttribute("isced:level","1;2");
+				overwriteAttributeInConstru("building","yes", "school");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "school");
+				addAttributeInConstruIfKeyValue("building", "yes", "isced:level","1;2");
+				break;
+			case "ECL":
+			case "FCL":
+				getAttributes().addAttribute("amenity","community_centre");
+				overwriteAttributeInConstru("building","yes", "community_centre");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "community_centre");
+				break;
+			case "EIN":
+			case "FIN":
+				getAttributes().addAttribute("amenity","school");
+				getAttributes().addAttribute("isced:level","3;4");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "school");
+				addAttributeInConstruIfKeyValue("building", "yes", "isced:level","3;4");
+				overwriteAttributeInConstru("building","yes","school");
+				break;
+			case "EMS":
+			case "FMS":
+				getAttributes().addAttribute("tourism","museum");
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism", "museum");
+				overwriteAttributeInConstru("building","yes","museum");
+				break;
+			case "EPR":
+			case "FPR":
+				getAttributes().addAttribute("amenity","school");
+				getAttributes().addAttribute("isced:level","4");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "school");
+				addAttributeInConstruIfKeyValue("building", "yes", "isced:level","4");
+				overwriteAttributeInConstru("building","yes","school");
+				break;
+			case "EUN":
+			case "FUN":
+				getAttributes().addAttribute("amenity","university");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "university");
+				overwriteAttributeInConstru("building","yes","university");
+				break;
+			case "G":
+			case "H":
+				getAttributes().addAttribute("tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GC1":
+			case "HC1":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","1");
+				break;
+			case "GC2":
+			case "HC2":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","2");
+				break;
+			case "GC3":
+			case "HC3":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","3");
+				break;
+			case "GC4":
+			case "HC4":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","4");
+				break;
+			case "GC5":
+			case "HC5":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","5");
+				break;
+			case "GH1":
+			case "HH1":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","1");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GH2":
+			case "HH2":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","2");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GH3":
+			case "HH3":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","3");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GH4":
+			case "HH4":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","4");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GH5":
+			case "HH5":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","5");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GP1":
+			case "HP1":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
+				addAttributeInConstruIfKeyValue("building", "yes", "category","1");
+				overwriteAttributeInConstru("building","yes","apartments");
+				break;
+			case "GP2":
+			case "HP2":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
+				addAttributeInConstruIfKeyValue("building", "yes", "category","2");
+				overwriteAttributeInConstru("building","yes","apartments");
+				break;
+			case "GP3":
+			case "HP3":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
+				addAttributeInConstruIfKeyValue("building", "yes", "category","3");
+				overwriteAttributeInConstru("building","yes","apartments");
+				break;
+			case "GPL":
+			case "HPL":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
+				overwriteAttributeInConstru("building","yes","apartments");
+				break;
+			case "GR1":
+			case "HR1":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","1");
+				break;
+			case "GR2":
+			case "HR2":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","2");
+				break;
+			case "GR3":
+			case "HR3":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","3");
+				break;
+			case "GR4":
+			case "HR4":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","4");
+				break;
+			case "GR5":
+			case "HR5":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
+				addAttributeInConstruIfKeyValue("building", "yes", "forks","5");
+				break;
+			case "GS1":
+			case "HS1":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","1");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GS2":
+			case "HS2":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","2");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GS3":
+			case "HS3":
+				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
+				addAttributeInConstruIfKeyValue("building", "yes", "stars","3");
+				overwriteAttributeInConstru("building","yes","hotel");
+				break;
+			case "GT1":
+			case "HT1":
+			case "GT2":
+			case "HT2":
+			case "GT3":
+			case "HT3":
+			case "GTL":
+			case "HTL":
+				// Como no sabemos a que se puede referir esto, mejor ponemos un fixme
+				getAttributes().addAttribute("fixme","Documentar codificación de destino de los bienes inmuebles en catastro código="+ usodestino +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles");
+				break;
+			case "I":
+			case "J":
+				getAttributes().addAttributeIfNotExistValue("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IAG":
+			case "JAG":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","farming");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IAL":
+			case "JAL":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","food");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IAM":
+			case "JAM":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","storage_tank");
+				getAttributes().addAttribute("content","OMW");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IAR":
+			case "JAR":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","agricultural");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IAS":
+			case "JAS":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("craft","sawmill");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IBB":
+			case "JBB":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","drinks");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IBD":
+			case "JBD":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","winery");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IBR":
+			case "JBR":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","ceramic");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "ICH":
+			case "JCH":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","mushrooms");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "ICN":
+			case "JCN":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","building");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "ICT":
+			case "JCT":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","quarry");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IEL":
+			case "JEL":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","electric");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IGR":
+			case "JGR":
+				getAttributes().addAttribute("landuse","farmyard");
+				break;
+			case "IIM":
+			case "JIM":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","chemistry");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IIN":
+			case "JIN":
+				getAttributes().addAttribute("landuse","greenhouse_horticulture");
+				overwriteAttributeInConstru("building","yes","greenhouse");
+				break;
+			case "IMD":
+			case "JMD":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","wood");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IMN":
+			case "JMN":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","manufacturing");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IMT":
+			case "JMT":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","metal");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IMU":
+			case "JMU":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","machinery");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IPL":
+			case "JPL":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","plastics");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IPP":
+			case "JPP":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","paper");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IPS":
+			case "JPS":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","fishing");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IPT":
+			case "JPT":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","petroleum");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "ITB":
+			case "JTB":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","tobacco");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "ITX":
+			case "JTX":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","clothing");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "IVD":
+			case "JVD":
+				getAttributes().addAttribute("landuse","industrial");
+				getAttributes().addAttribute("man_made","works");
+				getAttributes().addAttribute("works","glass");
+				overwriteAttributeInConstru("building","yes","industrial");
+				break;
+			case "K":
+			case "L":
+				getAttributes().addAttributeIfNotExistValue("leisure","sports_centre");
+				break;
+			case "KDP":
+			case "LDP":
+				getAttributes().addAttribute("leisure","pitch");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar sport=X si es posible.");
+				break;
+			case "KES":
+			case "LES":
+				getAttributes().addAttribute("leisure","stadium");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar sport=X si es posible.");
+				break;
+			case "KPL":
+			case "LPL":
+				getAttributes().addAttribute("leisure","sports_centre");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar sport=X si es posible.");
+				break;
+			case "KPS":
+			case "LPS":
+				getAttributes().addAttribute("leisure","swimming_pool");
+				getAttributes().addAttribute("sport","swimming");
+				break;
+			case "M":
+			case "N":
+				getAttributes().addAttributeIfNotExistValue("landuse","greenfield");
+				break;
+			case "O":
+			case "X":
+				getAttributes().addAttributeIfNotExistValue("landuse","commercial");
+				break;
+			case "O02":
+			case "X02":
+				getAttributes().addAttribute("landuse","commercial");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesional superior. Afinar office=X si es posible.");
+				break;
+			case "O03":
+			case "X03":
+				getAttributes().addAttribute("landuse","commercial");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesional medio. Afinar office=X si es posible.");
+				break;
+			case "O06":
+			case "X06":
+				getAttributes().addAttribute("landuse","commercial");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Médicos, abogados... Afinar office=X si es posible.");
+				break;
+			case "O07":
+			case "X07":
+				getAttributes().addAttribute("landuse","health");
+				addAttributeInConstruIfKeyValue("building", "yes", "health_facility:type","office");
+				addAttributeInConstruIfKeyValue("building", "yes", "health_person:type","nurse");
+				overwriteAttributeInConstru("building","yes","health");
+				break;
+			case "O11":
+			case "X11":
+				getAttributes().addAttribute("landuse","commercial");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesores Mercant. Afinar office=X si es posible.");
+				break;
+			case "O13":
+			case "X13":
+				getAttributes().addAttribute("landuse","commercial");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesores Universitarios. Afinar office=X si es posible.");
+				break;
+			case "O15":
+			case "X15":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "office","writer");
+				break;
+			case "O16":
+			case "X16":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "craft","painter");
+				break;
+			case "O17":
+			case "X17":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "office","musician");
+				break;
+			case "O43":
+			case "X43":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "office","salesman");
+				break;
+			case "O44":
+			case "X44":
+				getAttributes().addAttribute("landuse","commercial");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", agentes. Afinar office=X si es posible.");
+				break;
+			case "O75":
+			case "X75":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "craft","weaver");
+				break;
+			case "O79":
+			case "X79":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "craft","tailor");
+				break;
+			case "O81":
+			case "X81":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "craft","carpenter");
+				break;
+			case "O88":
+			case "X88":
+				getAttributes().addAttribute("landuse","commercial");
+				addAttributeInConstruIfKeyValue("building", "yes", "craft","jeweller");
+				break;
+			case "O99":
+			case "X99":
+				getAttributes().addAttribute("landuse","commercial");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", otras actividades. Afinar office=X si es posible.");
+				break;
+			case "P":
+			case "Q":
+				getAttributes().addAttribute("amenity","public_building");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","public_building");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "PAA":
+			case "QAA":
+				getAttributes().addAttribute("amenity","townhall");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","townhall");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "PAD":
+			case "QAD":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","courthouse");
+				addAttributeInConstruIfKeyValue("building", "yes", "operator","autonomous_community");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "PAE":
+			case "QAE":
+				getAttributes().addAttribute("amenity","townhall");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","townhall");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "PCB":
+			case "QCB":
+				getAttributes().addAttribute("office","administrative");
+				addAttributeInConstruIfKeyValue("building", "yes", "office","administrative");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "PDL":
+			case "QDL":
+			case "PGB":
+			case "QGB":
+				getAttributes().addAttribute("office","government");
+				addAttributeInConstruIfKeyValue("building", "yes", "office","government");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "PJA":
+			case "QJA":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","courthouse");
+				addAttributeInConstruIfKeyValue("building", "yes", "operator","county");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "PJO":
+			case "QJO":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","courthouse");
+				addAttributeInConstruIfKeyValue("building", "yes", "operator","province");
+				overwriteAttributeInConstru("building","yes","public");
+				break;
+			case "R":
+			case "S":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
+				overwriteAttributeInConstru("building","yes","church");
+				break;
+			case "RBS":
+			case "SBS":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
+				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
+				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
+				overwriteAttributeInConstru("building","yes","basilica");
+				break;
+			case "RCP":
+			case "SCP":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
+				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
+				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
+				overwriteAttributeInConstru("building","yes","chapel");
+				break;
+			case "RCT":
+			case "SCT":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
+				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
+				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
+				overwriteAttributeInConstru("building","yes","cathedral");
+				break;
+			case "RER":
+			case "SER":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
+				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
+				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
+				overwriteAttributeInConstru("building","yes","hermitage");
+				break;
+			case "RPR":
+			case "SPR":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
+				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
+				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
+				overwriteAttributeInConstru("building","yes","parish_church");
+				break;
+			case "RSN":
+			case "SSN":
+				getAttributes().addAttribute("landuse","health");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","hospital");
+				overwriteAttributeInConstru("building","yes","hospital");
+				break;
+			case "T":
+			case "U":
+				break;
+			case "TAD":
+			case "UAD":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","auditorium");
+				overwriteAttributeInConstru("building","yes","auditorium");
+				break;
+			case "TCM":
+			case "UCM":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cinema");
+				overwriteAttributeInConstru("building","yes","cinema");
+				break;
+			case "TCN":
+			case "UCN":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cinema");
+				overwriteAttributeInConstru("building","yes","cinema");
+				break;
+			case "TSL":
+			case "USL":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","hall");
+				overwriteAttributeInConstru("building","yes","hall");
+				break;
+			case "TTT":
+			case "UTT":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","theatre");
+				overwriteAttributeInConstru("building","yes","theatre");
+				break;
+			case "V":
+			case "W":
+				getAttributes().addAttributeIfNotExistValue("landuse","residential");
+				overwriteAttributeInConstru("building","yes","residential");
+				break;
+			case "Y":
+			case "Z":
+				break;
+			case "YAM":
+			case "ZAM":
+			case "YCL":
+			case "ZCL":
+				getAttributes().addAttribute("landuse","health");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","clinic");
+				addAttributeInConstruIfKeyValue("building", "yes", "medical_system:western","yes");
+				overwriteAttributeInConstru("building","yes","clinic");
+				break;
+			case "YBE":
+			case "ZBE":
+				getAttributes().addAttribute("landuse","pond");
+				break;
+			case "YCA":
+			case "ZCA":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","casino");
+				overwriteAttributeInConstru("building","yes","casino");
+				break;
+			case "YCB":
+			case "ZCB":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","club");
+				overwriteAttributeInConstru("building","yes","club");
+				break;
+			case "YCE":
+			case "ZCE":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","casino");
+				overwriteAttributeInConstru("building","yes","casino");
+				break;
+			case "YCT":
+			case "ZCT":
+				getAttributes().addAttribute("landuse","quarry");
+				break;
+			case "YDE":
+			case "ZDE":
+				getAttributes().addAttribute("man_made","wastewater_plant");
+				break;
+			case "YDG":
+				getAttributes().addAttribute("man_made","storage_tank");
+				getAttributes().addAttribute("content","gas");
+				break;
+			case "ZDG":
+				getAttributes().addAttribute("landuse","farmyard");
+				getAttributes().addAttribute("man_made","storage_tank");
+				getAttributes().addAttribute("content","gas");
+				break;
+			case "YDL":
+				addAttributeInConstruIfKeyValue("building", "yes", "man_made","storage_tank");
+				addAttributeInConstruIfKeyValue("building", "yes", "content","liquid");
+				break;
+			case "ZDL":
+				getAttributes().addAttribute("landuse","farmyard");
+				getAttributes().addAttribute("man_made","storage_tank");
+				getAttributes().addAttribute("content","liquid");
+				break;
+			case "YDS":
+			case "ZDS":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","pharmacy");
+				addAttributeInConstruIfKeyValue("building", "yes", "dispensing","yes");
+				break;
+			case "YGR":
+			case "ZGR":
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","kindergarten");
+				break;
+			case "YGV":
+			case "ZGV":
+				getAttributes().addAttribute("landuse","surface_mining");
+				getAttributes().addAttribute("mining_resource","gravel");
+				break;
+			case "YHG":
+			case "ZHG":
+				// Como no sabemos a que se puede referir esto, mejor ponemos un fixme
+				getAttributes().addAttribute("fixme","Documentar codificación de destino de los bienes inmuebles en catastro código="+ usodestino +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles");
+				break;
+			case "YHS":
+			case "ZHS":
+			case "YSN":
+			case "ZSN":
+				getAttributes().addAttribute("landuse","health");
+				addAttributeInConstruIfKeyValue("building", "yes", "amenity","hospital");
+				addAttributeInConstruIfKeyValue("building", "yes", "medical_system:western","yes");
+				overwriteAttributeInConstru("building","yes","hospital");
+				break;
+			case "YMA":
+			case "ZMA":
+				getAttributes().addAttribute("landuse","surface_mining");
+				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar mining_resource=X si es posible.");
+				break;
+			case "YME":
+			case "ZME":
+				getAttributes().addAttribute("man_made","pier");
+				break;
+			case "YPC":
+			case "ZPC":
+				getAttributes().addAttribute("landuse","aquaculture");
+				break;
+			case "YRS":
+			case "ZRS":
+				addAttributeInConstruIfKeyValue("building", "yes", "social_facility","group_home");
+				break;
+			case "YSA":
+			case "ZSA":
+			case "YSO":
+			case "ZSO":
+				addAttributeInConstruIfKeyValue("building", "yes", "office","labour_union");
+				break;
+			case "YSC":
+			case "ZSC":
+				getAttributes().addAttribute("landuse","health");
+				addAttributeInConstruIfKeyValue("building", "yes", "health_facility:type","first_aid");
+				addAttributeInConstruIfKeyValue("building", "yes", "medical_system:western","yes");
+				break;
+			case "YSL":
+				addAttributeInConstruIfKeyValue("building", "yes", "man_made","storage_tank");
+				addAttributeInConstruIfKeyValue("building", "yes", "content","solid");
+				break;
+			case "ZSL":
+				getAttributes().addAttribute("landuse","farmyard");
+				addAttributeInConstruIfKeyValue("building", "yes", "man_made","storage_tank");
+				addAttributeInConstruIfKeyValue("building", "yes", "content","solid");
+				break;
+			case "YVR":
+			case "ZVR":
+				getAttributes().addAttribute("landuse","landfill");
+				break;
+			default:
+				if (!usodestino.isEmpty()){
+					getAttributes().addAttribute("fixme","Documentar nuevo codificación de destino de los bienes inmuebles en catastro código="+ usodestino +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles");
 					}
-				// Si empieza con * se debe comprobar que no exista ya ese tag, porque el shapefile
-				// indica de forma mas especifica y este nuevo lo machacaria con un valor mas general
-			} else if (s[0].startsWith("*")){
-				if (getAttribute(s[0].replace("*", "")) == null){
-					addAttribute(s[0].replace("*", ""), s[1]);
-			}
-				// Sino anadir el attribute
-			} else {
-				addAttribute(s[0], s[1]);
-			}
 		}
 	}
 }

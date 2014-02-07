@@ -220,8 +220,8 @@ public class RelationOsm {
 			// Imprimimos los tags de sus shapes y en caso de que haya heredado de otros
 			int pos = 1;
 			for (Shape shape : shapes){
-				for (ShapeAttribute atr : shape.getAttributes()){
-					s += "<tag k=\""+atr.getKey()+"\" v=\""+atr.getValue()+"\"/>\n";
+				for (String key2 : shape.getAttributes().getKeys()){
+					s += shape.getAttributes().keyToOSM(key2);
 					hasData = hasData || shape.hasRelevantAttributesForPrinting();
 				}
 				if (Config.get("PrintShapeIds").equals("1"))
@@ -230,8 +230,8 @@ public class RelationOsm {
 
 			if (shapesRelation != null)
 				for (Shape shape : shapesRelation){
-					for (ShapeAttribute atr : shape.getAttributes()){
-						s += "<tag k=\""+atr.getKey()+"\" v=\""+atr.getValue()+"\"/>\n";
+					for (String key2 : shape.getAttributes().getKeys()){
+						s += shape.getAttributes().keyToOSM(key2);
 						hasData = hasData || shape.hasRelevantAttributesForPrinting();
 					}
 					if (Config.get("PrintShapeIds").equals("1"))

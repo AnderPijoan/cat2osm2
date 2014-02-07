@@ -3,6 +3,10 @@ import java.util.List;
 
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.util.PolygonExtracter;
+import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
+
 
 public abstract class ShapeLinear extends Shape {
 
@@ -94,15 +98,17 @@ public abstract class ShapeLinear extends Shape {
 	
 	
 	public boolean hasRelevantAttributesInternally(){
-		if(attributes != null)
-			for (ShapeAttribute atr : attributes)
-				if (!atr.getKey().equals("addr:postcode") && 
-						!atr.getKey().equals("addr:country") && 
-						!atr.getKey().equals("source") && 
-						!atr.getKey().equals("source:date") && 
-						!atr.getKey().equals("type"))
+		if(attributes != null){
+			for (String key : attributes.getKeys()){
+				if (!key.equals("addr:postcode") && 
+						!key.equals("addr:country") && 
+						!key.equals("source") && 
+						!key.equals("source:date") && 
+						!key.equals("type")){
 					return true;
-		
+				}
+			}
+		}
 		return false;
 	}
 	
@@ -114,5 +120,38 @@ public abstract class ShapeLinear extends Shape {
 	
 	public String getRefCat() {
 		return null;
+	}
+	
+	/**
+	 * Una vez leidos todos los datos, pasar el shape a formato OSM y guardarlo 
+	 * en la propia shape. Ya se extraera mas adelante.
+	 * @param utils
+	 * @return
+	 */
+	@Override
+	public boolean toOSM(Cat2OsmUtils utils, double threshold, ShapeParent parent){
+		
+		if(!this.getGeometry().isEmpty()){
+
+			//Simplificamos la geometria
+			TopologyPreservingSimplifier tps = new TopologyPreservingSimplifier(this.getGeometry());
+			tps.setDistanceTolerance(threshold);
+			this.setGeometry(tps.getResultGeometry());
+			
+			// Anadimos todos los nodos
+			Coordinate[] coor = this.getGeometry().getCoordinates();
+
+			for (int x = 0; x < coor.length; x++){
+				this.addNode(0, utils.generateNodeId(this.getCodigoMasa(), coor[x], null));
+			}
+
+			// Con los nodos creamos un way
+			List <Long> nodeList = this.getNodesIds(0);
+			this.addWay(0, utils.generateWayId(this.getCodigoMasa(), nodeList, this));
+
+			return true;
+		}
+		return false;
+		
 	}
 }

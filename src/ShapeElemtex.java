@@ -33,7 +33,7 @@ public class ShapeElemtex extends ShapePoint {
 			
 		}
 		else {
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "+ 
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tFormato geometrico "+ 
 					f.getDefaultGeometry().getClass().getName() +" desconocido dentro del shapefile ELEMTEX");
 		}
 
@@ -52,11 +52,11 @@ public class ShapeElemtex extends ShapePoint {
 		}
 
 		// Se agregan tags dependientes del rotulo
-		addAttributesAsStringArray(Rules.getTags(rotulo));
+		getAttributes().addAll(Rules.getTags(rotulo));
 
 		// Dependiendo del ttggss se usa o no
-		if (ttggss != null)
-			addAttributesAsStringArray(ttggssParser(ttggss));
+		if (ttggss != null && rotulo != null)
+			getAttributes().addAll(ttggssParser(ttggss, rotulo));
 
 		// Para agrupar geometrias segun su codigo de masa que como en este caso no existe se
 		// asigna el del nombre del fichero shapefile
@@ -85,57 +85,6 @@ public class ShapeElemtex extends ShapePoint {
 
 	public void setRotulo(String rotulo) {
 		this.rotulo = rotulo;
-	}
-
-
-	/** Traduce el atributo ttggss. Los que tengan ttggss = 0 no se tienen en cuenta
-	 * ya que hay elementos textuales que no queremos mostrar. Muchos atributos CONSTRU
-	 * de construcciones los han metido mal como elementos textuales, esos son los de longitud
-	 * menor a 3 que vamos a desechar
-	 * @return Lista de tags que genera
-	 */
-	public List<String[]> ttggssParser(String ttggss){
-		List<String[]> l = new ArrayList<String[]>();
-		String[] s = new String[2];
-
-		if (rotulo != null && ttggss.equals("189203") && rotulo.length()>2){ 
-			s[0] = "place"; s[1] ="locality";
-			l.add(s);
-			s = new String[2];
-			s[0] = "name"; s[1] = rotulo;
-			l.add(s);
-
-			return l;}
-
-		else if (rotulo != null && ttggss.equals("189300") && rotulo.length()>2){ 
-			s = new String[2];
-			s[0] = "name"; s[1] = rotulo;
-			l.add(s);
-			return l;}
-
-		else if (rotulo != null && ttggss.equals("189700") && rotulo.length()>2){ 
-			s = new String[2];
-			s[0] = "name"; s[1] = rotulo;
-			l.add(s);
-			return l;}
-
-		else if (rotulo != null && ttggss.equals("189401")){ 
-			s = new String[2];
-			s[0] = "entrance"; s[1] = "yes";
-			l.add(s);
-			//s = new String[2];
-			//s[0] = "addr:housenumber"; s[1] = rotulo;
-			//l.add(s);
-
-			return l;}
-
-		else {
-			s = new String[2];
-			s[0] = "ttggss"; s[1] = "0";
-			l.add(s);
-			setTtggss("0");
-			return l;
-		}
 	}
 
 

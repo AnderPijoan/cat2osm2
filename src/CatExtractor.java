@@ -9,7 +9,6 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
 
 
-
 public class CatExtractor {
 
 	public static void extract (String filename) throws IOException{

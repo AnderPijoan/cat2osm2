@@ -40,14 +40,14 @@ public class ShapeMasa extends ShapeParent {
 
 		}
 		else 
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "+ 
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tFormato geometrico "+ 
 		f.getDefaultGeometry().getClass().getName() +" desconocido dentro del shapefile MASA");
 
 		// Los demas atributos son metadatos y de ellos sacamos 
 		masa = (String) f.getAttribute("MASA");
 		
 		if (masa != null){
-			addAttribute("masa", masa);
+			getAttributes().addAttribute("masa", masa);
 		}
 	}
 	

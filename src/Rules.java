@@ -4,8 +4,10 @@ import java.io.FileReader;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /** Clase para acceder a un fichero de reglas de proceso para ELEMTEX. 
@@ -21,7 +23,7 @@ public class Rules {
 	 */
 	private class RuleEntry {
 		private Pattern rule;
-		private List<String[]> tags = new ArrayList<String[]>();
+		private Map<String, String> tags = new HashMap<String, String>();
 		/** Constructor de regla de validacion
 		 */
 		public RuleEntry(String rule) {
@@ -36,7 +38,7 @@ public class Rules {
 				if (t.length != 2 || (t.length==2 && t[1].trim().equals(""))) {
 					throw new IllegalArgumentException("Etiqueta mal definida.");
 				}
-				this.tags.add(t);
+				this.tags.put(t[0], t[1]);
 			}
 		}
 		/** Comprueba la regla
@@ -48,10 +50,10 @@ public class Rules {
 		}
 		/** Devuelve las etiquetas si se cumple la regla
 		 */
-		public List<String[]> getTags(String s) {
-			List<String[]> t = new ArrayList<String[]>();
+		public Map<String, String> getTags(String s) {
+			Map<String, String> t = new HashMap<String, String>();
 			if (matches(s)) {
-				t.addAll(this.tags);
+				t.putAll(this.tags);
 			}
 			return t;
 		}
@@ -126,10 +128,10 @@ public class Rules {
 	 * @param s rotulo a comprobar
 	 * @return lista de etiquetas
 	 */
-	public static List<String[]> getTags(String s) {
-		List<String[]> tags = new ArrayList<String[]>();
+	public static Map<String, String> getTags(String s) {
+		Map<String, String> tags = new HashMap<String, String>();
 		for (RuleEntry r: tagslist) {
-			tags.addAll(r.getTags(s));
+			tags.putAll(r.getTags(s));
 		}
 		return tags;
 	}

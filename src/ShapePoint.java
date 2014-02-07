@@ -3,6 +3,9 @@ import java.util.List;
 
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.util.PolygonExtracter;
+
 public abstract class ShapePoint extends Shape {
 
 	// Estas geometrias se descomponen en su unico poligono lineal
@@ -12,7 +15,7 @@ public abstract class ShapePoint extends Shape {
 	protected Long nodes; //[0] Outer solo
 	protected String ttggss; // Campo TTGGSS en Elempun.shp y Elemtex.shp
 	// Se usara para desechar algunos Elemtex y para
-	// conocer cuales tienen influencia en las parcelas sobre los que estan colocados (para tags landuse)W
+	// conocer cuales tienen influencia en las parcelas sobre los que estan colocados (para tags landuse)
 	
 
 	public ShapePoint(SimpleFeature f, String tipo) {
@@ -83,31 +86,53 @@ public abstract class ShapePoint extends Shape {
 	}
 	
 
-	public String getTtggss() {
+	/*public String getTtggss() {
 		return ttggss;
 	}
 
 	
 	public void setTtggss(String t) {
 		ttggss = t;
-	}
+	}*/
 	
 	
 	public boolean hasRelevantAttributesInternally(){
-		if(attributes != null)
-			for (ShapeAttribute atr : attributes)
-				if (!atr.getKey().equals("addr:postcode") && 
-						!atr.getKey().equals("addr:country") && 
-						!atr.getKey().equals("source") && 
-						!atr.getKey().equals("source:date") && 
-						!atr.getKey().equals("type"))
+		if(attributes != null){
+			for (String key : attributes.getKeys()){
+				if (!key.equals("addr:postcode") && 
+						!key.equals("addr:country") && 
+						!key.equals("source") && 
+						!key.equals("source:date") && 
+						!key.equals("type")){
 					return true;
-		
+				}
+			}
+		}
 		return false;
 	}
-	
+
+
 	public boolean hasRelevantAttributesForPrinting(){
 		return hasRelevantAttributesInternally();
+	}
+	
+
+	/**
+	 * Una vez leidos todos los datos, pasar el shape a formato OSM y guardarlo 
+	 * en la propia shape. Ya se extraera mas adelante.
+	 */
+	@Override
+	public boolean toOSM(Cat2OsmUtils utils, double threshold, ShapeParent parent){
+	
+		if (!this.getGeometry().isEmpty()){
+			Coordinate coor = this.getGeometry().getCoordinate();
+
+			// Anadimos solo un nodo
+			this.addNode(0, utils.generateNodeId(this.getCodigoMasa(), coor, this));
+
+			return true;
+		}
+		return false;
 	}
 
 }

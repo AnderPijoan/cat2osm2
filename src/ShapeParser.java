@@ -248,14 +248,14 @@ public class ShapeParser extends Thread{
 			} catch (Exception problem) {
 				problem.printStackTrace();
 				transaction.rollback();
-				System.out.println("["+new Timestamp(new Date().getTime())+"] No se han podido reproyectar los shapefiles "+tipo+f.getName()+".");
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se han podido reproyectar los shapefiles "+tipo+f.getName()+".");
 			} finally {
 				writer.close();
 				iterator.close();
 				transaction.close();
 			}
 
-		} catch (Exception er){ System.out.println("["+new Timestamp(new Date().getTime())+"] No se ha podido proyectar los shapefiles "+tipo+f.getName()+"."); er.printStackTrace(); }
+		} catch (Exception er){ System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se ha podido proyectar los shapefiles "+tipo+f.getName()+"."); er.printStackTrace(); }
 
 		return new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + tipo+f.getName());
 	}
@@ -270,7 +270,7 @@ public class ShapeParser extends Thread{
 
 		String path = Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName");
 
-		System.out.println("["+new Timestamp(new Date().getTime())+"] Terminado de leer los archivos "+filename+".");
+		System.out.println("["+new Timestamp(new Date().getTime())+"]\tTerminado de leer los archivos "+filename+".");
 
 		boolean borrado = true;
 
@@ -283,7 +283,7 @@ public class ShapeParser extends Thread{
 		borrado &= new File(path + File.separatorChar + filename.substring(0, filename.length()-4) +".QIX").delete();
 
 		if (!borrado)
-			System.out.println("["+new Timestamp(new Date().getTime())+"] No se pudo borrar alguno de los archivos temporales de "+filename+"." +
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se pudo borrar alguno de los archivos temporales de "+filename+"." +
 					" Estos estaran en la carpeta "+ path +".");
 	}
 

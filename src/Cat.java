@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
 
 public class Cat {
 
@@ -7,7 +5,7 @@ public class Cat {
 	String refCatastral; // Referencia Catastral
 	String subparce; // Codigo Subparcela
 	int numOrdenConstru; // Numero de orden de construccion
-	List<ShapeAttribute> attributes;
+	ShapeAttributes attributes;
 	String usoDestino; // Codigo de uso o destino para los registros 14 y 15
 	Double area; // Area
 	long fechaConstru = Cat2OsmUtils.getFechaArchivos(); // Fecha de construccion AAAAMMDD
@@ -74,23 +72,23 @@ public class Cat {
 	 */
 	public void addAttribute(String nombre, String valor){
 		if(attributes == null)
-			attributes = new ArrayList<ShapeAttribute>();
+			attributes = new ShapeAttributes();
 		
-		if (valor != null && !valor.trim().isEmpty()){
-			ShapeAttribute atr = new ShapeAttribute(nombre, valor.trim());
-			if (!attributes.contains(atr))
-				attributes.add(atr);
+		String k = nombre.trim();
+		String v = valor.trim();
+		
+		if (k.isEmpty() && !v.isEmpty()){
+			attributes.addAttributeIfNotExistValue(k, v);
 		}
 	}
 	
 	
-	public void addAttribute(List<ShapeAttribute> l){
-		if (l != null)
-			attributes.addAll(l);
+	public void addAttributes(ShapeAttributes attributes){
+			attributes.addAll(attributes.asHashMap());
 	}
 	
 	
-	public List<ShapeAttribute> getAttributes(){
+	public ShapeAttributes getAttributes(){
 		return attributes;
 	}
 	

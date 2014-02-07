@@ -31,7 +31,7 @@ public class ShapeElemlin extends ShapeLinear {
 			geometry.normalize();
 		}
 		else {
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "+ 
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tFormato geometrico "+ 
 					f.getDefaultGeometry().getClass().getName() +" desconocido dentro del shapefile ELEMLIN");
 		}
 
@@ -40,7 +40,7 @@ public class ShapeElemlin extends ShapeLinear {
 		ttggss = (String) f.getAttribute("TTGGSS");
 		
 		if (ttggss != null){
-			addAttributesAsStringArray(ttggssParser(ttggss));
+			getAttributes().addAll(ttggssParser(ttggss, ""));
 		}
 
 		// Para agrupar geometrias segun su codigo de masa que como en este caso no existe se

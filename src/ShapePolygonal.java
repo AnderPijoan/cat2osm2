@@ -1,7 +1,17 @@
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.util.PolygonExtracter;
+import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 
 public abstract class ShapePolygonal extends Shape {
@@ -112,34 +122,128 @@ public abstract class ShapePolygonal extends Shape {
 	
 	
 	public boolean hasRelevantAttributesInternally(){
-		if(attributes != null)
-			for (ShapeAttribute atr : attributes)
-				if (	!atr.getKey().equals("source") &&
-						!atr.getKey().equals("source:date") &&
-						!atr.getKey().equals("type"))
+		if(attributes != null){
+			for (String key : attributes.getKeys()){
+				if (!key.equals("source") && 
+						!key.equals("source:date") && 
+						!key.equals("type")){
 					return true;
-		
+				}
+			}
+		}
 		return false;
 	}
 	
 	
+	/**
+	 * A la hora de imprimir, las masas no tienen que ser imprimidas
+	 */
 	public boolean hasRelevantAttributesForPrinting(){
-		if(attributes != null)
-			for (ShapeAttribute atr : attributes)
-				if (!atr.getKey().equals("addr:postcode") &&
-						!atr.getKey().equals("addr:country") &&
-						!atr.getKey().equals("catastro:ref") &&
-						!atr.getKey().equals("source") &&
-						!atr.getKey().equals("source:date") &&
-						!atr.getKey().equals("masa") &&
-						!atr.getKey().equals("type"))
+		if(attributes != null){
+			for (String key : attributes.getKeys()){
+				if (!key.equals("addr:postcode") &&
+						!key.equals("addr:country") &&
+						!key.equals("catastro:ref") &&
+						!key.equals("source") &&
+						!key.equals("source:date") &&
+						!key.equals("masa") &&
+						!key.equals("type")){
 					return true;
-		
+				}
+			}
+		}
 		return false;
 	}
 	
 	
 	public String getTtggss(){
 		return null;
+	}
+	
+	
+	public boolean toOSM(Cat2OsmUtils utils, double threshold, ShapeParent parent){
+		
+		if (!this.getGeometry().isEmpty()){
+			
+			//Simplificamos la geometria
+			TopologyPreservingSimplifier tps = new TopologyPreservingSimplifier(this.getGeometry());
+			tps.setDistanceTolerance(threshold);
+			this.setGeometry(tps.getResultGeometry());
+			
+			// Los subshapes no pueden sobresalir de su shape padre
+			// Por ejemplo un edificio no puede sobresalir de su parcela ya que hay casos que
+			// los balcones de este si que salen.
+			if(parent != null){
+				List polys = PolygonExtracter.getPolygons(parent.getGeometry().intersection(this.getGeometry()));
+				this.setGeometry(this.getGeometry().getFactory().buildGeometry(polys));
+			}
+
+			// Transformar a OSM
+			// Obtenemos las coordenadas de cada punto del shape
+			if (this.geometry instanceof Polygon || this.geometry instanceof MultiPolygon){
+				
+					int numPolygons = 0;
+					for (int x = 0; x < this.getGeometry().getNumGeometries(); x++){
+						Polygon p = (Polygon) this.getGeometry().getGeometryN(x);
+	
+						// Outer
+						Coordinate[] coors = p.getExteriorRing().getCoordinates();
+						// Miramos por cada punto si existe un nodo, si no lo creamos
+						for (Coordinate coor : coors){
+							// Insertamos en la lista de nodos del shape, los ids de sus nodos
+							this.addNode(numPolygons, utils.generateNodeId(this.getCodigoMasa(), coor, null));
+						}
+						numPolygons++;
+	
+						// Posibles Inners
+						for (int y = 0; y < p.getNumInteriorRing(); y++){
+	
+							// Comprobar que los agujeros tengan cierto tamano, sino pueden ser fallose
+							// de union de parcelas mal dibujadas en catastro
+							if (p.getInteriorRingN(y).getArea() != 0){
+								coors = p.getInteriorRingN(y).getCoordinates();
+	
+								// Miramos por cada punto si existe un nodo, si no lo creamos
+								for (Coordinate coor : coors){
+									// Insertamos en la lista de nodos del shape, los ids de sus nodos
+									this.addNode(numPolygons, utils.generateNodeId(this.getCodigoMasa(), coor, null));
+								}
+								numPolygons++;
+							}
+						}
+					}
+	
+					// Por cada poligono creamos su way
+					for (int y = 0; y < numPolygons; y++){
+						// Con los nodos creamos un way
+						List <Long> nodeList = this.getNodesIds(y);
+						this.addWay(y, utils.generateWayId(this.getCodigoMasa(), nodeList, null));
+					}
+	
+	
+					// Creamos una relation para el shape, metiendoe en ella todos los members
+					List <Long> ids = new ArrayList<Long>(); // Ids de los members
+					List <String> types = new ArrayList<String>(); // Tipos de los members
+					List <String> roles = new ArrayList<String>(); // Roles de los members
+					for (int y = 0; y < this.getWays().size(); y++){
+						long wayId = this.getWays().get(y);
+						if (!ids.contains(wayId)){
+							ids.add(wayId);
+							types.add("way");
+							if (y == 0)roles.add("outer");
+							else roles.add("inner");
+						}
+					}
+					this.setRelation(utils.generateRelationId(this.getCodigoMasa(), ids, types, roles, this));
+	
+					return true;
+				} else {
+					
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tGeometría en formato desconocido : " + this.getGeometry().getGeometryType().toString());
+				return false;
+			}
+		}
+
+		return false;
 	}
 }

@@ -39,7 +39,7 @@ public class ShapeEjes extends ShapeLinear {
 			geometry.normalize();
 		}
 		else {
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "+
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tFormato geometrico "+
 		f.getDefaultGeometry().getClass().getName() +" desconocido del shapefile EJES");
 		}
 		
@@ -58,7 +58,7 @@ public class ShapeEjes extends ShapeLinear {
 			int v = Integer.parseInt((String) f.getAttribute("VIA"));
 			via = getVia((long) v);
 		}
-		else if(tipo.equals("UR"))  System.out.println("["+new Timestamp(new Date().getTime())+"] No se reconoce el tipo del atributo VIA "+ f.getAttribute("VIA").getClass().getName() );	
+		else if(tipo.equals("UR"))  System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se reconoce el tipo del atributo VIA "+ f.getAttribute("VIA").getClass().getName() );	
 
 		// Para agrupar geometrias segun su codigo de masa que como en este caso no existe se
 		// asigna el del nombre del fichero shapefile
@@ -73,125 +73,104 @@ public class ShapeEjes extends ShapeLinear {
 
 		if (via != null && !via.isEmpty()){
 			// Nombre de la via
-			addAttribute("name", nombreTipoViaParser(via.substring(0, 2)) +" "+ formatearNombreCalle(eliminarComillas(via.substring(3))));
+			getAttributes().addAttribute("name", nombreTipoViaParser(via.substring(0, 2)) +" "+ formatearNombreCalle(eliminarComillas(via.substring(3))));
 			// En funcion del tipo de via, meter tags que la describan
-			addAttributesAsStringArray(atributosViaParser(via.substring(0, 2)));
+			getAttributes().addAll(atributosViaParser(via.substring(0, 2)));
 		}
 		else{
-			addAttribute("highway", "unclassified");
+			getAttributes().addAttribute("highway", "unclassified");
 		}
 		
 		if (tipo.equals("UR")){
-			addAttribute("highway", "residential");
+			getAttributes().addAttribute("highway", "residential");
 		}
 	}
 	
 	
-	public List<String[]> atributosViaParser(String codigo){
-		List<String[]> l = new ArrayList<String[]>();
-		String[] s = new String[2];
+	public Map<String, String> atributosViaParser(String codigo){
+		Map<String, String> l = new HashMap<String, String>();
 
 		switch(codigo){
 		
 		case "AU":
-			s[0] = "highway"; s[1] = "motorway";
-			l.add(s);
+			l.put("highway","motorway");
 		return l;
 		
 		case "AY":
-			s[0] = "waterway"; s[1] = "stream";
-			l.add(s);
+			l.put("waterway","stream");
 		return l;
 		
 		case "CG":
-			s[0] = "amenity"; s[1] = "school";
-			l.add(s);
+			l.put("amenity","school");
 		return l;
 		
 		case "CJ":
-			s[0] = "highway"; s[1] = "residential";
-			l.add(s);
+			l.put("highway","residential");
 		return l;
 		
 		case "CM":
-			s[0] = "highway"; s[1] = "track";
-			l.add(s);
+			l.put("highway","track");
 		return l;
 		
 		case "CR":
-			s[0] = "highway"; s[1] = "unclassified";
-			l.add(s);
+			l.put("highway","unclassified");
 		return l;
 		
 		case "ES":
-			s[0] = "highway"; s[1] = "steps";
-			l.add(s);
+			l.put("highway","steps");
 		return l;
 		
 		case "FC":
-			s[0] = "railway"; s[1] = "rail";
-			l.add(s);
+			l.put("railway","rail");
 		return l;
 		
 		case "GL":
-			s[0] = "junction"; s[1] = "roundabout";
-			l.add(s);
+			l.put("junction","roundabout");
 		return l;
 		
 		case "GV":
-			s[0] = "highway"; s[1] = "primary";
-			l.add(s);
+			l.put("highway","primary");
 		return l;
 		
 		case "JR":
-			s[0] = "leisure"; s[1] = "garden";
-			l.add(s);
+			l.put("leisure","garden");
 		return l;
 		
 		case "MC":
-			s[0] = "amenity"; s[1] = "marketplace";
-			l.add(s);
+			l.put("amenity","marketplace");
 		return l;
 		
 		case "ML":
-			s[0] = "waterway"; s[1] = "dock";
-			l.add(s);
+			l.put("waterway","dock");
 		return l;
 		
 		case "PZ":
-			s[0] = "highway"; s[1] = "unclassified";
-			l.add(s);
+			l.put("highway","unclassified");
 		return l;
 		
 		case "RD":
-			s[0] = "highway"; s[1] = "unclassified";
-			l.add(s);
+			l.put("highway","unclassified");
 		return l;
 		
 		case "RU":
-			s[0] = "highway"; s[1] = "residential";
-			l.add(s);
+			l.put("highway","residential");
 		return l;
 		
 		case "SD":
-			s[0] = "highway"; s[1] = "path";
-			l.add(s);
+			l.put("highway","path");
 		return l;
 		
 		case "TR":
-			s[0] = "highway"; s[1] = "path";
-			l.add(s);
+			l.put("highway","path");
 		return l;
 		
 		case "UR":
-			s[0] = "highway"; s[1] = "residential";
-			l.add(s);
+			l.put("highway","residential");
 		return l;
 		
 		default:
 			if (codigo.isEmpty()){
-				s[0] = "fixme"; s[1] = "Tagear tipo de via "+ codigo +" en http://wiki.openstreetmap.org/w/index.php?title=Traduccion_metadatos_catastro_a_map_features.";
-				l.add(s);
+				l.put("fixme","Tagear tipo de via "+ codigo +" en http://wiki.openstreetmap.org/w/index.php?title=Traduccion_metadatos_catastro_a_map_features.");
 			}
 		}
 		return l;

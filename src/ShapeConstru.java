@@ -1,7 +1,8 @@
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -38,7 +39,7 @@ public class ShapeConstru extends ShapePolygonal {
 			geometry.normalize();
 		}
 		else
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Formato geometrico "
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tFormato geometrico "
 					+ f.getDefaultGeometry().getClass().getName() +" desconocido del shapefile CONSTRU");
 
 		// Los demas atributos son metadatos y de ellos sacamos 
@@ -46,8 +47,9 @@ public class ShapeConstru extends ShapePolygonal {
 
 		constru = (String) f.getAttribute("CONSTRU");
 		
-		if (constru != null)
-			addAttributesAsStringArray(construParser(constru));
+		if (constru != null){
+			getAttributes().addAll(construParser(constru));
+		}
 	}
 
 
@@ -186,40 +188,32 @@ public class ShapeConstru extends ShapePolygonal {
 	 * @param constru Atributo constru
 	 * @return Lista con los tags que genera
 	 */
-	public List<String[]> construParser(String constru){
+	public Map<String, String> construParser(String constru){
 
-		List<String[]> l = new ArrayList<String[]>();
+		Map<String, String> l = new HashMap<String, String>();
 		constru = constru.trim();
 		String[] construs = constru.split("\\+");
 		int alturaMax = Integer.MIN_VALUE;
 		int alturaMin = Integer.MAX_VALUE;
-		// Variable para saber si ya se ha escrito algun tag building=*
-		// Ya que sino, podriamos tener building=warehouse + building=yes por ejemplo
-		boolean building = false;
-		
 		
 		for (String s: construs){
 
-			List<String[]> temp = construElemParser(s.toUpperCase());
+			Map<String, String> temp = construElemParser(s.toUpperCase());
 
 			// Si es un numero, no sabemos si es el de altura superior o inferior
 			// por eso lo almacenamos hasta el final.
-			if (!temp.isEmpty() && temp.get(0)[0].equals("NUM")) {
-				String[] num = temp.get(0);
-				alturaMax = (alturaMax>Integer.parseInt(num[1]))? alturaMax : Integer.parseInt(num[1]);
-				alturaMin = (alturaMin<Integer.parseInt(num[1]))? alturaMin : Integer.parseInt(num[1]);
+			if (temp.get("NUM") != null) {
+				int num = Integer.parseInt(temp.get("NUM"));
+				alturaMax = (alturaMax > num ? alturaMax : num);
+				alturaMin = (alturaMin < num ? alturaMin : num);
 			}
-			else{
-				for (String[] tag : temp)
-					if (tag[0].equals("building"))
-						building = true;
-				
-				l.addAll(temp);
+			else {
+				l.putAll(temp);
 			}
 		}
 
 		// Comparamos si tenemos algun numero almacenado
-		if (alturaMax != Integer.MIN_VALUE && alturaMin != Integer.MAX_VALUE){
+		if (alturaMax != Integer.MIN_VALUE || alturaMin != Integer.MAX_VALUE){
 
 			// Si los dos valores han quedado iguales, es que solo se
 			// ha recogido un numero, se entiende si es mayor que 0, que alturaMin
@@ -228,36 +222,32 @@ public class ShapeConstru extends ShapePolygonal {
 				alturaMax = (alturaMax>0)? alturaMax : 0;
 				alturaMin = (alturaMin<0)? alturaMin : 0;
 			}
-			String[] s = new String[2];
 
 			if (alturaMax != 0){
 				// Comprobamos si se quiere exportar en formato catastro3d los pisos positivos
 				if(!Config.get("Catastro3d").equals("0")){
-					s[0] = "building:levels"; s[1] = alturaMax+""; 
-					l.add(s);
+					l.put("building:levels", alturaMax+"");
 				}
-				if (!building){				
-					s = new String[2];
-					s[0] = "building"; s[1] ="residential";
-					l.add(s);
+				if (l.get("building") == null){				
+					l.put("building","yes");
 				}
 			}
 
 			if(alturaMin != 0) {
 				// Comprobamos si se quiere exportar en formato catastro3d los pisos negativos
 				if(Config.get("Catastro3d").equals("-1")){
-					s = new String[2];
-					s[0] = "building:min_level"; s[1] = alturaMin+"";
-					l.add(s);
+					l.put("building:min_level",alturaMin+"");
 				}
-				if (!building){
-					s = new String[2];
-					s[0] = "building"; s[1] ="residential";
-					l.add(s);
+				if (l.get("building") == null){				
+					l.put("building","yes");
 				}
 			}
+			
+			// Comprobacion de edificios que no tienen altura, les ponemos 1
+			if (l.get("building") != null && l.get("building:levels") == null){
+				l.put("building:levels", "1");
+			}
 		}
-
 		return l;
 	}
 
@@ -266,10 +256,9 @@ public class ShapeConstru extends ShapePolygonal {
 	 * @param elem Elemto a parsear
 	 * @return Lista con los tags que genera cada elemento
 	 */
-	private List<String[]> construElemParser(String elem){
+	private Map<String, String> construElemParser(String elem){
 
-		List<String[]> l = new ArrayList<String[]>();
-		String[] s = new String[2];
+		Map<String, String> l = new HashMap<String, String>();
 		
 		if (elem.isEmpty()){
 			return l;
@@ -278,128 +267,94 @@ public class ShapeConstru extends ShapePolygonal {
 		switch(elem)
 		{
 		case "CO":
-			s[0] = "building"; s[1] = "warehouse";
-			l.add(s);
+			l.put("building", "warehouse");
 			return l;
 
 		case "PI":
-			s[0] = "leisure"; s[1] = "swimming_pool";
-			l.add(s);
-			s = new String[2];
-			s[0] = "access"; s[1] = "private";
-			l.add(s);
+			l.put("leisure","swimming_pool");
+			l.put("access","private");
 			return l;
 
 		case "TEN":
-			s[0] = "leisure"; s[1] = "pitch";
-			l.add(s);
-			s = new String[2];
-			s[0] = "sport"; s[1] = "tennis";
-			l.add(s);
+			l.put("leisure","pitch");
+			l.put("sport","tennis");
 			return l;
 
 		case "ETQ":
-			s[0]="landuse"; s[1]="reservoir";
-			l.add(s);
+			l.put("landuse","reservoir");
 			return l;
 
 		case "SILO":
-			s[0] = "man_made"; s[1] = "silo";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
+			l.put("man_made","silo");
+			l.put("building","yes");
 			return l;
 
 		case "SUELO":
 		case "TERRENY":
 		case "SOLAR":
-			s[0] = "landuse"; s[1] = "greenfield";
-			l.add(s);
+			l.put("landuse","greenfield");
 			return l;
 
 		case "DEP":
-			s[0] = "man_made"; s[1] = "storage_tank";
-			l.add(s);
+			l.put("man_made","storage_tank");
 			return l;
 
 		case "ESC":
-			s[0] = "highway"; s[1] ="steps";
-			l.add(s);
+			l.put("highway","steps");
 			return l;
 
 		case "TRF":
-			s[0] = "power"; s[1] ="sub_station";
-			l.add(s);
+			l.put("power","sub_station");
 			return l;
 
 		case "JD":
-			s[0] = "leisure"; s[1] = "garden";
-			l.add(s);
+			l.put("leisure","garden");
 			return l;
 
 		case "YJD":
-			s[0] = "leisure"; s[1] = "garden";
-			l.add(s);
+			l.put("leisure","garden");
 			return l;
 
 		case "FUT":
-			s[0] = "leisure"; s[1] = "stadium";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
+			l.put("leisure","stadium");
+			l.put("building","yes");
 			return l;
 
 		case "ZD":
-			s[0] = "leisure"; s[1] = "sports_centre";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
+			l.put("leisure","sports_centre");
 			return l;
 
 		case "RUINA":
-			s[0] = "ruins"; s[1] = "yes";
-			l.add(s);
-			s = new String[2];
-			s[0] = "building"; s[1] = "yes";
-			l.add(s);
+			l.put("ruins","yes");
+			l.put("building","yes");
 			return l;
 
 		case "CONS":
-			s[0] = "landuse"; s[1] = "construction";
-			l.add(s);
+			l.put("landuse","construction");
 			return l;
 
 		case "PRESA":
-			s[0] = "waterway"; s[1] = "dam";
-			l.add(s);
+			l.put("waterway","dam");
 			return l;
 
 		case "ZBE":
-			s[0]="landuse"; s[1]="reservoir";
-			l.add(s);
+			l.put("landuse","reservoir");
 			return l;
 
 		case "GOLF":
-			s[0] = "leisure"; s[1] = "golf_course";
-			l.add(s);
+			l.put("leisure","golf_course");
 			return l;
 
 		case "CAMPING":
-			s[0] = "tourism"; s[1] = "camp_site";
-			l.add(s);
+			l.put("tourism","camp_site");
 			return l;
 
 		case "PTLAN":
-			s[0] = "man_made"; s[1] = "pier";
-			l.add(s);
+			l.put("man_made","pier");
 			return l;
 
 		case "DARSENA":
-			s[0] = "waterway"; s[1] = "dock";
-			l.add(s);
+			l.put("waterway","dock");
 			return l;
 		}
 		
@@ -457,7 +412,7 @@ public class ShapeConstru extends ShapePolygonal {
 		}
 
 		// Si no, finalmente vamos al parser de numeros romanos
-		l.addAll(numRomanoParser(elem));
+		l.putAll(numRomanoParser(elem));
 
 		return l;
 
@@ -467,10 +422,9 @@ public class ShapeConstru extends ShapePolygonal {
 	 * @param elem numero romano a parsear
 	 * @return equivalente en numero decimal
 	 */
-	public List<String[]> numRomanoParser(String elem){
+	public Map<String, String> numRomanoParser(String elem){
 
-		List<String[]> l = new ArrayList<String[]>();
-		String[] s = new String[2];
+		Map<String, String> l = new HashMap<String, String>();
 		String numRomano = elem;
 		int sumaTotal = 0;
 		boolean negativo = numRomano.startsWith("-");
@@ -541,8 +495,7 @@ public class ShapeConstru extends ShapePolygonal {
 		if (negativo)
 			sumaTotal = (0 - sumaTotal);
 
-		s[0] = "NUM"; s[1] = sumaTotal+"";
-		l.add(s);
+		l.put("NUM", sumaTotal+"");
 		return l;
 	}
 }

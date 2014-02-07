@@ -2,7 +2,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -14,7 +16,7 @@ public abstract class Shape {
 	protected Geometry geometry = null;
 	
 	// Atributos y tags que se anadiran despues
-	protected List<ShapeAttribute> attributes;
+	protected ShapeAttributes attributes;
 	
 	// Tipo del shape rustico o urbano RU/UR
 	protected String tipo = null;
@@ -55,7 +57,7 @@ public abstract class Shape {
 			int fa = (Integer) f.getAttribute("FECHAALTA");
 			fechaAlta = (long) fa;
 		}
-		else System.out.println("["+new Timestamp(new Date().getTime())+"] No se reconoce el tipo del atributo FECHAALTA "
+		else System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se reconoce el tipo del atributo FECHAALTA "
 				+ f.getAttribute("FECHAALTA").getClass().getName());	
 
 		if (f.getAttribute("FECHABAJA") instanceof Integer){
@@ -69,10 +71,11 @@ public abstract class Shape {
 		else if (f.getAttribute("FECHABAJA") instanceof Long){
 			fechaBaja = (long) f.getAttribute("FECHABAJA");
 		}
-		else System.out.println("["+new Timestamp(new Date().getTime())+"] No se reconoce el tipo del atributo FECHABAJA"
+		else System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se reconoce el tipo del atributo FECHABAJA"
 				+ f.getAttribute("FECHABAJA").getClass().getName());
 		}
 
+	
 	/** Comprueba la fechaAlta y fechaBaja del shape para ver si se ha creado entre AnyoDesde y AnyoHasta
 	 * Deben seguir dados de alta despues de fechaHasta para que los devuelva. Es decir, shapes que se hayan
 	 * creado y dado de baja en ese intervalo no las devolvera.
@@ -125,54 +128,13 @@ public abstract class Shape {
 		return Id;
 	}
 	
-	
-	public void addAttribute(String k, String v){
-		
-		if(this.attributes == null)
-			this.attributes = new ArrayList<ShapeAttribute>();
-		
-		ShapeAttribute atr = new ShapeAttribute(k, v);
-		if (!this.attributes.contains(atr))
-			this.attributes.add(atr);
-	}
-	
-	
-	public void addAttributesAsStringArray(List<String[]> attributes){
-		
-		if(this.attributes == null)
-			this.attributes = new ArrayList<ShapeAttribute>();
-		
-		for(String[] str : attributes){
-			ShapeAttribute atr = new ShapeAttribute(str[0], str[1]);
-			if (!this.attributes.contains(atr))
-			this.attributes.add(atr);
-		}
-	}
-	
-	public void addAttributes(List<ShapeAttribute> attributes){
-		
-		if(this.attributes == null)
-			this.attributes = new ArrayList<ShapeAttribute>();
-		
-		for(ShapeAttribute atr : attributes){
-			if (!this.attributes.contains(atr))
-			this.attributes.add(atr);
-		}
-	}
-	
-	
-	public String getAttribute(String key){
-		for(ShapeAttribute atr : getAttributes())
-			if (atr.getKey().equals(key))
-				return atr.getValue();
-		
-		return null;
-	}
 
-	
-	public List<ShapeAttribute> getAttributes(){
+	public ShapeAttributes getAttributes(){
+		if(this.attributes == null)
+			this.attributes = new ShapeAttributes();
 		return attributes;
 	}
+	
 	
 	public long getFechaConstru() {
 		return fechaConstru;
@@ -201,39 +163,12 @@ public abstract class Shape {
 	
 	
 	public String printAttributes(){
-		String s = "";
-		
-		for(ShapeAttribute attribute : attributes){
-			s += attribute.toString();
-		}
-		return s;
+		return this.attributes.toOSM();
 	}
 	
 	
-	public boolean sameAttributes(List<ShapeAttribute> attributes){
-		
-		if(attributes == null && this.attributes == null)
-			return true;
-		
-		if (attributes == null)
-			return false;
-		
-		if(this.attributes == null)
-			return false;
-		
-		if(this.attributes.size() != attributes.size())
-			return false;
-		
-		List<String> l1 = new ArrayList<String>();
-		List<String> l2 = new ArrayList<String>();
-		for (ShapeAttribute l : this.attributes)
-			l1.add(l.toString());
-		Collections.sort(l1);
-		for (ShapeAttribute l : attributes)
-			l2.add(l.toString());
-		Collections.sort(l2);
-
-		return l1.equals(l2);
+	public boolean sameAttributes(ShapeAttributes attributes){
+		return this.attributes.equals(attributes);
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -264,9 +199,11 @@ public abstract class Shape {
 
 	public abstract String getRefCat();
 
-	public abstract String getTtggss();
+	//public abstract String getTtggss();
 
 	public abstract boolean isValid();
+	
+	public abstract boolean toOSM(Cat2OsmUtils utils, double threshold, ShapeParent parent);
 
 	//////////////////////////////////////////////////////////////////////////
 	
@@ -442,411 +379,321 @@ public abstract class Shape {
 	/** Traduce el ttggss de Elemlin y Elempun. Elemtex tiene en su clase su propio parser
 	 * ya que necesita mas datos suyos propios.
 	 * @param ttggss Atributo ttggss
+	 * @param rotulo Texto que se pasa SOLO en los elementos textuales
 	 * @return Lista de los tags que genera
 	 */
-	public List<String[]> ttggssParser(String ttggss){
-		List<String[]> l = new ArrayList<String[]>();
-		String[] s = new String[2];
+	public Map<String,String> ttggssParser(String ttggss, String rotulo){
+		Map<String,String> l = new HashMap<String,String>();
 
+		//setTtggss(ttggss);
+		
 		switch (ttggss){
 
 		// Divisiones administrativas
 		case "010401":
-			s[0] = "admin_level"; s[1] ="2";
-			l.add(s);
-			s = new String[2];
-			s[0] = "boundary"; s[1] ="administrative";
-			l.add(s);
-			s = new String[2];
-			s[0] = "border_type"; s[1] ="nation";
-			l.add(s);
+			l.put("admin_level","2");
+			l.put("boundary","administrative");
+			l.put("border_type","nation");
 			return l;
 		case "010301":
-			s[0] = "admin_level"; s[1] ="4";
-			l.add(s);
-			s = new String[2];
-			s[0] = "boundary"; s[1] ="administrative";
-			l.add(s);
+			l.put("admin_level","4");
+			l.put("boundary","administrative");
 			return l;
 		case "010201":
-			s[0] = "admin_level"; s[1] ="6";
-			l.add(s);
-			s = new String[2];
-			s[0] = "boundary"; s[1] ="administrative";
-			l.add(s);
+			l.put("admin_level","6");
+			l.put("boundary","administrative");
 			return l;
 		case "010101":
-			s[0] = "admin_level"; s[1] ="8";
-			l.add(s);
-			s = new String[2];
-			s[0] = "boundary"; s[1] ="administrative";
-			l.add(s);
+			l.put("admin_level","8");
+			l.put("boundary","administrative");
 			return l;
 		case "010102":
-			s[0] = "admin_level"; s[1] ="10";
-			l.add(s);
-			s = new String[2];
-			s[0] = "boundary"; s[1] ="administrative";
-			l.add(s);
+			l.put("admin_level","10");
+			l.put("boundary","administrative");
 			return l;
 		case "018507":
-			s[0] = "historic"; s[1] ="boundary_stone";
-			l.add(s);
+			l.put("historic","boundary_stone");
 			return l;
 		case "018506":
-			s[0] = "historic"; s[1] ="boundary_stone";
-			l.add(s);
+			l.put("historic","boundary_stone");
 			return l;
 
 			// Relieve
 		case "028110":
-			s[0] = "man_made"; s[1] ="survey_point";
-			l.add(s);
+			l.put("man_made","survey_point");
 			return l;
 		case "028112":
-			s[0] = "man_made"; s[1] ="survey_point";
-			l.add(s);
+			l.put("man_made","survey_point");
 			return l;
 
 			// Hidrografia
 		case "030102":
-			s[0] = "waterway"; s[1] ="river";
-			l.add(s);
+			l.put("waterway","river");
 			return l;
 		case "030202": 
-			s[0] = "waterway"; s[1] ="stream";
-			l.add(s);
+			l.put("waterway","stream");
 			return l;
 		case "030302": 
-			s[0] = "waterway"; s[1] ="drain";
-			l.add(s);
+			l.put("waterway","drain");
 			return l;
 		case "032301": 
-			s[0] = "natural"; s[1] ="coastline";
-			l.add(s);
+			l.put("natural","coastline");
 			return l;
 		case "033301": 
-			s[0] = "natural"; s[1] ="water";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] ="Especificar tipo de agua (natural=water / leisure=swimming_pool / man_made=water_well / amenity=fountain / ...), eliminar landuse=reservoir y/o comprobar que no este duplicado o contenido en otra geometria de agua.";
-			l.add(s);
+			l.put("natural","water");
+			l.put("fixme","Especificar tipo de agua (natural=water / leisure=swimming_pool / man_made=water_well / amenity=fountain / ...), eliminar landuse=reservoir y/o comprobar que no este duplicado o contenido en otra geometria de agua.");
 			return l;
 		case "037101": 
-			s[0] = "man_made"; s[1] ="water_well";
-			l.add(s);
+			l.put("man_made","water_well");
 			return l;
 		case "038101": 
-			s[0] = "man_made"; s[1] ="water_well";
-			l.add(s);
+			l.put("man_made","water_well");
 			return l;
 		case "038102": 
-			s[0] = "amenity"; s[1] ="fountain";
-			l.add(s);
+			l.put("amenity","fountain");
 			return l;
 		case "037102": 
-			s[0] = "natural"; s[1] ="water";
-			l.add(s);
-			s = new String[2];
-			s[0] = "fixme"; s[1] ="Especificar tipo de agua (natural=water / leisure=swimming_pool / man_made=water_well / amenity=fountain / ...), eliminar landuse=reservoir y/o comprobar que no este duplicado o contenido en otra geometria de agua.";
-			l.add(s);
+			l.put("natural","water");
+			l.put("fixme","Especificar tipo de agua (natural=water / leisure=swimming_pool / man_made=water_well / amenity=fountain / ...), eliminar landuse=reservoir y/o comprobar que no este duplicado o contenido en otra geometria de agua.");
 			return l;
 		case "037107": 
-			s[0] = "waterway"; s[1] ="dam";
-			l.add(s);
+			l.put("waterway","dam");
 			return l;
 
 			// Vias de comunicacion
 		case "060102": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "060104": 
-			s[0] = "highway"; s[1] ="motorway";
-			l.add(s);
+			l.put("highway","motorway");
 			return l;
 		case "060202": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "060204": 
-			s[0] = "highway"; s[1] ="primary";
-			l.add(s);
+			l.put("highway","primary");
 			return l;
 		case "060402": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "060404": 
-			s[0] = "highway"; s[1] ="track";
-			l.add(s);
+			l.put("highway","track");
 			return l;
 		case "060109": 
-			s[0] = "railway"; s[1] ="funicular";
-			l.add(s);
+			l.put("railway","funicular");
 			return l;
 		case "061104": 
-			s[0] = "railway"; s[1] ="rail";
-			l.add(s);
+			l.put("railway","rail");
 			return l;
 		case "067121": 
-			s[0] = "bridge"; s[1] ="yes";
-			l.add(s);
+			l.put("bridge","yes");
 			return l;
 		case "068401": 
-			s[0] = "highway"; s[1] ="milestone";
-			l.add(s);
+			l.put("highway","milestone");
 			return l;
 
 			// Red geodesica y topografica
 		case "108100": 
-			s[0] = "man_made"; s[1] ="survey_point";
-			l.add(s);
+			l.put("man_made","survey_point");
 			return l;
 		case "108101": 
-			s[0] = "man_made"; s[1] ="survey_point";
-			l.add(s);
+			l.put("man_made","survey_point");
 			return l;
 		case "108104": 
-			s[0] = "man_made"; s[1] ="survey_point";
-			l.add(s);
+			l.put("man_made","survey_point");
 			return l;
 
 			// Delimitaciones catastrales urbanisticas y estadisticas
 		case "111101": 
-			s[0] = "admin_level"; s[1] ="10";
-			l.add(s);
-			s = new String[2];
-			s[0] = "boundary"; s[1] ="administrative";
-			l.add(s);
+			l.put("admin_level","10");
+			l.put("boundary","administrative");
 			return l;
 		case "111000": 
-			s[0] = "admin_level"; s[1] ="12";
-			l.add(s);
+			l.put("admin_level","12");
 			return l;
 		case "111200": 
-			s[0] = "admin_level"; s[1] ="14";
-			l.add(s);
+			l.put("admin_level","14");
 			return l;
 		case "111300": 
-			s[0] = "admin_level"; s[1] ="10";
-			l.add(s);
+			l.put("admin_level","10");
 			return l;
 		case "115101": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "115000": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "115200": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "115300": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 
 			// Rustica (Compatibilidad 2006 hacia atras)
 		case "120100": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "120200": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "120500": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "120180": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "120280": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "120580": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "125101": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "125201": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "125501": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "125510": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 
 			// Rustica y Urbana
 		case "130100": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "130200": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "130500": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "135101": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "135201": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "135501": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "135510": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 
 			// Urbana (Compatibilidad 2006 hacia atras)
 		case "140100": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "140190": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "140200": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "140290": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "140500": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "140590": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "145101": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "145201": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "145501": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "145510": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 
 			// Infraestructura/Mobiliario
 		case "160101": 
-			s[0] = "kerb"; s[1] ="yes";
-			l.add(s);
+			l.put("kerb","yes");
 			return l;
 		case "160131": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "160132": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "160201": 
-			s[0] = "power"; s[1] ="line";
-			l.add(s);
+			l.put("power","line");
 			return l;
 		case "160202": 
-			s[0] = "telephone"; s[1] ="line";
-			l.add(s);
+			l.put("telephone","line");
 			return l;
 		case "160300": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "161101": 
-			s[0] = "highway"; s[1] ="road";
-			l.add(s);
+			l.put("highway","road");
 			return l;
 		case "167103": 
-			s[0] = "historic"; s[1] ="monument";
-			l.add(s);
+			l.put("historic","monument");
 			return l;
 		case "167104": 
-			s[0] = "highway"; s[1] ="steps";
-			l.add(s);
+			l.put("highway","steps");
 			return l;
 		case "167106": 
-			s[0] = "highway"; s[1] ="footway";
-			l.add(s);
-			s = new String[2];
-			s[0] = "tunnel"; s[1] ="yes";
-			l.add(s);
+			l.put("highway","footway");
+			l.put("tunnel","yes");
 			return l;
 		case "167111": 
-			s[0] = "power"; s[1] ="sub_station";
-			l.add(s);
+			l.put("power","sub_station");
 			return l;
 		case "167167": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "167201": 
-			s[0] = "barrier"; s[1] ="hedge";
-			l.add(s);
+			l.put("barrier","hedge");
 			return l;
 		case "168100": 
-			s[0] = "ttggss"; s[1] =ttggss;
-			l.add(s);
+			l.put("ttggss",ttggss);
 			return l;
 		case "168103": 
-			s[0] = "historic"; s[1] ="monument";
-			l.add(s);
+			l.put("historic","monument");
 			return l;
 		case "168113": 
-			s[0] = "power"; s[1] ="pole";
-			l.add(s);
+			l.put("power","pole");
 			return l;
 		case "168116": 
-			s[0] = "highway"; s[1] ="street_lamp";
-			l.add(s);
+			l.put("highway","street_lamp");
 			return l;
 		case "168153": 
-			s[0] = "natural"; s[1] ="tree";
-			l.add(s);
+			l.put("natural","tree");
 			return l;
 		case "168168": 
-			s[0] = "amenity"; s[1] ="parking_entrance";
-			l.add(s);
+			l.put("amenity","parking_entrance");
 			return l;
+			
+		// Elementos textuales
+		case "189203":
+			l.put("place","locality");
+			l.put("name",rotulo);
+			return l;
+		case "189300":
+		case "189700":
+			l.put("name",rotulo);
+			return l;
+		case "189401":
+			l.put("entrance","yes");
+			return l;
+			
 		default: if (!ttggss.isEmpty()){
-			s[0] = "fixme"; s[1] = "Documentar ttggss="+ttggss+" si es preciso en http://wiki.openstreetmap.org/w/index.php?title=Traduccion_metadatos_catastro_a_map_features";
-			l.add(s);
-		}
+			l.put("fixme", "Documentar ttggss="+ttggss+" si es preciso en http://wiki.openstreetmap.org/w/index.php?title=Traduccion_metadatos_catastro_a_map_features");
+			//setTtggss("0");
+			}
 		}
 		return l;
 	}
