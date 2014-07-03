@@ -242,13 +242,13 @@ public class Cat2Osm {
 			tempSnappedCoor = new Coordinate(); // Coordenada del elemtex pegado a la geometria de la parcela
 			point = (Point) shapeTex.getGeometry();
 
-			minDist = MINDIST; // Distancia minima ~ 80 metros
+			minDist = Cat2OsmUtils.ENTRANCES_SEARCHDIST; // Distancia minima ~ 80 metros
 
 			// Creamos el punto de busqueda con la coordenada del punto y la expandimos
 			// en la distancia minima para obtener
 			// una linea de desplazamiento para tocar la parcela
 			search = new Envelope(point.getCoordinate());
-			search.expandBy(MINDIST);
+			search.expandBy(Cat2OsmUtils.ENTRANCES_SEARCHDIST);
 
 			// Hacemos la query
 			lines = index.query(search);
