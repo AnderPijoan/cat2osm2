@@ -34,43 +34,55 @@ public class Main {
 			}
 
 			if (args[x].toLowerCase().equals("-rslt")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -rslt = " + args[x+1] );
 				Config.set("ResultFileName", args[x+1]);
 			}
 			if (args[x].toLowerCase().equals("-3d")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -3d = " + args[x+1] );
 				Config.set("Catastro3d", args[x+1]);
 			}
 			if (args[x].toLowerCase().equals("-dbg")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -dbg = " + args[x+1] );
 				Config.set("PrintShapeIds", args[x+1]);
 			}
 			if (args[x].toLowerCase().equals("-reg")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -reg = " + args[x+1] );
 				Config.set("TipoRegistro", args[x+1]);
 			}
-
 			if (args[x].toLowerCase().equals("-constru")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -constru");
 				Config.set("ExportType", "CONSTRU");
 			}
 			else if (args[x].toLowerCase().equals("-ejes")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -ejes");
 				Config.set("ExportType", "EJES");
 			}
 			else if (args[x].toLowerCase().equals("-elemlin")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -elemlin");
 				Config.set("ExportType", "ELEMLIN");
 			}
 			else if (args[x].toLowerCase().equals("-elempun")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -elempun");
 				Config.set("ExportType", "ELEMPUN");
 			}
 			else if (args[x].toLowerCase().equals("-elemtex")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -elemtex");
 				Config.set("ExportType", "ELEMTEX");
 			}
 			else if (args[x].toLowerCase().equals("-masa")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -masa");
 				Config.set("ExportType", "MASA");
 			}
 			else if (args[x].toLowerCase().equals("-parcela")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -parcela");
 				Config.set("ExportType", "PARCELA");
 			}
 			else if (args[x].toLowerCase().equals("-subparce")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -subparce");
 				Config.set("ExportType", "SUBPARCE");
 			}
 			else if (args[x].toLowerCase().equals("-usos")){
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -usos");
 				Config.set("ExportType", "USOS");
 			}
 			
@@ -221,7 +233,6 @@ public class Main {
 			}
 		}
 
-
 		// Listas
 		// Lista de shapes, agrupados por codigo de masa a la que pertenecen
 		// Si es un tipo de shapes que no tienen codigo de masa se meteran en una cuyo
@@ -311,11 +322,12 @@ public class Main {
 			{System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer archivo Cat rústico. " + e.getCause());}	
 		}
 
-
-		// Mover las entradas de las casas a sus respectivas parcelas
+		// Mover las entradas de las casas a sus respectivas parcelas 
+		// PERO NO ANADIRLAS A LA GEOMETRIA DE LA PARCELA
+		// ESO SE HACE AL FINAL
 		if (archivo.equals("*")){
 			System.out.println("["+new Timestamp(new Date().getTime())+"] Moviendo puntos de entrada a sus parcelas mas cercanas.");
-			HashMap <String, List<Shape>> shapesTemp = catastro.calcularEntradas(shapes);
+			HashMap <String, List<Shape>> shapesTemp = catastro.asignEntrances(shapes);
 			if (shapesTemp != null)
 				shapes = shapesTemp;
 		}
@@ -355,8 +367,7 @@ public class Main {
 			else if (shapes.get(key) != null){
 
 				try {
-
-					// Montar la jerarquia de parcelas.
+					// Montar la jerarquia de parcelas, construcciones y parte de construcciones
 					if (archivo.equals("*") && !key.startsWith("EJES") && !key.startsWith("ELEM")){
 						System.out.println("["+new Timestamp(new Date().getTime())+"]\tCreando jerarquia de parcelas/subparcelas/construcciones.");
 						catastro.createHyerarchy(key, shapes.get(key));
@@ -364,28 +375,23 @@ public class Main {
 
 					// Si son ELEMLIN o EJES, juntar todos los ways que compartan un node
 					// aunque sean de distintos shapes
-					// y
-					// Simplificar nodos intermedios en lineas rectas
 					if (key.startsWith("EJES") || key.startsWith("ELEMLIN") ){
 						System.out.println("["+new Timestamp(new Date().getTime())+"]\tEncadenando shapes lineales.");
 						catastro.joinLinearElements(key, shapes.get(key));
-
-						System.out.println("["+new Timestamp(new Date().getTime())+"]\tSimplificando geometrías.");
-						catastro.simplifyGeometries(shapes.get(key), 0.000002);
 					}
-					//				else {
-					//					System.out.println("["+new Timestamp(new Date().getTime())+"]    Simplificando geometrías.");
-					//					catastro.simplifyGeometries(shapes.get(key), 0.0000005);
-					//				}
 
-					// Operacion de simplificacion de relaciones sin tags relevantes
+					// Operacion de eliminar relaciones relaciones sin tags relevantes
 					if (archivo.equals("*")){
 						System.out.println("["+new Timestamp(new Date().getTime())+"]\tSimplificando Shapes sin tags relevantes.");
-						catastro.simplificarShapesSinTags(key, shapes.get(key));
+						catastro.deleteNoTagsShapes(key, shapes.get(key));
 					}
 
 					// Desmontar las geometrias en elementos de OSM
-					catastro.convertShapes2OSM(shapes.get(key), 0.000002);
+					catastro.convertShapes2OSM(shapes.get(key));
+					
+					// Simplificar las geometrias OSM
+					// No se pueden simplificar antes porque hay que reutilizar nodos y geometrias superpuestas
+					catastro.simplifyOSM(utils, shapes.get(key), key);
 
 				} catch (Exception e) {
 					System.out.println("["+new Timestamp(new Date().getTime())+"]\tLa exportación de " + Config.get("ResultFileName") + "-" + key + " [" + ++pos + File.separatorChar + shapes.keySet().size() + "] falló.\r");
@@ -556,7 +562,7 @@ public class Main {
 			else if (shapes.get(key) != null){
 
 				// Desmontar las geometrias en elementos de OSM
-				catastro.convertShapes2OSM(shapes.get(key), 0.000002);
+				catastro.convertShapes2OSM(shapes.get(key));
 
 				// Escribir los datos en los archivos temporales
 				System.out.println("["+new Timestamp(new Date().getTime())+"]\tEscribiendo archivos temporales.");

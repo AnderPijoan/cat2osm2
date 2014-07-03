@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.util.PolygonExtracter;
 
@@ -89,8 +91,8 @@ public class ShapeParcela extends ShapeParent {
 		////////////////////////////////////////////////////////////////////// 
 		//
 		// SE HA COMPROBADO QUE EL NUMSYMBOL 4 PERTENECE A PARCELAS QUE GENERALMENTE
-		// NO HAY QUE DIBUJAR COMO PARCELAS DE CARRETERAS, PARCELA RUSTICA QUE CUBRE
-		// TODA LA ZONA URBANA Y ALGUNA MAS
+		// NO HAY QUE DIBUJAR COMO PARCELAS BAJO CARRETERAS, PARCELAS RUSTICA QUE 
+		// CUBREN TODA UNA ZONA URBANA Y POR TANTO NO TIENEN ATRIBUTOS, ETC
 		//
 		///////////////////////////////////////////////////////////////////////
 		if (f.getAttribute("NUMSYMBOL") instanceof Double) {
@@ -207,913 +209,163 @@ public class ShapeParcela extends ShapeParent {
 		this.entrances.add(entrance);
 	}
 
-	
 	/**
-	 * Sobreescribe el atributo a los constru SOLO si existe la clave k con el valor v
-	 * @param k Clave
-	 * @param v Valor existente
-	 * @param newV Valor con el que se sobreescribira
+	 * Los nuevos tags de OSM 3d requieren para las construcciones con distintas
+	 * alturas crear una relacion con el contorno y sus partes.
+	 * Para ello esta la clase ConstruExterior y las ConstruPart.
+	 * La Parcela unicamente tendra como subshapes ConstruExteriores y estas seran
+	 * las que contengan los ConstruPart como sus subshapes.
+	 * Se creara una ConstruExterior de forma automatica para englobar los ConstruPart.
+	 * A la hora de anadir los Construs a una parcela, se comprueba si interseca
+	 * con alguna ya existente, para unirlas en una. Al crear esta union
+	 * se añadira la nueva parte ampliando la geometría de la ConstruExterior
 	 */
-	public void overwriteAttributeInConstru(String k, String v, String newV){
-		if(subshapes != null)
-			for(Shape sub : subshapes){
-				if (sub instanceof ShapeConstru )
-					sub.getAttributes().overwriteAttribute(k, v, newV);
-			}
-	}
-	
-	
-	/**
-	 * Anade el atributo a los constru solo si existe la clave especificada
-	 * @param ifKey Clave que tiene que existir
-	 * @param k Clave
-	 * @param v Valor
-	 */
-	public void addAttributeInConstruIfKeyValue(String existKey, String existValue, String k, String v){
-		if(subshapes != null)
-			for(Shape sub : subshapes){
-				if (sub instanceof ShapeConstru )
-					sub.getAttributes().addAttributeIfKeyValue(existKey, existValue, k, v);
-			}
-	}
+//	@Override
+//	public void addSubshape(ShapePolygonal subshape){
+//		if (subshapes == null)
+//			subshapes = new ArrayList<Shape>();
+//		this.subshapes.add(subshape);
+//		
+//		ShapePolygonal construPart = subshape;
+//		boolean existsConstruPart = false;
+//		
+//		// Si el subshape (ShapeConstruPart) coincide perfectamente con la parcela
+//		// o son practicamente el mismo directamente solo anadimos los tags a la parcela
+//		
+//		if (construPart.getGeometry().buffer(0).equalsNorm(this.geometry.buffer(0))){
+//			getAttributes().addAll(construPart.getAttributes().asHashMap());
+//		} else {
+//			
+//			// Sino, comprobar los subshapes de la parcela para buscar intersecciones
+//			// para reutilizar subshapes existentes. Si no existen o no hay interseccion
+//			// anadir la construccion a los subshapes de la parcela
+//
+//			for(Shape construExt : subshapes){
+//				
+//				// Calcular la interseccion. Hasta ahora si solo se tocaban en un punto 2 geometrias
+//				// se creaba un multipoligono que las unia, pero no tiene logica. Para comprobar esos
+//				// casos se comprueba que la interseccion tenga mas e 1 punto.
+//				Geometry intersection = construPart.getGeometry().intersection(construExt.getGeometry());
+//				
+//				if ( construPart.getGeometry().overlaps(construExt.getGeometry()) || // Una junto a la otra
+//						(construPart.getGeometry().intersects(construExt.getGeometry()) && intersection.getNumPoints() > 1 ) // Interseccionan
+//						){
+//					existsConstruPart = true;
+//					construExt.setGeometry(
+//							construExt.getGeometry().union(
+//									construPart.getGeometry()));
+//					construExt.getGeometry().normalize();
+//					((ShapeParent) construExt).addSubshape(construPart);
+//				}
+//			}
+//			if (!existsConstruPart){
+//				// Si no existe ninguna parte que interseque
+//				// crear una nueva ConstruExterior y meter en ella la ConstruPart
+//				SimpleFeatureType type = null;
+//				try {
+//					// Crear el shape
+//					type = DataUtilities.createType("ConstruExterior", "MASA:String,REFCAT:String,FECHAALTA:Double,FECHABAJA:Double");
+//					SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+//					builder.add(this.getCodigoMasa());
+//					builder.add(this.getRefCat());
+//					builder.add(construPart.getFechaAlta());
+//					builder.add(construPart.getFechaBaja());
+//					ShapeParent nuevoConstruExt = new ShapeConstruExterior(builder.buildFeature(null), this.getTipo());
+//
+//					// Anadimos como subshape el ConstruPart
+//					nuevoConstruExt.addSubshape(construPart);
+//					nuevoConstruExt.setGeometry(construPart.getGeometry());
+//
+//					// Anadimos NO TODOS, sino los atributos importantes a la construccion
+//					// exterior, para que esta tenga tags relevantes y asi no sea borrada
+//					List<String> nokeys = new ArrayList<String>();
+//					nokeys.add("building:levels");
+//					nokeys.add("height");
+//					for (String key : construPart.getAttributes().getKeys()){
+//						if (!nokeys.contains(key))
+//						{
+//							nuevoConstruExt.getAttributes().addAttribute(key, construPart.getAttributes().getValue(key));
+//						}
+//					}
+//					// Anadimos a la parcela el ConstruExterior
+//					this.subshapes.add(nuevoConstruExt);
+//				} catch (SchemaException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//	}
 
 	
-	/**
-	 * Comprueba si hay destinos o usos, coge el de mayor
-	 * area y actualiza sus propiedades y las de los subshapes en consecuencia.
-	 * 
-	 * Hay tags que vienen mas detallados en los shapefiles por eso puede que
-	 * no se sobreescriban o si.
-	 */
+	@Override
 	public void createAttributesFromUsoDestino() {
-
-			String usodestino = getUsoDestinoMasArea();
-			
-			switch (usodestino){
-			case "A":
-			case "B":
-				break;
-			case "AAL":
-			case "BAL":
-				overwriteAttributeInConstru("building", "yes", "warehouse");
-				break;
-			case "AAP":
-			case "BAP":
-				getAttributes().addAttribute("landuse", "garages");
-				overwriteAttributeInConstru("building", "yes", "garage");
-				break;
-			case"ACR":
-			case"BCR":
-				break;
-			case "ACT":
-			case "BCT":
-				addAttributeInConstruIfKeyValue("building", "yes", "power", "sub_station");
-				overwriteAttributeInConstru("building", "yes", "sub_station");
-				break;
-			case "AES":
-			case "BES":
-				overwriteAttributeInConstru("building", "yes", "station");
-				addAttributeInConstruIfKeyValue("building", "yes", "public_transport", "station");
-				break;
-			case "AIG":
-			case "BIG":
-				getAttributes().addAttribute("landuse","farmyard");
-				overwriteAttributeInConstru("building", "yes", "livestock");
-				break;
-			case "C":
-			case "D":
-				getAttributes().addAttributeIfNotExistValue("landuse","retail");
-				break;
-			case "CAT":
-			case "DAT":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop", "car");
-				break;
-			case "CBZ":
-			case "DBZ":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","electronics");
-				break;
-			case "CCE":
-			case "DCE":
-				getAttributes().addAttribute("landuse","retail");
-				break;
-			case "CCL":
-			case "DCL":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","shoes");
-				break;
-			case "CCR":
-			case "DCR":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","butcher");
-				break;
-			case "CDM":
-			case "DDM":
-				getAttributes().addAttribute("landuse","retail");
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","yes");
-				break;
-			case "CDR":
-			case "DDR":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","chemist");
-				break;
-			case "CFN":
-			case "DFN":;
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","bank");
-				break;
-			case "CFR":
-			case "DFR":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","pharmacy");
-				break;
-			case "CFT":
-			case "DFT":
-				addAttributeInConstruIfKeyValue("building", "yes", "craft","plumber");
-				break;
-			case "CGL":
-			case "DGL":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","marketplace");
-				break;
-			case "CIM":
-			case "DIM":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","copyshop");
-				break;
-			case "CJY":
-			case "DJY":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","jewelry");
-				break;
-			case "CLB":
-			case "DLB":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","books");
-				break;
-			case "CMB":
-			case "DMB":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","furniture");
-				break;
-			case "CPA":
-			case "DPA":
-				getAttributes().addAttribute("landuse","retail");
-				break;
-			case "CPR":
-			case "DPR":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","chemist");
-				break;
-			case "CRL":
-			case "DRL":
-				addAttributeInConstruIfKeyValue("building", "yes", "craft","watchmaker");
-				break;
-			case "CSP":
-			case "DSP":
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","clothes");
-				break;
-			case "CTJ":
-			case "DTJ":
-				getAttributes().addAttribute("landuse","retail");
-				overwriteAttributeInConstru("building","yes", "supermarket");
-				addAttributeInConstruIfKeyValue("building", "yes", "shop","supermarket");
-				break;
-			case "E":
-			case "F":
-				getAttributes().addAttributeIfNotExistValue("amenity","school");
-				addAttributeInConstruIfKeyValue("building","yes","amenity","school");
-				overwriteAttributeInConstru("building","yes","school");
-				break;
-			case "EBL":
-			case "FBL":
-				overwriteAttributeInConstru("building","yes", "library");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","library");
-				break;
-			case "EBS":
-			case "FBS":
-				getAttributes().addAttribute("amenity","school");
-				getAttributes().addAttribute("isced:level","1;2");
-				overwriteAttributeInConstru("building","yes", "school");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "school");
-				addAttributeInConstruIfKeyValue("building", "yes", "isced:level","1;2");
-				break;
-			case "ECL":
-			case "FCL":
-				getAttributes().addAttribute("amenity","community_centre");
-				overwriteAttributeInConstru("building","yes", "community_centre");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "community_centre");
-				break;
-			case "EIN":
-			case "FIN":
-				getAttributes().addAttribute("amenity","school");
-				getAttributes().addAttribute("isced:level","3;4");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "school");
-				addAttributeInConstruIfKeyValue("building", "yes", "isced:level","3;4");
-				overwriteAttributeInConstru("building","yes","school");
-				break;
-			case "EMS":
-			case "FMS":
-				getAttributes().addAttribute("tourism","museum");
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism", "museum");
-				overwriteAttributeInConstru("building","yes","museum");
-				break;
-			case "EPR":
-			case "FPR":
-				getAttributes().addAttribute("amenity","school");
-				getAttributes().addAttribute("isced:level","4");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "school");
-				addAttributeInConstruIfKeyValue("building", "yes", "isced:level","4");
-				overwriteAttributeInConstru("building","yes","school");
-				break;
-			case "EUN":
-			case "FUN":
-				getAttributes().addAttribute("amenity","university");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity", "university");
-				overwriteAttributeInConstru("building","yes","university");
-				break;
-			case "G":
-			case "H":
-				getAttributes().addAttribute("tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GC1":
-			case "HC1":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","1");
-				break;
-			case "GC2":
-			case "HC2":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","2");
-				break;
-			case "GC3":
-			case "HC3":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","3");
-				break;
-			case "GC4":
-			case "HC4":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","4");
-				break;
-			case "GC5":
-			case "HC5":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cafe");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","5");
-				break;
-			case "GH1":
-			case "HH1":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","1");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GH2":
-			case "HH2":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","2");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GH3":
-			case "HH3":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","3");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GH4":
-			case "HH4":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","4");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GH5":
-			case "HH5":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","5");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GP1":
-			case "HP1":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
-				addAttributeInConstruIfKeyValue("building", "yes", "category","1");
-				overwriteAttributeInConstru("building","yes","apartments");
-				break;
-			case "GP2":
-			case "HP2":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
-				addAttributeInConstruIfKeyValue("building", "yes", "category","2");
-				overwriteAttributeInConstru("building","yes","apartments");
-				break;
-			case "GP3":
-			case "HP3":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
-				addAttributeInConstruIfKeyValue("building", "yes", "category","3");
-				overwriteAttributeInConstru("building","yes","apartments");
-				break;
-			case "GPL":
-			case "HPL":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","apartments");
-				overwriteAttributeInConstru("building","yes","apartments");
-				break;
-			case "GR1":
-			case "HR1":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","1");
-				break;
-			case "GR2":
-			case "HR2":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","2");
-				break;
-			case "GR3":
-			case "HR3":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","3");
-				break;
-			case "GR4":
-			case "HR4":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","4");
-				break;
-			case "GR5":
-			case "HR5":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","restaurant");
-				addAttributeInConstruIfKeyValue("building", "yes", "forks","5");
-				break;
-			case "GS1":
-			case "HS1":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","1");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GS2":
-			case "HS2":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","2");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GS3":
-			case "HS3":
-				addAttributeInConstruIfKeyValue("building", "yes", "tourism","hotel");
-				addAttributeInConstruIfKeyValue("building", "yes", "stars","3");
-				overwriteAttributeInConstru("building","yes","hotel");
-				break;
-			case "GT1":
-			case "HT1":
-			case "GT2":
-			case "HT2":
-			case "GT3":
-			case "HT3":
-			case "GTL":
-			case "HTL":
-				// Como no sabemos a que se puede referir esto, mejor ponemos un fixme
-				getAttributes().addAttribute("fixme","Documentar codificación de destino de los bienes inmuebles en catastro código="+ usodestino +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles");
-				break;
-			case "I":
-			case "J":
-				getAttributes().addAttributeIfNotExistValue("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IAG":
-			case "JAG":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","farming");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IAL":
-			case "JAL":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","food");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IAM":
-			case "JAM":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","storage_tank");
-				getAttributes().addAttribute("content","OMW");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IAR":
-			case "JAR":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","agricultural");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IAS":
-			case "JAS":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("craft","sawmill");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IBB":
-			case "JBB":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","drinks");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IBD":
-			case "JBD":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","winery");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IBR":
-			case "JBR":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","ceramic");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "ICH":
-			case "JCH":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","mushrooms");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "ICN":
-			case "JCN":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","building");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "ICT":
-			case "JCT":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","quarry");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IEL":
-			case "JEL":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","electric");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IGR":
-			case "JGR":
-				getAttributes().addAttribute("landuse","farmyard");
-				break;
-			case "IIM":
-			case "JIM":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","chemistry");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IIN":
-			case "JIN":
-				getAttributes().addAttribute("landuse","greenhouse_horticulture");
-				overwriteAttributeInConstru("building","yes","greenhouse");
-				break;
-			case "IMD":
-			case "JMD":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","wood");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IMN":
-			case "JMN":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","manufacturing");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IMT":
-			case "JMT":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","metal");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IMU":
-			case "JMU":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","machinery");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IPL":
-			case "JPL":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","plastics");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IPP":
-			case "JPP":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","paper");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IPS":
-			case "JPS":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","fishing");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IPT":
-			case "JPT":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","petroleum");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "ITB":
-			case "JTB":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","tobacco");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "ITX":
-			case "JTX":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","clothing");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "IVD":
-			case "JVD":
-				getAttributes().addAttribute("landuse","industrial");
-				getAttributes().addAttribute("man_made","works");
-				getAttributes().addAttribute("works","glass");
-				overwriteAttributeInConstru("building","yes","industrial");
-				break;
-			case "K":
-			case "L":
-				getAttributes().addAttributeIfNotExistValue("leisure","sports_centre");
-				break;
-			case "KDP":
-			case "LDP":
-				getAttributes().addAttribute("leisure","pitch");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar sport=X si es posible.");
-				break;
-			case "KES":
-			case "LES":
-				getAttributes().addAttribute("leisure","stadium");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar sport=X si es posible.");
-				break;
-			case "KPL":
-			case "LPL":
-				getAttributes().addAttribute("leisure","sports_centre");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar sport=X si es posible.");
-				break;
-			case "KPS":
-			case "LPS":
-				getAttributes().addAttribute("leisure","swimming_pool");
-				getAttributes().addAttribute("sport","swimming");
-				break;
-			case "M":
-			case "N":
-				getAttributes().addAttributeIfNotExistValue("landuse","greenfield");
-				break;
-			case "O":
-			case "X":
-				getAttributes().addAttributeIfNotExistValue("landuse","commercial");
-				break;
-			case "O02":
-			case "X02":
-				getAttributes().addAttribute("landuse","commercial");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesional superior. Afinar office=X si es posible.");
-				break;
-			case "O03":
-			case "X03":
-				getAttributes().addAttribute("landuse","commercial");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesional medio. Afinar office=X si es posible.");
-				break;
-			case "O06":
-			case "X06":
-				getAttributes().addAttribute("landuse","commercial");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Médicos, abogados... Afinar office=X si es posible.");
-				break;
-			case "O07":
-			case "X07":
-				getAttributes().addAttribute("landuse","health");
-				addAttributeInConstruIfKeyValue("building", "yes", "health_facility:type","office");
-				addAttributeInConstruIfKeyValue("building", "yes", "health_person:type","nurse");
-				overwriteAttributeInConstru("building","yes","health");
-				break;
-			case "O11":
-			case "X11":
-				getAttributes().addAttribute("landuse","commercial");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesores Mercant. Afinar office=X si es posible.");
-				break;
-			case "O13":
-			case "X13":
-				getAttributes().addAttribute("landuse","commercial");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", Profesores Universitarios. Afinar office=X si es posible.");
-				break;
-			case "O15":
-			case "X15":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "office","writer");
-				break;
-			case "O16":
-			case "X16":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "craft","painter");
-				break;
-			case "O17":
-			case "X17":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "office","musician");
-				break;
-			case "O43":
-			case "X43":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "office","salesman");
-				break;
-			case "O44":
-			case "X44":
-				getAttributes().addAttribute("landuse","commercial");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", agentes. Afinar office=X si es posible.");
-				break;
-			case "O75":
-			case "X75":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "craft","weaver");
-				break;
-			case "O79":
-			case "X79":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "craft","tailor");
-				break;
-			case "O81":
-			case "X81":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "craft","carpenter");
-				break;
-			case "O88":
-			case "X88":
-				getAttributes().addAttribute("landuse","commercial");
-				addAttributeInConstruIfKeyValue("building", "yes", "craft","jeweller");
-				break;
-			case "O99":
-			case "X99":
-				getAttributes().addAttribute("landuse","commercial");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", otras actividades. Afinar office=X si es posible.");
-				break;
-			case "P":
-			case "Q":
-				getAttributes().addAttribute("amenity","public_building");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","public_building");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "PAA":
-			case "QAA":
-				getAttributes().addAttribute("amenity","townhall");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","townhall");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "PAD":
-			case "QAD":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","courthouse");
-				addAttributeInConstruIfKeyValue("building", "yes", "operator","autonomous_community");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "PAE":
-			case "QAE":
-				getAttributes().addAttribute("amenity","townhall");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","townhall");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "PCB":
-			case "QCB":
-				getAttributes().addAttribute("office","administrative");
-				addAttributeInConstruIfKeyValue("building", "yes", "office","administrative");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "PDL":
-			case "QDL":
-			case "PGB":
-			case "QGB":
-				getAttributes().addAttribute("office","government");
-				addAttributeInConstruIfKeyValue("building", "yes", "office","government");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "PJA":
-			case "QJA":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","courthouse");
-				addAttributeInConstruIfKeyValue("building", "yes", "operator","county");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "PJO":
-			case "QJO":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","courthouse");
-				addAttributeInConstruIfKeyValue("building", "yes", "operator","province");
-				overwriteAttributeInConstru("building","yes","public");
-				break;
-			case "R":
-			case "S":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
-				overwriteAttributeInConstru("building","yes","church");
-				break;
-			case "RBS":
-			case "SBS":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
-				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
-				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
-				overwriteAttributeInConstru("building","yes","basilica");
-				break;
-			case "RCP":
-			case "SCP":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
-				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
-				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
-				overwriteAttributeInConstru("building","yes","chapel");
-				break;
-			case "RCT":
-			case "SCT":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
-				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
-				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
-				overwriteAttributeInConstru("building","yes","cathedral");
-				break;
-			case "RER":
-			case "SER":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
-				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
-				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
-				overwriteAttributeInConstru("building","yes","hermitage");
-				break;
-			case "RPR":
-			case "SPR":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","place_of_worship");
-				addAttributeInConstruIfKeyValue("building", "yes", "religion","christian");
-				addAttributeInConstruIfKeyValue("building", "yes", "denomination","roman_catholic");
-				overwriteAttributeInConstru("building","yes","parish_church");
-				break;
-			case "RSN":
-			case "SSN":
-				getAttributes().addAttribute("landuse","health");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","hospital");
-				overwriteAttributeInConstru("building","yes","hospital");
-				break;
-			case "T":
-			case "U":
-				break;
-			case "TAD":
-			case "UAD":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","auditorium");
-				overwriteAttributeInConstru("building","yes","auditorium");
-				break;
-			case "TCM":
-			case "UCM":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cinema");
-				overwriteAttributeInConstru("building","yes","cinema");
-				break;
-			case "TCN":
-			case "UCN":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","cinema");
-				overwriteAttributeInConstru("building","yes","cinema");
-				break;
-			case "TSL":
-			case "USL":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","hall");
-				overwriteAttributeInConstru("building","yes","hall");
-				break;
-			case "TTT":
-			case "UTT":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","theatre");
-				overwriteAttributeInConstru("building","yes","theatre");
-				break;
-			case "V":
-			case "W":
-				getAttributes().addAttributeIfNotExistValue("landuse","residential");
-				overwriteAttributeInConstru("building","yes","residential");
-				break;
-			case "Y":
-			case "Z":
-				break;
-			case "YAM":
-			case "ZAM":
-			case "YCL":
-			case "ZCL":
-				getAttributes().addAttribute("landuse","health");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","clinic");
-				addAttributeInConstruIfKeyValue("building", "yes", "medical_system:western","yes");
-				overwriteAttributeInConstru("building","yes","clinic");
-				break;
-			case "YBE":
-			case "ZBE":
-				getAttributes().addAttribute("landuse","pond");
-				break;
-			case "YCA":
-			case "ZCA":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","casino");
-				overwriteAttributeInConstru("building","yes","casino");
-				break;
-			case "YCB":
-			case "ZCB":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","club");
-				overwriteAttributeInConstru("building","yes","club");
-				break;
-			case "YCE":
-			case "ZCE":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","casino");
-				overwriteAttributeInConstru("building","yes","casino");
-				break;
-			case "YCT":
-			case "ZCT":
-				getAttributes().addAttribute("landuse","quarry");
-				break;
-			case "YDE":
-			case "ZDE":
-				getAttributes().addAttribute("man_made","wastewater_plant");
-				break;
-			case "YDG":
-				getAttributes().addAttribute("man_made","storage_tank");
-				getAttributes().addAttribute("content","gas");
-				break;
-			case "ZDG":
-				getAttributes().addAttribute("landuse","farmyard");
-				getAttributes().addAttribute("man_made","storage_tank");
-				getAttributes().addAttribute("content","gas");
-				break;
-			case "YDL":
-				addAttributeInConstruIfKeyValue("building", "yes", "man_made","storage_tank");
-				addAttributeInConstruIfKeyValue("building", "yes", "content","liquid");
-				break;
-			case "ZDL":
-				getAttributes().addAttribute("landuse","farmyard");
-				getAttributes().addAttribute("man_made","storage_tank");
-				getAttributes().addAttribute("content","liquid");
-				break;
-			case "YDS":
-			case "ZDS":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","pharmacy");
-				addAttributeInConstruIfKeyValue("building", "yes", "dispensing","yes");
-				break;
-			case "YGR":
-			case "ZGR":
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","kindergarten");
-				break;
-			case "YGV":
-			case "ZGV":
-				getAttributes().addAttribute("landuse","surface_mining");
-				getAttributes().addAttribute("mining_resource","gravel");
-				break;
-			case "YHG":
-			case "ZHG":
-				// Como no sabemos a que se puede referir esto, mejor ponemos un fixme
-				getAttributes().addAttribute("fixme","Documentar codificación de destino de los bienes inmuebles en catastro código="+ usodestino +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles");
-				break;
-			case "YHS":
-			case "ZHS":
-			case "YSN":
-			case "ZSN":
-				getAttributes().addAttribute("landuse","health");
-				addAttributeInConstruIfKeyValue("building", "yes", "amenity","hospital");
-				addAttributeInConstruIfKeyValue("building", "yes", "medical_system:western","yes");
-				overwriteAttributeInConstru("building","yes","hospital");
-				break;
-			case "YMA":
-			case "ZMA":
-				getAttributes().addAttribute("landuse","surface_mining");
-				getAttributes().addAttribute("fixme","Codigo="+ usodestino +", afinar mining_resource=X si es posible.");
-				break;
-			case "YME":
-			case "ZME":
-				getAttributes().addAttribute("man_made","pier");
-				break;
-			case "YPC":
-			case "ZPC":
-				getAttributes().addAttribute("landuse","aquaculture");
-				break;
-			case "YRS":
-			case "ZRS":
-				addAttributeInConstruIfKeyValue("building", "yes", "social_facility","group_home");
-				break;
-			case "YSA":
-			case "ZSA":
-			case "YSO":
-			case "ZSO":
-				addAttributeInConstruIfKeyValue("building", "yes", "office","labour_union");
-				break;
-			case "YSC":
-			case "ZSC":
-				getAttributes().addAttribute("landuse","health");
-				addAttributeInConstruIfKeyValue("building", "yes", "health_facility:type","first_aid");
-				addAttributeInConstruIfKeyValue("building", "yes", "medical_system:western","yes");
-				break;
-			case "YSL":
-				addAttributeInConstruIfKeyValue("building", "yes", "man_made","storage_tank");
-				addAttributeInConstruIfKeyValue("building", "yes", "content","solid");
-				break;
-			case "ZSL":
-				getAttributes().addAttribute("landuse","farmyard");
-				addAttributeInConstruIfKeyValue("building", "yes", "man_made","storage_tank");
-				addAttributeInConstruIfKeyValue("building", "yes", "content","solid");
-				break;
-			case "YVR":
-			case "ZVR":
-				getAttributes().addAttribute("landuse","landfill");
-				break;
-			default:
-				if (!usodestino.isEmpty()){
-					getAttributes().addAttribute("fixme","Documentar nuevo codificación de destino de los bienes inmuebles en catastro código="+ usodestino +" en http://wiki.openstreetmap.org/wiki/Traduccion_metadatos_catastro_a_map_features#Codificaci.C3.B3n_de_los_destinos_de_los_bienes_inmuebles");
-					}
+		ParcelaParser parser = new ParcelaParser();
+		parser.parseParcela(this);
+	}
+	
+	/**
+	 * Convierte la parcela a OSM Y ANADE EL PUNTO DE LA ENTRADA
+	 * a la relacion
+	 */
+	@Override
+	public boolean toOSM(Cat2OsmUtils utils, ShapeParent parent){
+		boolean converted = true;
+		// ANADIMOS LA ENTRADA A LA GEOMETRIA DE PARCELA Y TODOS LOS SUBSHAPES SOBRE LOS
+		// QUE TAMBIEN LA TOQUEN.
+		if (this.getEntrances() != null){
+			// Recorremos los entrances de la parcela
+			for (Shape entrance : this.getEntrances()){
+				// Crear un NodeOSM con la entrada
+				converted = entrance.toOSM(utils, this);
+				if (converted){
+					converted = addEntrancePointToGeomIfOnEdge(utils, this, entrance);
+				}
+			}
 		}
+		if (converted){
+			converted = super.toOSM(utils, parent);
+		} 
+		return converted;
+	}
+	
+	/**
+	 * Dada un shape y una entrada, comprueba si esta ultima esta sobre el shape y en ese
+	 * caso lo anade.
+	 * @param utils
+	 * @param shape
+	 * @param entrance
+	 * @return
+	 */
+	public boolean addEntrancePointToGeomIfOnEdge(Cat2OsmUtils utils, ShapePolygonal shape, Shape entrance){	
+		// Crear una lista con las coordenadas de la geometria
+		List<Coordinate> coors = new ArrayList<Coordinate>();
+		for (Coordinate coor : shape.getGeometry().getCoordinates()){
+			coors.add(coor);
+		}
+		for(int x = 1; x < coors.size(); x++){
+			Coordinate[] tempCoors = {coors.get(x-1), coors.get(x)};
+			LineString line = shape.getGeometry().getFactory().createLineString(tempCoors);
+			if (line.isWithinDistance(entrance.getGeometry(), Cat2OsmUtils.GEOM_INTERSECTION_THRESHOLD)) {
+				
+				// ANADIMOS LA COORDENADA A LA LISTA DE COORDENADAS Y SOBREESCRIBIMOS LA GEOMETRIA
+				coors.add(x, entrance.getGeometry().getCoordinates()[0]);
+				
+				// COMPROBAR QUE HA QUEDADO UNA LINEA CERRADA
+				if (coors.get(0).equals(coors.get(coors.size()-1))){
+					shape.setGeometry(shape.getGeometry().getFactory().createPolygon(
+							shape.getGeometry().getFactory().createLinearRing( (coors.toArray(new Coordinate[coors.size()])) ), null)
+							);
+				}
+				
+				// LANZAR EL MISMO PROCESO CON LOS SUBSHAPES
+				if(shape instanceof ShapeParent && ((ShapeParent)shape).getSubshapes() != null){
+					for(Shape subshape : ((ShapeParent)shape).getSubshapes()){
+						addEntrancePointToGeomIfOnEdge(utils, (ShapePolygonal)subshape, entrance);
+					}
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 }

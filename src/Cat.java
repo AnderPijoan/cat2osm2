@@ -77,7 +77,7 @@ public class Cat {
 		String k = nombre.trim();
 		String v = valor.trim();
 		
-		if (k.isEmpty() && !v.isEmpty()){
+		if (!k.isEmpty() && !v.isEmpty()){
 			attributes.addAttributeIfNotExistValue(k, v);
 		}
 	}

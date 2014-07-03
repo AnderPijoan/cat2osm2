@@ -1,28 +1,17 @@
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 
-import com.vividsolutions.jts.algorithm.LineIntersector;
-import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.util.PolygonExtracter;
-import com.vividsolutions.jts.operation.overlay.PolygonBuilder;
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
+import com.vividsolutions.jts.geom.Point;
 
 
 public class Cat2OsmUtils {
@@ -30,6 +19,13 @@ public class Cat2OsmUtils {
 	private volatile static long idnode = -1;    // Comienzo de id de nodos
 	private volatile static long idway = -1;     // Comienzo de id de ways
 	private volatile static long idrelation = -1; // Comienzo de id de relations
+	
+	// CONSTANTES
+	static final double GEOM_SIMPLIFIER_THRESHOLD = 0.00001;
+	static final double GEOM_INTERSECTION_THRESHOLD = 0.000001;
+	static final double GEOM_EQUALS_THRESHOLD = 0.00001;
+	static final double GEOM_AREA_THRESHOLD = 0.0000000001;
+	static final double ENTRANCES_SEARCHDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
 
 	// Fecha actual, leida del archivo .cat
 	private static long fechaArchivos;
@@ -78,7 +74,6 @@ public class Cat2OsmUtils {
 	 * @param w Way a borrar
 	 */
 	public synchronized void deleteWayFromRelations(String key, WayOsm w){
-
 		for (RelationOsm relation : totalRelations.get(key).keySet())
 			relation.removeMember(totalWays.get(key).get(w));
 	}
@@ -365,6 +360,24 @@ public class Cat2OsmUtils {
 		return null;
 	}
 
+	/** Dado el ID de una relation, la devuelve
+	 * @param codigo
+	 * @param id
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public synchronized RelationOsm getRelation(String codigo, long id){
+		return ((RelationOsm) getKeyFromValue((Map< String, Map <Object, Long>>) ((Object)totalRelations), codigo, id));
+	}
+	
+	/** Dado un id de way lo devuelve
+	 * @return node NodeOsm
+	 */
+	@SuppressWarnings("unchecked")
+	public synchronized WayOsm getWay(String key, long id){
+		return ((WayOsm) getKeyFromValue((Map< String, Map <Object, Long>>) ((Object)totalWays), key, id));
+	}
+	
 	/** Dada una lista de identificadores de ways, devuelve una lista con esos
 	 * ways
 	 * @return ways lista de WayOsm
@@ -372,16 +385,23 @@ public class Cat2OsmUtils {
 	@SuppressWarnings("unchecked")
 	public synchronized List<WayOsm> getWays(String codigo, List<Long> ids){
 		List<WayOsm> ways = new ArrayList<WayOsm>();
-
-		for (Long l: ids)
-			ways.add(((WayOsm) getKeyFromValue((Map< String, Map <Object, Long>>) ((Object)totalWays), codigo, l)));
-
-		ways.remove(null);
-
+		for (Long l: ids){
+			WayOsm way = getWay(codigo, l);
+			if (way != null){
+				ways.add(way);
+			}
+		}
 		return ways;
 	}
 
-
+	/** Dado un id de nodo lo devuelve
+	 * @return node NodeOsm
+	 */
+	@SuppressWarnings("unchecked")
+	public synchronized NodeOsm getNode(String key, long id){
+		return ((NodeOsm) getKeyFromValue((Map< String, Map <Object, Long>>) ((Object)totalNodes), key, id));
+	}
+	
 	/** Dada una lista de identificadores de nodes, devuelve una lista con esos
 	 * nodes
 	 * @return nodes lista de NodeOsm
@@ -389,12 +409,12 @@ public class Cat2OsmUtils {
 	@SuppressWarnings("unchecked")
 	public synchronized List<NodeOsm> getNodes(String key, List<Long> ids){
 		List<NodeOsm> nodes = new ArrayList<NodeOsm>();
-
-		for (Long l: ids)
-			nodes.add(((NodeOsm) getKeyFromValue((Map< String, Map <Object, Long>>) ((Object)totalNodes), key, l)));
-
-		nodes.remove(null);
-
+		for (Long l: ids){
+			NodeOsm node = getNode(key, l);
+			if (node != null){
+				nodes.add(node);
+			}
+		}
 		return nodes;
 	}
 
@@ -414,7 +434,7 @@ public class Cat2OsmUtils {
 				w.getNodes().remove(id);
 		}
 	}
-
+	
 	public static boolean getOnlyEntrances() {
 		return onlyEntrances;
 	}
@@ -439,19 +459,49 @@ public class Cat2OsmUtils {
 		Cat2OsmUtils.onlyConstru = constru;
 	}
 
-	public static boolean nodeOnWay(Coordinate node, Coordinate[] wayCoors) {
-		LineIntersector lineIntersector = new RobustLineIntersector();
-		for (int i = 1; i < wayCoors.length; i++) {
-			Coordinate p0 = wayCoors[i - 1];
-			Coordinate p1 = wayCoors[i];
-			lineIntersector.computeIntersection(node, p0, p1);
-			if (lineIntersector.hasIntersection()) {
+	/** Busca si el nodo esta sobre el way indicado
+	 * @param key
+	 * @param node
+	 * @param way
+	 * @return
+	 */
+	public boolean nodeOnWay(String key, long nodeId, long wayId) {
+		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+		NodeOsm node = this.getNode(key, nodeId);
+		WayOsm way = this.getWay(key, wayId);
+		Point point = geometryFactory.createPoint(node.getCoor());
+		for (int i = 1; i < way.getNodes().size(); i++) {
+			Coordinate[] coors = {this.getNode(key, way.getNodes().get(i-1)).getCoor(), this.getNode(key, way.getNodes().get(i)).getCoor()};
+			LineString line = geometryFactory.createLineString(coors);
+			if (line.isWithinDistance(point, Cat2OsmUtils.GEOM_INTERSECTION_THRESHOLD)) {
 				return true;
 			}
 		}
 		return false;
 	}
-
+	
+	/** Busca si el nodo esta sobre el way indicado y en ese caso lo anade al way
+	 * @param key
+	 * @param node
+	 * @param way
+	 * @return
+	 */
+	public boolean nodeToWayIfOnEdge(String key, long nodeId, long wayId) {
+		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+		NodeOsm node = this.getNode(key, nodeId);
+		WayOsm way = this.getWay(key, wayId);
+		Point point = geometryFactory.createPoint(node.getCoor());
+		for (int i = 1; i < way.getNodes().size(); i++) {
+			Coordinate[] coors = {this.getNode(key, way.getNodes().get(i-1)).getCoor(), this.getNode(key, way.getNodes().get(i)).getCoor()};
+			LineString line = geometryFactory.createLineString(coors);
+			if (line.isWithinDistance(point, Cat2OsmUtils.GEOM_INTERSECTION_THRESHOLD)) {
+				way.getNodes().add(i, nodeId);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public static long getFechaArchivos() {
 		return fechaArchivos;
 	}
@@ -487,6 +537,12 @@ public class Cat2OsmUtils {
 		return 0;	
 	}
 
+	/**
+	 * Comprueba si dos geometrias lineales estan conectadas por el principio o final
+	 * @param g1
+	 * @param g2
+	 * @return
+	 */
 	public static int areConnected(Geometry g1, Geometry g2){
 
 		if(g1 == null || g2 == null)
@@ -500,6 +556,23 @@ public class Cat2OsmUtils {
 		if(g1.getCoordinates()[g1.getCoordinates().length-1].equals(g2.getCoordinates()[g2.getCoordinates().length-1]))
 			return 4;
 		return 0;	
+	}
+	
+	/**
+	 * Intenta conectar dos geometrias lineales
+	 * @param g1
+	 * @param g2
+	 * @return La geometria resultante o null
+	 */
+	public static Geometry connectTwoLines(Geometry g1, Geometry g2){
+		Geometry newGeom = null;
+		switch(Cat2OsmUtils.areConnected(g1, g2)){
+		case 1: newGeom = g1.union(g2); break;
+		case 2: newGeom = g2.union(g1); break;
+		case 3: newGeom = g1.reverse().union(g2); break;
+		case 4: newGeom = g1.union(g2.reverse()); break;
+		}
+		return newGeom;
 	}
 	
 	

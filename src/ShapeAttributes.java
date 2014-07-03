@@ -28,11 +28,18 @@ public class ShapeAttributes {
 	}
 	
 	public void overwriteAttribute(String k, String existingV, String newV){
-		if (attributes.get(k) == existingV){
+		if (attributes.get(k) != null && attributes.get(k).equals(existingV)){
 			attributes.put(k, newV);
 		}
 	}
 	
+	/**
+	 * Anade el atributo K y valor V si no existe la clave K en los atributos o si 
+	 * esta existe y su valor es uno de los contenidos en equal
+	 * @param k
+	 * @param v
+	 * @param equal
+	 */
 	public void addAttributeIfNotExistsValueOrEqualTo(String k, String v, List<String> equal){
 		if (attributes.get(k) == null || (equal != null && equal.contains(attributes.get(k)) ))
 		attributes.put(k, v);
@@ -47,7 +54,7 @@ public class ShapeAttributes {
 	}
 	
 	public void removeAttribute(String k, String v){
-		if (attributes.get(k) == v)
+		if (attributes.get(k) != null && attributes.get(k).equals(v))
 			attributes.remove(k);
 	}
 	
@@ -107,13 +114,20 @@ public class ShapeAttributes {
 			return false;
 		ShapeAttributes other = (ShapeAttributes) obj;
 		if (attributes == null) {
-			if (other.attributes != null)
+			if (other.attributes != null || !equal)
 				return false;
 		} for(String key : attributes.keySet()){
 			if (other.attributes.get(key) == null){
-				equal = false;
+				return false;
 			} else {
 				equal = equal && attributes.get(key).equals(other.attributes.get(key));
+			}
+		} 
+		for(String key : other.attributes.keySet()){
+			if (attributes.get(key) == null || !equal){
+				return false;
+			} else {
+				equal = equal && other.attributes.get(key).equals(attributes.get(key));
 			}
 		}
 		return equal;

@@ -4,7 +4,6 @@ import java.util.List;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.util.PolygonExtracter;
 
 public abstract class ShapePoint extends Shape {
 
@@ -122,7 +121,7 @@ public abstract class ShapePoint extends Shape {
 	 * en la propia shape. Ya se extraera mas adelante.
 	 */
 	@Override
-	public boolean toOSM(Cat2OsmUtils utils, double threshold, ShapeParent parent){
+	public boolean toOSM(Cat2OsmUtils utils, ShapeParent parent){
 	
 		if (!this.getGeometry().isEmpty()){
 			Coordinate coor = this.getGeometry().getCoordinate();

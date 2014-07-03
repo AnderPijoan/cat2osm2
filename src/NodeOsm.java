@@ -114,5 +114,4 @@ public class NodeOsm {
 	
 		return s;
 	}
-
 }

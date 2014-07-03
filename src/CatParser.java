@@ -38,9 +38,9 @@ public class CatParser {
 			Cat c = catLineParser(line);
 			String key = "";
 
-			if (tipo.equals("UR") && c.getRefCatastral() != null) // El codigo de masa son los primeros 5 caracteres
+			if (tipo.equals("UR") && c.getRefCatastral() != null) // El codigo de masa URBANA son los primeros 5 caracteres
 				key = c.getRefCatastral().substring(0, 5).replaceAll("[^\\p{L}\\p{N}]", "") + "-";
-			if (tipo.equals("RU") && c.getRefCatastral() != null) // El codigo de masa son los caracteres 6, 7 y 8
+			if (tipo.equals("RU") && c.getRefCatastral() != null) // El codigo de masa RUSTICA son los caracteres 6, 7 y 8
 				key = c.getRefCatastral().substring(6, 9).replaceAll("[^\\p{L}\\p{N}]", "") + "-";
 
 			if (shapesTotales.get(key) != null && (c.getTipoRegistro() == tipoRegistrosBuscar || tipoRegistrosBuscar == 0)){
@@ -85,7 +85,7 @@ public class CatParser {
 						// Para los tipos de registro de subparcelas, buscamos la subparcela concreta para
 						// anadirle los atributos
 					case 17:
-						matches = buscarSubparce(matches, c.getSubparce());
+						//matches = buscarSubparce(matches, c.getSubparce());
 						break;
 
 					}
@@ -108,14 +108,10 @@ public class CatParser {
 	 * de inmuebles y con el punto X e Y del centroide de la parcela que coincide con su referencia
 	 * catastral crea nodos con los usos
 	 * de los bienes inmuebles
-	 * @param cat Archivo cat del que lee linea a linea
-	 * @param List<Shape> Lista de los elementos shp parseados ya en memoria
-	 * @param t solo sirve para diferenciar del otro metodo
-	 * @throws IOException
 	 */
 	public void parseUsosFile(String tipo, File cat, HashMap <String, List<Shape>> shapesTotales) throws IOException{
 
-				BufferedReader bufRdr  = createCatReader(cat);
+				BufferedReader bufRdr = createCatReader(cat);
 				String line = null; // Para cada linea leida del archivo .cat
 		
 				// Lectura del archivo .cat
@@ -479,8 +475,8 @@ public class CatParser {
 			//c.addAttribute("TEXTO DE DIRECCION NO ESTRUCTURADA",line.substring(257,282));
 			c.addAttribute("name",eliminarComillas(line.substring(257,282).trim()));
 			//c.addAttribute("CODIGO POSTAL",line.substring(282,287));
-//			if (!line.substring(282,287).equals("00000"))
-//				c.addAttribute("addr:postcode",line.substring(282,287));
+			if (!line.substring(282,287).equals("00000"))
+				c.addAttribute("addr:postcode",line.substring(282,287));
 //			if (!line.substring(282,287).isEmpty() && !line.substring(282,287).equals("00000"))
 //				c.addAttribute("addr:country" ,"ES");
 			//c.addAttribute("DISTRITO MUNICIPAL",line.substring(287,289));

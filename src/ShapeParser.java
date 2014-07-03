@@ -115,7 +115,7 @@ public class ShapeParser extends Thread{
 
 				// Shapes del archivo CONSTRU.SHP
 				while (reader.hasNext()) {
-					Shape shape = new ShapeConstru(reader.next(), tipo);
+					Shape shape = new ShapeConstruPart(reader.next(), tipo);
 
 					// Si cumple estar entre las fechas
 					if (shape != null && shape.checkCatastroDate(fechaDesde, fechaHasta) && shape.isValid()){
@@ -194,7 +194,7 @@ public class ShapeParser extends Thread{
 	}
 
 
-	/** Utilizando ogr2ogr reproyecta el archivo de shapes de su proyeccion
+	/** Reproyecta el archivo de shapes de su proyeccion
 	 * EPSG a WGS84 que es la que utiliza OpenStreetMap. Tambien convierte las 
 	 * coordenadas UTM en Lat/Lon
 	 * @param f Archivo a reproyectar

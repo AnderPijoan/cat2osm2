@@ -24,15 +24,12 @@ import com.vividsolutions.jts.index.SpatialIndex;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
-import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 
 public class Cat2Osm {
 
-	public static final String VERSION = "2014-01-07";
+	public static final String VERSION = "2014-07-03";
 	public static Cat2OsmUtils utils;
-
-	private final double MINDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
 
 	/** Constructor
 	 * @param utils Clase utils en la que se almacenan los nodos, ways y relaciones 
@@ -74,7 +71,7 @@ public class Cat2Osm {
 	 * @return lista de shapes con los tags modificados, si es null es que no habia portales
 	 */
 	@SuppressWarnings("unchecked")
-	public HashMap <String, List<Shape>> calcularEntradas(HashMap <String, List<Shape>> shapes){
+	public HashMap <String, List<Shape>> asignEntrances(HashMap <String, List<Shape>> shapes){
 
 		// Si no se ha leido ningun portal
 		if (shapes.get("ELEMTEX-189401") == null)
@@ -157,13 +154,13 @@ public class Cat2Osm {
 
 			// Buscamos la parcela mas cercana
 
-			double minDist = MINDIST; // Distancia minima ~ 80 metros
+			double minDist = Cat2OsmUtils.ENTRANCES_SEARCHDIST;
 
 			// Creamos el punto de busqueda con la coordenada del punto y la expandimos
 			// en la distancia minima para obtener
 			// una linea de desplazamiento para tocar la parcela
 			Envelope search = new Envelope(point.getCoordinate());
-			search.expandBy(MINDIST);
+			search.expandBy(Cat2OsmUtils.ENTRANCES_SEARCHDIST);
 
 			// Hacemos la query
 			List<LocationIndexedLine> lines = index.query(search);
@@ -197,13 +194,13 @@ public class Cat2Osm {
 			tempSnappedCoor = new Coordinate(); // Coordenada del elemtex pegado a la geometria de la parcela
 			point = (Point) shapeTex.getGeometry();
 
-			minDist = MINDIST; // Distancia minima ~ 80 metros
+			minDist = Cat2OsmUtils.ENTRANCES_SEARCHDIST; // Distancia minima ~ 80 metros
 
 			// Creamos el punto de busqueda con la coordenada del punto y la expandimos
 			// en la distancia minima para obtener
 			// una linea de desplazamiento para tocar la parcela
 			search = new Envelope(point.getCoordinate());
-			search.expandBy(MINDIST);
+			search.expandBy(Cat2OsmUtils.ENTRANCES_SEARCHDIST);
 
 			// Hacemos la query
 			lines = index.query(search);
@@ -378,7 +375,6 @@ public class Cat2Osm {
 				shapeTex.getAttributes().addAttribute("FIXME", "FIXME");
 			}
 		}
-
 		System.out.println("["+new Timestamp(new Date().getTime())+"]\tTerminado.                                         ");
 		return shapes;
 	}
@@ -426,20 +422,22 @@ public class Cat2Osm {
 
 	/** Comprueba si una relacion no tiene datos relevantes y la elimina.
 	 * Antes se hacia solo a la hora de imprimir las relaciones pero para entonces las vias ya
-	 * estaban simplificadas pensando que estas relaciones tenian tags
+	 * estaban simplificadas y con tags cambiados.
+	 * Ahora se hace al leer las geometrias (hasRelevantAttributesInternally) y antes de imprimir
+	 * (hasRelevantAttributes)
 	 * @param utils Clase Utils de Cat2Osm
 	 */
-	public void simplificarShapesSinTags(String key, List<Shape> shapes){
+	public void deleteNoTagsShapes(String key, List<Shape> shapes){
 
 		Iterator<Shape> it = shapes.iterator();
 		while(it.hasNext()){
 
 			Shape shape = it.next();
 
-			if(shape instanceof ShapeParcela){
+			if(shape instanceof ShapeParent){
 				boolean hasData = false;
-				if (null != ((ShapeParcela) shape).getSubshapes())
-					for(Shape subshape : ((ShapeParcela) shape).getSubshapes()){
+				if (null != ((ShapeParent) shape).getSubshapes())
+					for(Shape subshape : ((ShapeParent) shape).getSubshapes()){
 						hasData = hasData || subshape.hasRelevantAttributesInternally();
 					}
 
@@ -493,20 +491,12 @@ public class Cat2Osm {
 
 				// Geometria resultante de la union
 				Geometry newGeom = null;
-				boolean touches = true;
 
 				// Comprobamos si se tocan
 				if(shape1 != shape2){
 
-					switch(Cat2OsmUtils.areConnected(shape1.getGeometry(), shape2.getGeometry())){
-					case 1: newGeom = shape1.getGeometry().union(shape2.getGeometry()); break;
-					case 2: newGeom = shape2.getGeometry().union(shape1.getGeometry()); break;
-					case 3: newGeom = shape1.getGeometry().reverse().union(shape2.getGeometry()); break;
-					case 4: newGeom = shape1.getGeometry().union(shape2.getGeometry().reverse()); break;
-					default : touches = false;
-					}
-
-					if (touches){
+					newGeom = Cat2OsmUtils.connectTwoLines(shape1.getGeometry(), shape2.getGeometry());
+					if (newGeom != null){
 						// Actualizamos el shape1
 						shape1.setGeometry(newGeom);
 						shape1.getAttributes().addAll(shape2.getAttributes().asHashMap());
@@ -646,17 +636,26 @@ public class Cat2Osm {
 
 		switch(shape.getClass().getName()){
 
-		case "ShapeParcela":
+		// Los shapeParcela, imprimen las entradas
+		case "ShapeParcela":{
+			
+			if( ((ShapeParcela)shape).getEntrances() != null)
+				for(Shape subshape : ((ShapeParcela)shape).getEntrances())
+					printShape(key, subshape, outNodes, outWays, outRelations);
+			// Continua
+		}
+		
+		// Los shapes que son padres imprimen sus subshapes y luego su propia geometria si fuese el caso
+		case "ShapeConstruExterior":
 		case "ShapeMasa":{
 
-			if( null != ((ShapeParent)shape).getSubshapes())
+			if( ((ShapeParent)shape).getSubshapes() != null)
 				for(Shape subshape : ((ShapeParent)shape).getSubshapes())
 					printShape(key, subshape, outNodes, outWays, outRelations);
-
 			// Continua
 		}
 
-		case "ShapeConstru":
+		case "ShapeConstruPart":
 		case "ShapeSubparce":{
 
 			if(!shape.checkBuildingDate(Long.parseLong(Config.get("FechaConstruDesde")), Long.parseLong(Config.get("FechaConstruHasta"))))
@@ -719,27 +718,6 @@ public class Cat2Osm {
 	}
 
 
-	/** Simplifica las geometrias
-	 * @param key
-	 * @param shapes
-	 */
-	public void simplifyGeometries(List<Shape> shapes, double threshold) {
-
-		// Recorremos todos los shapes
-		for(Shape shape : shapes){
-			// Hay 2 tipos de simplificadores
-			//
-			// DouglasPeuckerSimplifier
-			// TopologyPreservingSimplifier
-			// 
-
-			TopologyPreservingSimplifier tps = new TopologyPreservingSimplifier(shape.getGeometry());
-			tps.setDistanceTolerance(threshold);
-			shape.setGeometry(tps.getResultGeometry());
-		}
-	}
-
-
 	// Los shapes de parcela urbana van a tener unos subshapes que seran las construcciones
 	// Se sacan de la lista de shapes las que coincidan con una parcela y se meten en su parcela.
 	// Lo mismo con las masas rusticas, que almacenaran dentro sus subparcelas (ya que de la informacion
@@ -767,14 +745,18 @@ public class Cat2Osm {
 
 					Shape subshape = shapes.get(y);
 
-					// Si una coincide
+					// Si una que debe ser hija coincide
+					// (Las construExterior en este momento no existe aun, estas se crean dentro de la
+					// ShapeParcela de forma automatica)
 					if(x != y && subshape != null && 
-							(subshape instanceof ShapeSubparce || subshape instanceof ShapeConstru) && 
+							(subshape instanceof ShapeSubparce || subshape instanceof ShapeConstruPart) && 
 							subshape.getRefCat().equals(refCat)){
 
-						// Se mete dentro de su parcela padre
-						((ShapeParent) shape).addSubshape((ShapePolygonal) subshape);
-
+						// Se creara una ShapeConstruExterior para meterla dentro. Y dentro
+						// de la parcela se metera la COnstruExterior
+						// Parcela > Exterior > Part
+						// Para ello el addSubshape de parcela esta sobreescrito
+						((ShapeParcela) shape).addSubshape((ShapePolygonal) subshape);
 						// INTRODUCIMOS NULL PARA NO ALTERAR EL ORDEN DE LOS ELEMENTOS DE LA LISTA
 						// DESPUES LOS BORRAMOS
 						shapes.set(y, null);
@@ -815,7 +797,7 @@ public class Cat2Osm {
 
 								// Si encontramos una construccion
 								if(x != y && y != z && null != subsubshape && 
-										subsubshape instanceof ShapeConstru && 
+										subsubshape instanceof ShapeConstruPart && 
 										subsubshape.getRefCat().equals(refCat)){
 
 									// Se mete dentro de su parcela padre
@@ -830,24 +812,9 @@ public class Cat2Osm {
 							// Coge el destino o uso de mayor area de esa parcela y crea los attributes
 							// para ella y sus subshapes
 							((ShapeParent) subshape).createAttributesFromUsoDestino();
-
-							// Intenta unir todos los subshapes con los mismos tags en uno
-							((ShapeParent) subshape).joinSubshapes(false);
-
-							// Una vez unidos y transferidos los datos de la parcela a sus construcciones
-							// las parcelas no se van a usar, por lo que pasamos las construcciones de la
-							// parcela a la masa
-//							if(null != ((ShapeParent) subshape).getSubshapes())
-//								for(ShapePolygonal constru : ((ShapeParent) subshape).getSubshapes())
-//									((ShapeParent) shape).addSubshape(constru);
-
-							// Eliminamos la parcela
-							// INTRODUCIMOS NULL PARA NO ALTERAR EL ORDEN DE LOS ELEMENTOS DE LA LISTA
-							// DESPUES LOS BORRAMOS
-//							shapes.set(y, null);
 						}
 
-						// Si una subparcela coincide
+						// Si encontramos una SUBPARCELA RUSTICA
 						if(x != y && null != subshape &&
 								subshape instanceof ShapeSubparce &&
 								subshape.getCodigoMasa().equals(masa)){
@@ -860,29 +827,35 @@ public class Cat2Osm {
 							shapes.set(y, null);
 						}
 					}
-					// Unir todos los subshapes con los mismos tags en uno
-					if(Config.get("SplitRU").equals("0"))
+					
+					// Si no han pedido que separemos las parcelas rusticas
+					if(Config.get("SplitRU").equals("0")){
 						((ShapeParent) shape).joinSubshapes(false);
+					}
 				}
 		}
-
 		// Eliminar los null que hemos introducido
 		Iterator<Shape> it = shapes.iterator();
 		while(it.hasNext())
-			if(null == it.next())
+			if(it.next() == null)
 				it.remove();
 	}
 
 
 	// Convertir los shapes a elementos de OSM. De esta manera luego a la hora de imprimir se
-	// reutilizan elementos que se compartan entre varios shapes
-	public void convertShapes2OSM(List<Shape> shapes, double threshold) {
+	// reutilizan elementos OSM que se compartan entre varios shapes
+	public void convertShapes2OSM(List<Shape> shapes) {
 
 		Iterator<Shape> it = shapes.iterator();
 		while(it.hasNext()){
 			Shape shape = it.next();
-			shape.toOSM(utils, threshold, null);
+			shape.toOSM(utils, null);
 		}
+	}
+	
+	// Simplificar las geometrias OSM
+	// No se pueden simplificar antes porque hay que reutilizar nodos y geometrias superpuestas
+	public void simplifyOSM(Cat2OsmUtils utils, List<Shape> shapes, String key) {
 	}
 
 }

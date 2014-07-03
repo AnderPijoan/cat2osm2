@@ -4,7 +4,6 @@ import java.util.List;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.util.PolygonExtracter;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 
@@ -129,13 +128,13 @@ public abstract class ShapeLinear extends Shape {
 	 * @return
 	 */
 	@Override
-	public boolean toOSM(Cat2OsmUtils utils, double threshold, ShapeParent parent){
-		
+	public boolean toOSM(Cat2OsmUtils utils, ShapeParent parent){
+			
 		if(!this.getGeometry().isEmpty()){
-
-			//Simplificamos la geometria
+			
+			//Simplificamos la geometria con un threshold 
 			TopologyPreservingSimplifier tps = new TopologyPreservingSimplifier(this.getGeometry());
-			tps.setDistanceTolerance(threshold);
+			tps.setDistanceTolerance(Cat2OsmUtils.GEOM_SIMPLIFIER_THRESHOLD);
 			this.setGeometry(tps.getResultGeometry());
 			
 			// Anadimos todos los nodos
