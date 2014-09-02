@@ -83,18 +83,7 @@ public class ShapeParcela extends ShapeParent {
 
 		// Los demas atributos son metadatos y de ellos sacamos
 		referenciaCatastral = (String) f.getAttribute("REFCAT");
-
-		if (referenciaCatastral != null) {
-			getAttributes().addAttribute("catastro:ref", referenciaCatastral);
-		}
-
-		////////////////////////////////////////////////////////////////////// 
-		//
-		// SE HA COMPROBADO QUE EL NUMSYMBOL 4 PERTENECE A PARCELAS QUE GENERALMENTE
-		// NO HAY QUE DIBUJAR COMO PARCELAS BAJO CARRETERAS, PARCELAS RUSTICA QUE 
-		// CUBREN TODA UNA ZONA URBANA Y POR TANTO NO TIENEN ATRIBUTOS, ETC
-		//
-		///////////////////////////////////////////////////////////////////////
+		
 		if (f.getAttribute("NUMSYMBOL") instanceof Double) {
 			numSymbol = (Integer) f.getAttribute("NUMSYMBOL");
 		} else if (f.getAttribute("NUMSYMBOL") instanceof Long) {
@@ -107,6 +96,13 @@ public class ShapeParcela extends ShapeParent {
 
 
 	public boolean isValid() {
+		//////////////////////////////////////////////////////////////////////
+		//
+		// SE HA COMPROBADO QUE EL NUMSYMBOL 4 PERTENECE A PARCELAS QUE GENERALMENTE
+		// NO HAY QUE DIBUJAR COMO PARCELAS BAJO CARRETERAS, PARCELAS RUSTICA QUE 
+		// CUBREN TODA UNA ZONA URBANA Y POR TANTO NO TIENEN ATRIBUTOS, ETC
+		//
+		///////////////////////////////////////////////////////////////////////
 		return (numSymbol != 4 ? true : false);
 	}
 
@@ -218,7 +214,7 @@ public class ShapeParcela extends ShapeParent {
 	 * Se creara una ConstruExterior de forma automatica para englobar los ConstruPart.
 	 * A la hora de anadir los Construs a una parcela, se comprueba si interseca
 	 * con alguna ya existente, para unirlas en una. Al crear esta union
-	 * se añadira la nueva parte ampliando la geometría de la ConstruExterior
+	 * se a��adira la nueva parte ampliando la geometr��a de la ConstruExterior
 	 */
 //	@Override
 //	public void addSubshape(ShapePolygonal subshape){
@@ -342,10 +338,18 @@ public class ShapeParcela extends ShapeParent {
 		for (Coordinate coor : shape.getGeometry().getCoordinates()){
 			coors.add(coor);
 		}
+		
+		// Crear una lista con pares de indices de coordenadas entre los que ha dado
+		// que la entrada interseca
+		List<Coordinate[]> matchCoors = new ArrayList<Coordinate[]>();
+		
 		for(int x = 1; x < coors.size(); x++){
 			Coordinate[] tempCoors = {coors.get(x-1), coors.get(x)};
 			LineString line = shape.getGeometry().getFactory().createLineString(tempCoors);
 			if (line.isWithinDistance(entrance.getGeometry(), Cat2OsmUtils.GEOM_INTERSECTION_THRESHOLD)) {
+				
+				Coordinate[] coors2 = {coors.get(x-1), coors.get(x)};
+				matchCoors.add(coors2);
 				
 				// ANADIMOS LA COORDENADA A LA LISTA DE COORDENADAS Y SOBREESCRIBIMOS LA GEOMETRIA
 				coors.add(x, entrance.getGeometry().getCoordinates()[0]);

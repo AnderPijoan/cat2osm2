@@ -132,7 +132,7 @@ public abstract class ShapePolygonal extends Shape {
 	
 	
 	/**
-	 * A la hora de imprimir, las masas no tienen que ser imprimidas
+	 * A la hora de imprimir, las geometrias sin tags relevantes no tienen que ser imprimidas
 	 */
 	public boolean hasRelevantAttributesForPrinting(){
 		if(attributes != null){
@@ -217,7 +217,7 @@ public abstract class ShapePolygonal extends Shape {
 					this.setRelation(utils.generateRelationId(this.getCodigoMasa(), ids, types, roles, this));
 					return true;
 				} else {
-				System.out.println("["+new Timestamp(new Date().getTime())+"]\tGeometría en formato desconocido : " + this.getGeometry().getGeometryType().toString());
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tGeometr��a en formato desconocido : " + this.getGeometry().getGeometryType().toString());
 				return false;
 			}
 		}

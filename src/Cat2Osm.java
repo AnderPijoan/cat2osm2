@@ -28,7 +28,7 @@ import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
 public class Cat2Osm {
 
-	public static final String VERSION = "2014-07-03";
+	public static final String VERSION = "2014-09-02";
 	public static Cat2OsmUtils utils;
 
 	/** Constructor
@@ -589,7 +589,7 @@ public class Cat2Osm {
 
 		if (!borrado)
 			System.out.println("["+new Timestamp(new Date().getTime())+"]\tNO se pudo borrar alguno de los archivos temporales." +
-					" Estos estarán en la carpeta "+ path + File.separatorChar + folder +".");
+					" Estos estar��n en la carpeta "+ path + File.separatorChar + folder +".");
 
 	}
 
@@ -670,7 +670,7 @@ public class Cat2Osm {
 
 				// Si no tiene ids no se imprime
 				if (relation.getIds().size()<1){
-					System.out.println("["+new Timestamp(new Date().getTime())+"]\tRelation id="+ shape.getRelationId() +" con menos de un way. No se imprimirá.");
+					System.out.println("["+new Timestamp(new Date().getTime())+"]\tRelation id="+ shape.getRelationId() +" con menos de un way. No se imprimir��.");
 					break;
 				}
 

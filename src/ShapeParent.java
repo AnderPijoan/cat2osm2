@@ -256,7 +256,7 @@ public abstract class ShapeParent extends ShapePolygonal {
 //				
 //			} else {
 //				
-//				System.out.println("["+new Timestamp(new Date().getTime())+"]\tGeometría en formato desconocido : " + this.getGeometry().getGeometryType().toString());
+//				System.out.println("["+new Timestamp(new Date().getTime())+"]\tGeometr��a en formato desconocido : " + this.getGeometry().getGeometryType().toString());
 //				return false;
 //			}
 //			

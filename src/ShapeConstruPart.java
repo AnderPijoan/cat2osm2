@@ -41,7 +41,6 @@ public class ShapeConstruPart extends ShapePolygonal {
 
 		// Los demas atributos son metadatos y de ellos sacamos 
 		referenciaCatastral = (String) f.getAttribute("REFCAT");
-
 		constru = (String) f.getAttribute("CONSTRU");
 		
 		if (constru != null){

@@ -22,7 +22,7 @@ public class Cat2OsmUtils {
 	
 	// CONSTANTES
 	static final double GEOM_SIMPLIFIER_THRESHOLD = 0.00001;
-	static final double GEOM_INTERSECTION_THRESHOLD = 0.000001;
+	static final double GEOM_INTERSECTION_THRESHOLD = 0.000005;
 	static final double GEOM_EQUALS_THRESHOLD = 0.00001;
 	static final double GEOM_AREA_THRESHOLD = 0.0000000001;
 	static final double ENTRANCES_SEARCHDIST = 0.00008; // Distancia minima para busqueda de portales ~ 80 metros
