@@ -25,7 +25,7 @@ public class Main {
 		for(int x = 0; x < args.length; x++){
 
 			if (args[x].toLowerCase().equals("-v")){
-				System.out.println("Cat2Osm2 versi��n "+Cat2Osm.VERSION+".");
+				System.out.println("Cat2Osm2 versión "+Cat2Osm.VERSION+".");
 				System.exit(0);
 			}
 
@@ -34,55 +34,55 @@ public class Main {
 			}
 
 			if (args[x].toLowerCase().equals("-rslt")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -rslt = " + args[x+1] );
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -rslt = " + args[x+1] );
 				Config.set("ResultFileName", args[x+1]);
 			}
 			if (args[x].toLowerCase().equals("-3d")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -3d = " + args[x+1] );
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -3d = " + args[x+1] );
 				Config.set("Catastro3d", args[x+1]);
 			}
 			if (args[x].toLowerCase().equals("-dbg")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -dbg = " + args[x+1] );
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -dbg = " + args[x+1] );
 				Config.set("PrintShapeIds", args[x+1]);
 			}
 			if (args[x].toLowerCase().equals("-reg")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -reg = " + args[x+1] );
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -reg = " + args[x+1] );
 				Config.set("TipoRegistro", args[x+1]);
 			}
 			if (args[x].toLowerCase().equals("-constru")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -constru");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -constru");
 				Config.set("ExportType", "CONSTRU");
 			}
 			else if (args[x].toLowerCase().equals("-ejes")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -ejes");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -ejes");
 				Config.set("ExportType", "EJES");
 			}
 			else if (args[x].toLowerCase().equals("-elemlin")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -elemlin");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -elemlin");
 				Config.set("ExportType", "ELEMLIN");
 			}
 			else if (args[x].toLowerCase().equals("-elempun")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -elempun");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -elempun");
 				Config.set("ExportType", "ELEMPUN");
 			}
 			else if (args[x].toLowerCase().equals("-elemtex")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -elemtex");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -elemtex");
 				Config.set("ExportType", "ELEMTEX");
 			}
 			else if (args[x].toLowerCase().equals("-masa")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -masa");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -masa");
 				Config.set("ExportType", "MASA");
 			}
 			else if (args[x].toLowerCase().equals("-parcela")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -parcela");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -parcela");
 				Config.set("ExportType", "PARCELA");
 			}
 			else if (args[x].toLowerCase().equals("-subparce")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -subparce");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -subparce");
 				Config.set("ExportType", "SUBPARCE");
 			}
 			else if (args[x].toLowerCase().equals("-usos")){
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado par��metro -usos");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Detectado parámetro -usos");
 				Config.set("ExportType", "USOS");
 			}
 			
@@ -103,12 +103,12 @@ public class Main {
 			case "MASA":
 			case "PARCELA":
 			case "SUBPARCE":
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath") + " para exportar ��nicamente "+ Config.get("ExportType") + ".");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath") + " para exportar únicamente "+ Config.get("ExportType") + ".");
 				ejecutarCat2Osm(Config.get("ExportType").toUpperCase());
 				break;
 
 			case "USOS":
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath")  + " para exportar ��nicamente el archivo de destinos a corregir.");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Iniciando Cat2Osm en el directorio indicado " + Config.get("ResultPath")  + " para exportar únicamente el archivo de destinos a corregir.");
 				crearUsos();
 				break;
 
@@ -118,16 +118,16 @@ public class Main {
 				break;
 			
 			default:
-				System.out.println("["+new Timestamp(new Date().getTime())+"] No se ha definido un tipo de exportaci��n");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] No se ha definido un tipo de exportación");
 				System.exit(-1);
 			}
 
 		} else {
 
-			System.out.println("Cat2Osm versi��n "+Cat2Osm.VERSION+".\n");
+			System.out.println("Cat2Osm versión "+Cat2Osm.VERSION+".\n");
 			System.out.println("Forma de uso:");
 			System.out.println("");
-			System.out.println("Es necesrio indicar el directorio donde se encuentren los 4 archivos de catastro TAL CUAL se descargan de la web y para una ��nica poblaci��n.");
+			System.out.println("Es necesrio indicar el directorio donde se encuentren los 4 archivos de catastro TAL CUAL se descargan de la web y para una única población.");
 			System.out.println("");
 			System.out.println("   java -jar [-XmxMemoria] cat2osm2.jar [Opciones] / [Directorio]\n");
 			System.out.println("");
@@ -135,22 +135,22 @@ public class Main {
 			System.out.println("");
 			System.out.println("   java -jar -Xmx10240M cat2osm2.jar /home/yo/carpetaArchivos -rslt MiPueblo -3d 1 -reg 0 -constru -dbg 1 \n");
 			System.out.println("");
-			System.out.println("Par��metros opcionales");
+			System.out.println("parámetros opcionales");
 			System.out.println("");
 			System.out.println("-v            Muestra la version de Cat2Osm2");
-			System.out.println("-rslt         Nombre del resultado (si no se indica, ser�� 'Resultado')");
+			System.out.println("-rslt         Nombre del resultado (si no se indica, será 'Resultado')");
 			System.out.println("-3d           Exportar las alturas de los edificios (1=Pisos sobre tierra, 0=No, -1=Pisos sobre y bajo tierra), por defecto es 1");
-			System.out.println("-reg          Utilizar un ��nico tipo de registro de catastro (11,14,15 o 17), por defecto es 0=todos");
-			System.out.println("-dbg          A��adir a las geometr��as el ID que tienen internamente en Cat2Osm2 para debuggin (1=Si, 0=No), por defecto es 0");
-			System.out.println("-constru      Generar un archivo SOLO con las geometr��as CONSTRU");
-			System.out.println("-ejes         Generar un archivo SOLO con las geometr��as EJES");
-			System.out.println("-elemlin      Generar un archivo SOLO con las geometr��as ELEMLIN");
-			System.out.println("-elempun      Generar un archivo SOLO con las geometr��as ELEMPUN");
-			System.out.println("-elemtex      Generar un archivo SOLO con las geometr��as ELEMTEX y mostrando todos los textos de Parajes y Comarcas, Informaci��n urbana y r��stica y Vegetaci��n y Accidentes demogr��ficos");
-			System.out.println("-masa         Generar un archivo SOLO con las geometr��as MASA");
-			System.out.println("-parcela      Generar un archivo SOLO con las geometr��as PARCELA");
-			System.out.println("-subparce     Generar un archivo SOLO con las geometr��as SUBPARCE");
-			System.out.println("-usos         Generar un archivo SOLO con los usos de inmuebles que no se pueden asignar directamente a una construcci��n");
+			System.out.println("-reg          Utilizar un único tipo de registro de catastro (11,14,15 o 17), por defecto es 0=todos");
+			System.out.println("-dbg          Añadir a las geometrías el ID que tienen internamente en Cat2Osm2 para debuggin (1=Si, 0=No), por defecto es 0");
+			System.out.println("-constru      Generar un archivo SOLO con las geometrías CONSTRU");
+			System.out.println("-ejes         Generar un archivo SOLO con las geometrías EJES");
+			System.out.println("-elemlin      Generar un archivo SOLO con las geometrías ELEMLIN");
+			System.out.println("-elempun      Generar un archivo SOLO con las geometrías ELEMPUN");
+			System.out.println("-elemtex      Generar un archivo SOLO con las geometrías ELEMTEX y mostrando todos los textos de Parajes y Comarcas, Información urbana y rústica y Vegetación y Accidentes demográficos");
+			System.out.println("-masa         Generar un archivo SOLO con las geometrías MASA");
+			System.out.println("-parcela      Generar un archivo SOLO con las geometrías PARCELA");
+			System.out.println("-subparce     Generar un archivo SOLO con las geometrías SUBPARCE");
+			System.out.println("-usos         Generar un archivo SOLO con los usos de inmuebles que no se pueden asignar directamente a una construcción");
 			System.out.println("");
 			System.out.println("Para mas informacion acceder a:");
 			System.out.println("");
@@ -219,7 +219,7 @@ public class Main {
 			Cat2OsmUtils.setFechaArchivos(Long.parseLong(m.group().substring(0, 4)+"0101"));
 		}
 		else{
-			System.out.println("["+new Timestamp(new Date().getTime())+"] El archivo Cat Urbano debe tener el formato de nombre que viene por defecto en Catastro (XX_XX_U_aaaa-mm-dd.CAT) para leer de ��l la fecha de creaci��n.");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] El archivo Cat Urbano debe tener el formato de nombre que viene por defecto en Catastro (XX_XX_U_aaaa-mm-dd.CAT) para leer de él la fecha de creación.");
 			System.exit(-1);
 		}
 
@@ -295,10 +295,10 @@ public class Main {
 					}
 			catch(Exception e)
 			{
-				System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer alguno de los archivos shapefiles r��sticos. " + e.getMessage());}
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer alguno de los archivos shapefiles rústicos. " + e.getMessage());}
 		}
 		else
-			System.out.println("["+new Timestamp(new Date().getTime())+"]\tEl directorio de shapefiles r��sticos "+Config.get("RusticoSHPPath")+" no existe.");
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tEl directorio de shapefiles rústicos "+Config.get("RusticoSHPPath")+" no existe.");
 
 		for (ShapeParser sp : parsers)
 			sp.join();
@@ -314,10 +314,10 @@ public class Main {
 			{System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer archivo Cat urbano. " + e.getCause());}
 
 			try {
-				System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo archivo Cat r��stico.");
+				System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo archivo Cat rústico.");
 				catastro.catParser("RU", new File(Config.get("RusticoCATFile")), shapes);
 			}catch(Exception e)
-			{System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer archivo Cat r��stico. " + e.getCause());}	
+			{System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer archivo Cat rústico. " + e.getCause());}	
 		}
 
 		// Mover las entradas de las casas a sus respectivas parcelas 
@@ -325,7 +325,7 @@ public class Main {
 		// ESO SE HACE AL FINAL
 		if (archivo.equals("*")){
 			System.out.println("["+new Timestamp(new Date().getTime())+"] Moviendo puntos de entrada a sus parcelas mas cercanas.");
-			HashMap <String, List<Shape>> shapesTemp = catastro.asignEntrances(shapes);
+			HashMap <String, List<Shape>> shapesTemp = catastro.moveEntrancesToParcel(shapes);
 			if (shapesTemp != null)
 				shapes = shapesTemp;
 		}
@@ -357,15 +357,15 @@ public class Main {
 					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempWays.osm").exists()
 					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempNodes.osm").exists()){
 
-				System.out.println("["+new Timestamp(new Date().getTime())+"]\tSe han encontrado 3 archivos temporales de una posible ejecuci��n interrumpida, se proceder�� a juntarlos en un archivo resultado.");
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tSe han encontrado 3 archivos temporales de una posible ejecución interrumpida, se procederá a juntarlos en un archivo resultado.");
 				catastro.juntarFilesTemporales(key, folder, Config.get("ResultFileName"), outOsmGlobal);
-				System.out.println("["+new Timestamp(new Date().getTime())+"] ����Terminada la exportaci��n de " + Config.get("ResultFileName") + "!!");
+				System.out.println("["+new Timestamp(new Date().getTime())+"]  Terminada la exportación de " + Config.get("ResultFileName"));
 
 			}
 			else if (shapes.get(key) != null){
 
 				try {
-					// Montar la jerarquia de parcelas, construcciones y parte de construcciones
+					// Montar la jerarquia de parcelas, construcciones, parte de construcciones y entradas
 					if (archivo.equals("*") && !key.startsWith("EJES") && !key.startsWith("ELEM")){
 						System.out.println("["+new Timestamp(new Date().getTime())+"]\tCreando jerarquia de parcelas/subparcelas/construcciones.");
 						catastro.createHyerarchy(key, shapes.get(key));
@@ -392,7 +392,7 @@ public class Main {
 					catastro.simplifyOSM(utils, shapes.get(key), key);
 
 				} catch (Exception e) {
-					System.out.println("["+new Timestamp(new Date().getTime())+"]\tLa exportaci��n de " + Config.get("ResultFileName") + "-" + key + " [" + ++pos + File.separatorChar + shapes.keySet().size() + "] fall��.\r");
+					System.out.println("["+new Timestamp(new Date().getTime())+"]\tLa exportación de " + Config.get("ResultFileName") + "-" + key + " [" + ++pos + File.separatorChar + shapes.keySet().size() + "] falló.\r");
 					e.printStackTrace();
 				} finally {
 
@@ -411,7 +411,7 @@ public class Main {
 		outOsmGlobal.write("</osm>");outOsmGlobal.newLine();
 		outOsmGlobal.close();
 
-		System.out.println("["+new Timestamp(new Date().getTime())+"] ����Terminada la exportaci��n!!");
+		System.out.println("["+new Timestamp(new Date().getTime())+"] Terminada la exportación.");
 
 	}
 
@@ -470,7 +470,7 @@ public class Main {
 			Cat2OsmUtils.setFechaArchivos(Long.parseLong(m.group().substring(0, 4)+"0101"));
 		}
 		else{
-			System.out.println("["+new Timestamp(new Date().getTime())+"]\tEl archivo Cat Urbano debe tener el formato de nombre que viene por defecto en Catastro (XX_XX_U_aaaa-mm-dd.CAT) para leer de ��l la fecha de creaci��n.");
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tEl archivo Cat Urbano debe tener el formato de nombre que viene por defecto en Catastro (XX_XX_U_aaaa-mm-dd.CAT) para leer de él la fecha de creación.");
 			System.exit(-1);
 		}
 
@@ -511,15 +511,15 @@ public class Main {
 			for(int i=0; i < filesR.length; i++)
 				if ( filesR[i].getName().toUpperCase().equals("PARCELA"))
 					try{
-						System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo "+ filesR[i].getName() +" Rustico.");
+						System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo "+ filesR[i].getName() +" Rústico.");
 						parsers.add(new ShapeParser("RU", new File(filesR[i] + File.separator + filesR[i].getName() + ".SHP"), utils, shapes));
 					}
 			catch(Exception e)
 			{
-				System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer alguno de los archivos shapefiles r��sticos. " + e.getMessage());}
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer alguno de los archivos shapefiles rústicos. " + e.getMessage());}
 		}
 		else
-			System.out.println("["+new Timestamp(new Date().getTime())+"]\tEl directorio de shapefiles r��sticos "+Config.get("RusticoSHPPath")+" no existe.");
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tEl directorio de shapefiles rústicos "+Config.get("RusticoSHPPath")+" no existe.");
 
 		for (ShapeParser sp : parsers)
 			sp.join();
@@ -534,10 +534,10 @@ public class Main {
 		{System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer archivo Cat urbano. " + e.getCause());}
 
 		try {
-			System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo archivo Cat r��stico.");
+			System.out.println("["+new Timestamp(new Date().getTime())+"] Leyendo archivo Cat rústico.");
 			catastro.catUsosParser("RU", new File(Config.get("RusticoCATFile")), shapes);
 		}catch(Exception e)
-		{System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer archivo Cat r��stico. " + e.getCause());}	
+		{System.out.println("["+new Timestamp(new Date().getTime())+"]\tFallo al leer archivo Cat rústico. " + e.getCause());}	
 
 
 		int pos = 0;
@@ -552,9 +552,9 @@ public class Main {
 					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempWays.osm").exists()
 					&& new File(Config.get("ResultPath") + File.separatorChar + folder + File.separatorChar + Config.get("ResultFileName") + key +"tempNodes.osm").exists()){
 
-				System.out.println("["+new Timestamp(new Date().getTime())+"]\tSe han encontrado 3 archivos temporales de una posible ejecuci��n interrumpida, se proceder�� a juntarlos en un archivo resultado.");
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tSe han encontrado 3 archivos temporales de una posible ejecución interrumpida, se procederá a juntarlos en un archivo resultado.");
 				catastro.juntarFilesTemporales(key, folder, Config.get("ResultFileName"), outOsmGlobal);
-				System.out.println("["+new Timestamp(new Date().getTime())+"] ����Terminada la exportaci��n de " + Config.get("ResultFileName") + "!!");
+				System.out.println("["+new Timestamp(new Date().getTime())+"]  Terminada la exportación de " + Config.get("ResultFileName"));
 
 			}
 			else if (shapes.get(key) != null){
@@ -577,7 +577,7 @@ public class Main {
 		outOsmGlobal.write("</osm>");outOsmGlobal.newLine();
 		outOsmGlobal.close();
 
-		System.out.println("["+new Timestamp(new Date().getTime())+"] ����Terminada la exportaci��n de " + Config.get("ResultFileName") + "!!");
+		System.out.println("["+new Timestamp(new Date().getTime())+"]  Terminada la exportación de " + Config.get("ResultFileName"));
 
 
 

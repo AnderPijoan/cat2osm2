@@ -278,7 +278,6 @@ public class CatParser {
 			 */
 			break;}
 		case 11: {
-
 			//c.addAttribute("TIPO DE REGISTRO",line.substring(0,2)); 
 			//c.addAttribute("CODIGO DE DELEGACION MEH",line.substring(23,25));
 			//c.addAttribute("CODIGO DEL MUNICIPIO",line.substring(25,28));
@@ -305,7 +304,7 @@ public class CatParser {
 			c.addAttribute("addr:street",nombreTipoViaParser(line.substring(158,163).trim())+" "+formatearNombreCalle(eliminarComillas(line.substring(163,188).trim())));
 			//c.addAttribute("PRIMER NUMERO DE POLICIA",line.substring(188,192));
 			//c.addAttribute("PRIMERA LETRA (CARACTER DE DUPLICADO)",line.substring(192,193));
-			c.addAttribute("addr:housenumber",utils.eliminarCerosString(line.substring(188,192))+line.substring(192,193).trim());
+			//c.addAttribute("addr:housenumber",utils.eliminarCerosString(line.substring(188,192))+line.substring(192,193).trim());
 			//c.addAttribute("SEGUNDO NUMERO DE POLICIA",line.substring(193,197));
 			//c.addAttribute("SEGUNDA LETRA (CARACTER DE DUPLICADO)",line.substring(197,198));
 			//c.addAttribute("KILOMETRO (3enteros y 2decimales)",line.substring(198,203));
@@ -313,8 +312,8 @@ public class CatParser {
 			//c.addAttribute("TEXTO DE DIRECCION NO ESTRUCTURADA",line.substring(215,240));
 			c.addAttribute("name",eliminarComillas(line.substring(215,240)));
 			//c.addAttribute("CODIGO POSTAL",line.substring(240,245));
-//			if (!line.substring(240,245).equals("00000"))
-//				c.addAttribute("addr:postcode", line.substring(240,245));
+			if (!line.substring(240,245).equals("00000"))
+				c.addAttribute("addr:postcode", line.substring(240,245));
 //			if (!line.substring(240,245).isEmpty() && !line.substring(240,245).equals("00000"))
 //				c.addAttribute("addr:country","ES");
 			//c.addAttribute("DISTRITO MUNICIPAL",line.substring(245,247));
@@ -343,7 +342,6 @@ public class CatParser {
 
 			return c;}
 		case 13: {
-
 			//c.addAttribute("TIPO DE REGISTRO",line.substring(0,2));
 			//c.addAttribute("CODIGO DE DELEGACION MEH",line.substring(23,25));
 			//c.addAttribute("CODIGO DE MUNICIPIO",line.substring(25,28));
@@ -391,7 +389,6 @@ public class CatParser {
 			return c; }
 
 		case 14: {
-
 			//c.addAttribute("TIPO DE REGISTRO",line.substring(0,2)); 
 			//c.addAttribute("CODIGO DE DELEGACION DEL MEH",line.substring(23,25));
 			//c.addAttribute("CODIGO DEL MUNICIPIO",line.substring(25,28));
@@ -428,7 +425,6 @@ public class CatParser {
 			return c;}
 
 		case 15: {
-
 			//c.addAttribute("TIPO DE REGISTRO",line.substring(0,2));
 			//c.addAttribute("CODIGO DE DELEGACION MEH",line.substring(23,25));
 			//c.addAttribute("CODIGO DEL MUNICIPIO",line.substring(25,28));
@@ -464,7 +460,7 @@ public class CatParser {
 			c.addAttribute("addr:street",nombreTipoViaParser(line.substring(200,205).trim())+" "+formatearNombreCalle(eliminarComillas(line.substring(205,230).trim())));
 			//c.addAttribute("PRIMER NUMERO DE POLICIA",line.substring(230,234));
 			//c.addAttribute("PRIMERA LETRA (CARACTER DE DUPLICADO)",line.substring(234,235));
-			c.addAttribute("addr:housenumber",utils.eliminarCerosString(line.substring(230,234))+line.substring(234,235).trim());
+			//c.addAttribute("addr:housenumber",utils.eliminarCerosString(line.substring(230,234))+line.substring(234,235).trim());
 			//c.addAttribute("SEGUNDO NUMERO DE POLICIA",line.substring(235,239));
 			//c.addAttribute("SEGUNDA LETRA (CARACTER DE DUPLICADO)",line.substring(239,240));
 			//c.addAttribute("KILOMETRO (3enteros y 2decimales)",line.substring(240,245));
@@ -502,7 +498,6 @@ public class CatParser {
 			return c;}
 
 		case 16: {
-
 			//c.addAttribute("TIPO DE REGISTRO",line.substring(0,2));
 			//c.addAttribute("CODIGO DE DELEGACION MEH",line.substring(23,25));
 			//c.addAttribute("CODIGO DEL MUNICIPIO",line.substring(25,28));
@@ -516,11 +511,9 @@ public class CatParser {
 			//c.addAttribute("CALIFICACION CATASTRAL DE LA SUBPARCELA",line.substring(48,50));
 			//c.addAttribute("BLOQUE REPETITIVO HASTA 15 VECES",line.substring(50,999));
 
-
 			return c;}
 
 		case 17: {
-
 			//c.addAttribute("TIPO DE REGISTRO",line.substring(0,2));
 			//c.addAttribute("CODIGO DE DELEGACION MEH",line.substring(23,25));
 			//c.addAttribute("CODIGO DEL MUNICIPIO",line.substring(25,28));
@@ -545,7 +538,6 @@ public class CatParser {
 
 			return c;}
 		case 90: {
-
 			/*System.out.println("\nTIPO DE REGISTRO 90: REGISTRO DE COLA\n"); 
 			System.out.println("Numero total de registros tipo 11           :"+line.substring(9,16));
 			System.out.println("Numero total de registros tipo 13           :"+line.substring(23,30));
@@ -584,21 +576,21 @@ public class CatParser {
 		case "BJ":return "Bajada";
 		case "BO":return "Barrio";
 		case "BR":return "Barranco";
-		case "CA":return "Cañada";
+		case "CA":return "Ca��ada";
 		case "CG":return "Colegio/Cigarral";
 		case "CH":return "Chalet";
 		case "CI":return "Cinturon";
-		case "CJ":return "Calleja/Callejón";
+		case "CJ":return "Calleja/Callej��n";
 		case "CM":return "Camino";
 		case "CN":return "Colonia";
 		case "CO":return "Concejo/Colegio";
 		case "CP":return "Campa/Campo";
 		case "CR":return "Carretera/Carrera";
-		case "CS":return "Caserío";
+		case "CS":return "Caser��o";
 		case "CT":return "Cuesta/Costanilla";
 		case "CU":return "Conjunto";
-		case "DE":return "Detrás";
-		case "DP":return "Diputación";
+		case "DE":return "Detr��s";
+		case "DP":return "Diputaci��n";
 		case "DS":return "Diseminados";
 		case "ED":return "Edificios";
 		case "EM":return "Extramuros";
@@ -610,7 +602,7 @@ public class CatParser {
 		case "FN":return "Finca";
 		case "GL":return "Glorieta";
 		case "GR":return "Grupo";
-		case "GV":return "Gran Vía";
+		case "GV":return "Gran V��a";
 		case "HT":return "Huerta/Huerto";
 		case "JR":return "Jardines";
 		case "LD":return "Lado/Ladera";
@@ -624,16 +616,16 @@ public class CatParser {
 		case "PB":return "Poblado";
 		case "PD":return "Partida";
 		case "PJ":return "Pasaje/Pasadizo";
-		case "PL":return "Polígono";
+		case "PL":return "Pol��gono";
 		case "PM":return "Paramo";
 		case "PQ":return "Parroquia/Parque";
-		case "PR":return "Prolongación/Continuación";
+		case "PR":return "Prolongaci��n/Continuaci��n";
 		case "PS":return "Paseo";
 		case "PT":return "Puente";
 		case "PZ":return "Plaza";
 		case "QT":return "Quinta";
 		case "RB":return "Rambla";
-		case "RC":return "Rincón/Rincona";
+		case "RC":return "Rinc��n/Rincona";
 		case "RD":return "Ronda";
 		case "RM":return "Ramal";
 		case "RP":return "Rampa";
@@ -642,12 +634,12 @@ public class CatParser {
 		case "SA":return "Salida";
 		case "SD":return "Senda";
 		case "SL":return "Solar";
-		case "SN":return "Salón";
+		case "SN":return "Sal��n";
 		case "SU":return "Subida";
 		case "TN":return "Terrenos";
 		case "TO":return "Torrente";
-		case "TR":return "Travesía";
-		case "UR":return "Urbanización";
+		case "TR":return "Traves��a";
+		case "UR":return "Urbanizaci��n";
 		case "VR":return "Vereda";
 		case "CY":return "Caleya";
 		}

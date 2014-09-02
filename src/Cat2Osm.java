@@ -71,7 +71,7 @@ public class Cat2Osm {
 	 * @return lista de shapes con los tags modificados, si es null es que no habia portales
 	 */
 	@SuppressWarnings("unchecked")
-	public HashMap <String, List<Shape>> asignEntrances(HashMap <String, List<Shape>> shapes){
+	public HashMap <String, List<Shape>> moveEntrancesToParcel(HashMap <String, List<Shape>> shapes){
 
 		// Si no se ha leido ningun portal
 		if (shapes.get("ELEMTEX-189401") == null)
@@ -151,9 +151,7 @@ public class Cat2Osm {
 			Coordinate tempSnappedCoor = new Coordinate(); // Coordenada temporal del elemtex pegado a la geometria de la parcela
 			com.vividsolutions.jts.geom.Point point = (Point) shapeTex.getGeometry(); // Geometria del shape del portal
 
-
 			// Buscamos la parcela mas cercana
-
 			double minDist = Cat2OsmUtils.ENTRANCES_SEARCHDIST;
 
 			// Creamos el punto de busqueda con la coordenada del punto y la expandimos
@@ -338,7 +336,6 @@ public class Cat2Osm {
 					}
 					// No existe sameNumberParcela
 					else{
-
 						// Si se han encontrado solo estas dos pero son la misma
 						if (nearestPairParcela.equals(nearestParcela)){
 							finalCoord  = nearestSnappedCoor;
@@ -351,9 +348,7 @@ public class Cat2Osm {
 							finalParcel = nearestPairParcela;
 						}
 					}
-
 				}
-
 				// Solo se ha encontrado la mas cercana
 				else{
 					finalCoord  = nearestSnappedCoor;
@@ -769,6 +764,18 @@ public class Cat2Osm {
 
 				// Intenta unir todos los subshapes con los mismos tags en uno
 				((ShapeParent) shape).joinSubshapes(true);
+				
+				// Pasar los atributos de direccion postal de la parcela a sus entradas
+				if ( ((ShapeParcela) shape).getEntrances() != null){
+					for(ShapeElemtex entrance : ((ShapeParcela) shape).getEntrances()){
+						entrance.getAttributes().addAttribute("addr:street", shape.getAttributes().getValue("addr:street"));
+						entrance.getAttributes().addAttribute("addr:postcode", shape.getAttributes().getValue("addr:postcode"));
+					}
+				}
+				// Y borramos esos tags de la parcela
+				shape.getAttributes().removeAttribute("addr:street");
+				shape.getAttributes().removeAttribute("addr:postcode");
+				
 			} else 
 				// Si encontramos una MASA RUSTICA 
 				// (deberia haber solo una en la lista de shapes, ya que son por una unica masa)

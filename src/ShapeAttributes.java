@@ -14,7 +14,9 @@ public class ShapeAttributes {
 	}
 
 	public void addAttribute(String k, String v){
-		attributes.put(k, v);
+		if (k != null && v != null){
+			attributes.put(k, v);
+		}
 	}
 	
 	public void addAttributeIfNotExistValue(String k, String v){

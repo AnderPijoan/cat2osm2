@@ -161,7 +161,11 @@ public abstract class Shape {
 	
 	
 	public String printAttributes(){
-		return this.attributes.toOSM();
+		if(this.attributes != null){
+			return this.attributes.toOSM();
+		}
+		else 
+			return "";
 	}
 	
 	
@@ -223,21 +227,21 @@ public abstract class Shape {
 		case "BJ":return "Bajada";
 		case "BO":return "Barrio";
 		case "BR":return "Barranco";
-		case "CA":return "Cañada";
+		case "CA":return "Ca��ada";
 		case "CG":return "Colegio/Cigarral";
 		case "CH":return "Chalet";
 		case "CI":return "Cinturon";
-		case "CJ":return "Calleja/Callejón";
+		case "CJ":return "Calleja/Callej��n";
 		case "CM":return "Camino";
 		case "CN":return "Colonia";
 		case "CO":return "Concejo/Colegio";
 		case "CP":return "Campa/Campo";
 		case "CR":return "Carretera/Carrera";
-		case "CS":return "Caserío";
+		case "CS":return "Caser��o";
 		case "CT":return "Cuesta/Costanilla";
 		case "CU":return "Conjunto";
-		case "DE":return "Detrás";
-		case "DP":return "Diputación";
+		case "DE":return "Detr��s";
+		case "DP":return "Diputaci��n";
 		case "DS":return "Diseminados";
 		case "ED":return "Edificios";
 		case "EM":return "Extramuros";
@@ -249,7 +253,7 @@ public abstract class Shape {
 		case "FN":return "Finca";
 		case "GL":return "Glorieta";
 		case "GR":return "Grupo";
-		case "GV":return "Gran Vía";
+		case "GV":return "Gran V��a";
 		case "HT":return "Huerta/Huerto";
 		case "JR":return "Jardines";
 		case "LD":return "Lado/Ladera";
@@ -263,16 +267,16 @@ public abstract class Shape {
 		case "PB":return "Poblado";
 		case "PD":return "Partida";
 		case "PJ":return "Pasaje/Pasadizo";
-		case "PL":return "Polígono";
+		case "PL":return "Pol��gono";
 		case "PM":return "Paramo";
 		case "PQ":return "Parroquia/Parque";
-		case "PR":return "Prolongación/Continuación";
+		case "PR":return "Prolongaci��n/Continuaci��n";
 		case "PS":return "Paseo";
 		case "PT":return "Puente";
 		case "PZ":return "Plaza";
 		case "QT":return "Quinta";
 		case "RB":return "Rambla";
-		case "RC":return "Rincón/Rincona";
+		case "RC":return "Rinc��n/Rincona";
 		case "RD":return "Ronda";
 		case "RM":return "Ramal";
 		case "RP":return "Rampa";
@@ -281,12 +285,12 @@ public abstract class Shape {
 		case "SA":return "Salida";
 		case "SD":return "Senda";
 		case "SL":return "Solar";
-		case "SN":return "Salón";
+		case "SN":return "Sal��n";
 		case "SU":return "Subida";
 		case "TN":return "Terrenos";
 		case "TO":return "Torrente";
-		case "TR":return "Travesía";
-		case "UR":return "Urbanización";
+		case "TR":return "Traves��a";
+		case "UR":return "Urbanizaci��n";
 		case "VR":return "Vereda";
 		case "CY":return "Caleya";
 		}
@@ -307,10 +311,10 @@ public abstract class Shape {
 //		case "CA":return "-";
 //		case "CG":return "-";
 //		case "CH":return "Xalet";
-//		case "CI":return "Cinturó";
-//		case "CJ":return "Carreró";
-//		case "CM":return "Camí";
-//		case "CN":return "Colònia";
+//		case "CI":return "Cintur��";
+//		case "CJ":return "Carrer��";
+//		case "CM":return "Cam��";
+//		case "CN":return "Col��nia";
 //		case "CO":return "-";
 //		case "CP":return "Camp";
 //		case "CR":return "Carretera";
@@ -318,7 +322,7 @@ public abstract class Shape {
 //		case "CT":return "Pujada";
 //		case "CU":return "Conjunt";
 //		case "DE":return "-";
-//		case "DP":return "Diputació";
+//		case "DP":return "Diputaci��";
 //		case "DS":return "Disseminats";
 //		case "ED":return "Edificis";
 //		case "EM":return "Extramurs";
@@ -330,7 +334,7 @@ public abstract class Shape {
 //		case "FN":return "Finca";
 //		case "GL":return "-";
 //		case "GR":return "Grup";
-//		case "GV":return "Gran Vía";
+//		case "GV":return "Gran V��a";
 //		case "HT":return "Hort";
 //		case "JR":return "Jardins";
 //		case "LD":return "Vessant ??";
@@ -344,13 +348,13 @@ public abstract class Shape {
 //		case "PB":return "Poblat ??";
 //		case "PD":return "-";
 //		case "PJ":return "Passatge";
-//		case "PL":return "Polígon";
+//		case "PL":return "Pol��gon";
 //		case "PM":return "-";
 //		case "PQ":return "-";
 //		case "PR":return "-";
 //		case "PS":return "Passeig";
 //		case "PT":return "Pont";
-//		case "PZ":return "Plaça";
+//		case "PZ":return "Pla��a";
 //		case "QT":return "-";
 //		case "RB":return "Rambla";
 //		case "RC":return "-";
@@ -367,7 +371,7 @@ public abstract class Shape {
 //		case "TN":return "Terrenys";
 //		case "TO":return "Torrent";
 //		case "TR":return "Travessera";
-//		case "UR":return "Urbanització";
+//		case "UR":return "Urbanitzaci��";
 //		case "VR":return "-";
 //		case "CY":return "-";}
 		
@@ -686,6 +690,7 @@ public abstract class Shape {
 			return l;
 		case "189401":
 			l.put("entrance","yes");
+			l.put("add:housenumber", rotulo);
 			return l;
 			
 		default: if (!ttggss.isEmpty()){

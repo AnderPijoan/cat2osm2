@@ -200,7 +200,6 @@ public class ShapeParcela extends ShapeParent {
 	public void addEntrance(ShapeElemtex entrance) {
 		if(null == this.entrances)
 			entrances = new ArrayList<ShapeElemtex>();
-		
 		if(!entrances.contains(entrance))
 		this.entrances.add(entrance);
 	}
@@ -320,7 +319,7 @@ public class ShapeParcela extends ShapeParent {
 		}
 		if (converted){
 			converted = super.toOSM(utils, parent);
-		} 
+		}
 		return converted;
 	}
 	
