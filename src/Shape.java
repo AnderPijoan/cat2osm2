@@ -690,7 +690,7 @@ public abstract class Shape {
 			return l;
 		case "189401":
 			l.put("entrance","yes");
-			l.put("add:housenumber", rotulo);
+			l.put("addr:housenumber", rotulo);
 			return l;
 			
 		default: if (!ttggss.isEmpty()){
