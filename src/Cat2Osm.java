@@ -771,10 +771,11 @@ public class Cat2Osm {
 						entrance.getAttributes().addAttribute("addr:street", shape.getAttributes().getValue("addr:street"));
 						entrance.getAttributes().addAttribute("addr:postcode", shape.getAttributes().getValue("addr:postcode"));
 					}
+					// Y borramos esos tags de la parcela sólo en este caso, si la parcela
+                                        // no tiene entradas los dejamos igual^M
+					shape.getAttributes().removeAttribute("addr:street");
+					shape.getAttributes().removeAttribute("addr:postcode");
 				}
-				// Y borramos esos tags de la parcela
-				shape.getAttributes().removeAttribute("addr:street");
-				shape.getAttributes().removeAttribute("addr:postcode");
 				
 			} else 
 				// Si encontramos una MASA RUSTICA 
