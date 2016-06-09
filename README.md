@@ -14,7 +14,7 @@ Forma de uso
 
 Es necesrio indicar el directorio donde se encuentren los 4 archivos de catastro TAL CUAL se descargan de la web y para una única población.
 
-   java -jar [-XmxMemoria] cat2osm2.jar [Opciones] / [Directorio]
+   java -jar [-XmxMemoria] cat2osm2.jar  [Directorio] / [Opciones]
 
 
 Ejemplo
