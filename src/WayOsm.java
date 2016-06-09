@@ -1,6 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -237,7 +238,8 @@ public class WayOsm {
 			return "";
 		}
 
-		s = ("<way id=\""+ id +"\" timestamp=\""+new Timestamp(new Date().getTime())+"\" version=\"6\">\n");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+		s = ("<way id=\""+ id +"\" timestamp=\""+df.format(new Date())+"\" version=\"6\">\n");
 
 		// Imprimir los tags yendo a sus shapes a recogerlos
 		if(shapes != null){

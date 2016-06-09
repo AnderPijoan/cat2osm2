@@ -1,6 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -183,7 +184,8 @@ public class RelationOsm {
 		// En caso de que tenga varios ways, si que se imprime como una relacion de ways.
 		else {
 
-			s = ("<relation id=\""+ id +"\" timestamp=\""+new Timestamp(new Date().getTime())+"\" visible=\"true\"  version=\"6\">\n");
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+			s = ("<relation id=\""+ id +"\" timestamp=\""+df.format(new Date())+"\" visible=\"true\"  version=\"6\">\n");
 
 			for (int x = 0; x < ids.size(); x++){
 

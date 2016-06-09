@@ -1,4 +1,6 @@
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -93,7 +95,8 @@ public class NodeOsm {
 	public String printNode(Long id){
 		String s = "";
 
-		s = ("<node id=\""+ id +"\" timestamp=\""+new Timestamp(new Date().getTime())+"\" version=\"6\" lat=\""+this.coor.y+"\" lon=\""+this.coor.x+"\">\n");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+		s = ("<node id=\""+ id +"\" timestamp=\""+df.format(new Date())+"\" version=\"6\" lat=\""+this.coor.y+"\" lon=\""+this.coor.x+"\">\n");
 
 		// Imprimir los tags yendo a sus shapes a recogerlos
 		if(shapes != null){
