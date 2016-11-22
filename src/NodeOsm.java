@@ -95,7 +95,7 @@ public class NodeOsm {
 	public String printNode(Long id){
 		String s = "";
 
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		s = ("<node id=\""+ id +"\" timestamp=\""+df.format(new Date())+"\" version=\"6\" lat=\""+this.coor.y+"\" lon=\""+this.coor.x+"\">\n");
 
 		// Imprimir los tags yendo a sus shapes a recogerlos

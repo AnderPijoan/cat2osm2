@@ -238,7 +238,7 @@ public class WayOsm {
 			return "";
 		}
 
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		s = ("<way id=\""+ id +"\" timestamp=\""+df.format(new Date())+"\" version=\"6\">\n");
 
 		// Imprimir los tags yendo a sus shapes a recogerlos

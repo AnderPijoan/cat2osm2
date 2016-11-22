@@ -54,6 +54,7 @@ public class ShapeParser extends Thread{
 
 		try {
 			FileDataStore store = FileDataStoreFinder.getDataStore(file);
+			
 			//ShapefileDataStore store = new ShapefileDataStore(file.toURI().toURL());
 			//ShapefileDataStore store = new ShapefileDataStore(file.toURI().toURL(),true,Charset.forName("ISO-8859-15"));
 			//ShapefileDataStore ds = new ShapefileDataStore(new URL(file.getAbsolutePath()));
@@ -190,7 +191,9 @@ public class ShapeParser extends Thread{
 
 			borrarShpFiles(file.getName().toUpperCase());
 
-		} catch (IOException e) {e.printStackTrace();}
+		} catch (IOException e) { 
+			//e.printStackTrace();
+		}
 	}
 
 
@@ -202,9 +205,9 @@ public class ShapeParser extends Thread{
 	 */
 	public synchronized File reproyectarWGS84(File f, String tipo){
 
-		try
-		{			
-			FileDataStore store = FileDataStoreFinder.getDataStore(f);
+		try {
+					
+			FileDataStore store = FileDataStoreFinder.getDataStore( f );
 			SimpleFeatureSource featureSource = store.getFeatureSource();
 			SimpleFeatureType schema = featureSource.getSchema();
 			CoordinateReferenceSystem dataCRS = schema.getCoordinateReferenceSystem();
@@ -219,19 +222,23 @@ public class ShapeParser extends Thread{
 			Map<String, Serializable> create = new HashMap<String, Serializable>();
 
 			File out = new File(Config.get("ResultPath") + File.separatorChar +  Config.get("ResultFileName") + File.separator + tipo + f.getName());
-
+			
 			create.put("url", out.toURI().toURL());
 			create.put("create spatial index", Boolean.TRUE);
 			DataStore dataStore = factory.createNewDataStore(create);
 			SimpleFeatureType featureType = SimpleFeatureTypeBuilder.retype(schema, wgs84CRS);
 			dataStore.createSchema(featureType);
 
+			Transaction transaction = null;
+			FeatureWriter<SimpleFeatureType, SimpleFeature> writer = null;
+			SimpleFeatureIterator iterator = null;
 
-			Transaction transaction = new DefaultTransaction("Reproject");
-			FeatureWriter<SimpleFeatureType, SimpleFeature> writer =
-					dataStore.getFeatureWriterAppend(featureType.getTypeName(), transaction);
-			SimpleFeatureIterator iterator = featureCollection.features();
 			try {
+				
+				transaction = new DefaultTransaction("Reproject");
+				writer = dataStore.getFeatureWriterAppend( (tipo + featureType.getTypeName()), transaction);
+				iterator = featureCollection.features();
+			
 				while (iterator.hasNext()) {
 					// copy the contents of each feature and transform the geometry
 					SimpleFeature feature = iterator.next();
@@ -245,17 +252,26 @@ public class ShapeParser extends Thread{
 					writer.write();
 				}
 				transaction.commit();
+				
 			} catch (Exception problem) {
-				problem.printStackTrace();
+				
+				//problem.printStackTrace();
 				transaction.rollback();
 				System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se han podido reproyectar los shapefiles "+tipo+f.getName()+".");
+				
 			} finally {
-				writer.close();
-				iterator.close();
-				transaction.close();
+				
+				if( writer != null){ writer.close(); }
+				if( iterator != null){ iterator.close(); }
+				if( transaction != null){ transaction.close(); }
+				System.out.println("["+new Timestamp(new Date().getTime())+"]\tCerrando transacción "+tipo+f.getName()+".");
+				
 			}
 
-		} catch (Exception er){ System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se ha podido proyectar los shapefiles "+tipo+f.getName()+"."); er.printStackTrace(); }
+		} catch (Exception er){ 
+			System.out.println("["+new Timestamp(new Date().getTime())+"]\tNo se ha podido proyectar los shapefiles "+tipo+f.getName()+". Algunos archivos de catastro pueden estar vacios dependiendo del municipio."); 
+			//er.printStackTrace(); 
+		}
 
 		return new File(Config.get("ResultPath") + File.separatorChar + Config.get("ResultFileName") + File.separatorChar + tipo+f.getName());
 	}

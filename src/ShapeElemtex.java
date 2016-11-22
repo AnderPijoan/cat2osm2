@@ -7,7 +7,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.lang.WordUtils;
 
 public class ShapeElemtex extends ShapePoint {
 
